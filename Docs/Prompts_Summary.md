@@ -19,11 +19,10 @@ A running log of prompts/decisions from this chat and from Claude Code, in execu
 
 ## Claude Code (build, commits, pushes)
 
-*No entries yet — populate once the build starts. Suggested row format:*
-
 | # | Date | Prompt given to Claude Code | Commit / PR | Status |
 |---|---|---|---|---|
-| | | | | |
+| 1 | 2026-07-19 | Scaffold monorepo skeleton: Angular + NestJS + Prisma, env config for demo/staging/production, git init, README | `6dc5415` | Committed locally (push pending repo URL) |
+| 2 | 2026-07-19 | Maintain this Prompts_Summary log; append a row per commit within the same commit | _(this commit — finalize on push)_ | Committed locally (push pending repo URL) |
 
 ---
 
