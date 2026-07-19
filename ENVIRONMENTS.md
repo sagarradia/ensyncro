@@ -2,6 +2,14 @@
 
 Ensyncro runs in three logical environments, each with its own database, secrets, and subdomain (PRD §8). The active environment is selected by the **`APP_ENV`** variable.
 
+Each environment maps to a long-lived Git branch and a Vercel Custom Environment (Option A). See **[DEPLOYMENT.md](DEPLOYMENT.md)** for the full runbook, the per-environment variable matrix, and Vercel/Neon setup steps.
+
+| Environment  | Git branch | Neon branch  |
+| ------------ | ---------- | ------------ |
+| `demo`       | `demo`     | `demo`       |
+| `staging`    | `staging`  | `staging`    |
+| `production` | `main`     | `production` |
+
 | `APP_ENV`    | Purpose                                                      | Frontend origin              | Stats behaviour                                          | OTP     |
 | ------------ | ----------------------------------------------------------- | ---------------------------- | ------------------------------------------------------- | ------- |
 | `demo`       | Working demo, all 3 roles instantly accessible, seeded data | `demo.ensyncro.app`          | Seeded demo numbers, clearly not live                   | mock    |

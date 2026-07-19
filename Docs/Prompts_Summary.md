@@ -32,6 +32,7 @@ A running log of prompts/decisions from this chat and from Claude Code, in execu
 | 9 | 2026-07-19 | Fix Vercel build TS2305 (@prisma/client missing Role/OtpChannel): confirmed enums in schema; add prisma generate via postinstall + prebuild in apps/api; verified from a clean state with npm run api:build | `c978a3c` | Pushed |
 | 10 | 2026-07-19 | Confirm frontend is its own app (apps/web) and make it independently deployable: add apps/web/vercel.json (static SPA, outputDirectory dist/web/browser, SPA rewrite, asset caching) + README deploy notes | `d8612a0` | Pushed |
 | 11 | 2026-07-19 | Fix blank deployed frontend (NG0908): add zone.js polyfill in angular.json; wire build-time env injection (scripts/set-env.mjs via prebuild, APP_ENV/API_BASE_URL) replacing fileReplacements, add Environment type; verified render + no console errors in browser + injected URL in bundle | `6eb30d2` | Pushed |
+| 12 | 2026-07-19 | Option A environment separation: add DEPLOYMENT.md runbook (branch↔Vercel-env↔Neon mapping, env matrix with placeholders/no secrets, setup + verification steps), link from ENVIRONMENTS.md, and create long-lived demo + staging branches | `_pending_` | Committed locally |
 
 ---
 
