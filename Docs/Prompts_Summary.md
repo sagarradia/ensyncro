@@ -21,9 +21,10 @@ A running log of prompts/decisions from this chat and from Claude Code, in execu
 
 | # | Date | Prompt given to Claude Code | Commit / PR | Status |
 |---|---|---|---|---|
-| 1 | 2026-07-19 | Scaffold monorepo skeleton: Angular + NestJS + Prisma, env config for demo/staging/production, git init, README | `6dc5415` | Committed locally (push pending repo URL) |
-| 2 | 2026-07-19 | Maintain this Prompts_Summary log; append a row per commit within the same commit | `_pending_` | Committed locally (push pending repo URL) |
-| 3 | 2026-07-19 | Document the "same commit, fill hashes at push" logging convention | `_pending_` | Committed locally (push pending repo URL) |
+| 1 | 2026-07-19 | Scaffold monorepo skeleton: Angular + NestJS + Prisma, env config for demo/staging/production, git init, README | `6dc5415` | Pushed |
+| 2 | 2026-07-19 | Maintain this Prompts_Summary log; append a row per commit within the same commit | `753ba30` | Pushed |
+| 3 | 2026-07-19 | Document the "same commit, fill hashes at push" logging convention | `1f6a6a0` | Pushed |
+| 4 | 2026-07-19 | Init git repo, connect GitHub remote (origin), commit and push | [`origin/main`](https://github.com/sagarradia/ensyncro/tree/main) | Pushed |
 
 ---
 
