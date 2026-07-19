@@ -61,6 +61,8 @@ npm run web:dev
 
 ## Environments
 
+See [ENVIRONMENTS.md](ENVIRONMENTS.md) for the full variable reference, local setup, and validation behaviour.
+
 Ensyncro runs in three logical environments, each with its own database, secrets, and subdomain (PRD §8):
 
 | Environment    | Purpose                                                        | Stats behaviour                                              |

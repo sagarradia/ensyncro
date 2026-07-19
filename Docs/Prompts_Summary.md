@@ -27,6 +27,7 @@ A running log of prompts/decisions from this chat and from Claude Code, in execu
 | 4 | 2026-07-19 | Init git repo, connect GitHub remote (origin), commit and push | [`origin/main`](https://github.com/sagarradia/ensyncro/tree/main) | Pushed |
 | 5 | 2026-07-19 | Scaffold Angular frontend app: root shell, home page, routing, favicon, .editorconfig; verified `ng build` | `0388a49` | Pushed |
 | 6 | 2026-07-19 | Scaffold NestJS backend app: HealthModule (/api/health + DB status), tsconfig.build, validation deps, placeholder Prisma model; verified build + live health request | `2ff6f74` | Pushed |
+| 7 | 2026-07-19 | Plan task #4 — Env config for demo/staging/production: boot-time env validation (fail-fast + prod warnings), monorepo-root .env loading, ENVIRONMENTS.md; add execution plan to repo | `_pending_` | Committed locally |
 
 ---
 
