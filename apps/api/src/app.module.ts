@@ -2,7 +2,7 @@ import { Module } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
 import configuration from './config/configuration';
 import { PrismaModule } from './prisma/prisma.module';
-import { AppController } from './app.controller';
+import { HealthModule } from './health/health.module';
 
 @Module({
   imports: [
@@ -14,7 +14,9 @@ import { AppController } from './app.controller';
       envFilePath: ['.env'],
     }),
     PrismaModule,
+    HealthModule,
+    // Feature modules (auth, founders, investors, admin, data-room, cms, ...)
+    // will be registered here as they are built. See PRD §5 / §7.
   ],
-  controllers: [AppController],
 })
 export class AppModule {}

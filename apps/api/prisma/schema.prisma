@@ -16,9 +16,20 @@ datasource db {
 }
 
 // ─────────────────────────────────────────────────────────────
-// Models are intentionally NOT defined yet — this is a skeleton.
+// Real feature models are NOT defined yet — this is a skeleton.
 // The v1 data model (users, founder_profiles, investor_profiles,
 // admin_profiles, data_room_files, data_room_access_log, matches,
 // cms_content, platform_stats, ...) will be added when feature work
 // begins. See Docs/Ensyncro_PRD_v1.md section 7.
+//
+// The single model below is a TEMPORARY placeholder: Prisma cannot
+// generate a client from a schema with zero models, and the backend
+// instantiates PrismaClient at startup. Delete it once the first real
+// model is added.
 // ─────────────────────────────────────────────────────────────
+model ScaffoldProbe {
+  id        String   @id @default(uuid())
+  createdAt DateTime @default(now())
+
+  @@map("_scaffold_probe")
+}
