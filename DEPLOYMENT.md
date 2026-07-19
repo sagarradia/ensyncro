@@ -13,13 +13,19 @@ application code is identical across environments — behaviour differs only by 
 
 | Environment    | Git branch | Vercel environment   | Web domain               | API domain                   | Neon branch  |
 | -------------- | ---------- | -------------------- | ------------------------ | ---------------------------- | ------------ |
-| **production** | `main`     | Production           | `ensyncro.app`           | `api.ensyncro.app`           | `production` |
+| **production** | `main`     | Production           | `ensyncro.app`           | `api.ensyncro.app`           | `main`       |
 | **staging**    | `staging`  | Custom → `staging`   | `staging.ensyncro.app`   | `staging-api.ensyncro.app`   | `staging`    |
 | **demo**       | `demo`     | Custom → `demo`      | `demo.ensyncro.app`      | `demo-api.ensyncro.app`      | `demo`       |
 
 Domains above are the assumed scheme — adjust to the real domains you attach in
 Vercel. The two apps deploy as **separate Vercel projects** (`apps/web`,
 `apps/api`), each configured with all three environments.
+
+> **Actual Neon setup:** the database lives in the Vercel-managed Neon project
+> `neon-bronze-pocket` (org `org-purple-recipe-42632303`). Its **default branch
+> `main` is the production branch** (kept as-is, not renamed, so the Vercel–Neon
+> integration's default-branch expectation is preserved); `staging` and `demo`
+> branches were added off `main`.
 
 ## 2. Branch strategy
 
@@ -52,8 +58,8 @@ the Neon integration and must not be set by hand.
 | `NODE_ENV`           | `production`                  | `production`                     | `production`                 |
 | `API_PORT`           | `3000`                        | `3000`                           | `3000`                       |
 | `CORS_ORIGIN`        | `https://demo.ensyncro.app`   | `https://staging.ensyncro.app`   | `https://ensyncro.app`       |
-| `DATABASE_URL`       | injected (Neon `demo`)        | injected (Neon `staging`)        | injected (Neon `production`) |
-| `DIRECT_URL`         | injected (Neon `demo`)        | injected (Neon `staging`)        | injected (Neon `production`) |
+| `DATABASE_URL`       | injected (Neon `demo`)        | injected (Neon `staging`)        | injected (Neon `main`)       |
+| `DIRECT_URL`         | injected (Neon `demo`)        | injected (Neon `staging`)        | injected (Neon `main`)       |
 | `JWT_ACCESS_SECRET`  | «unique per env»              | «unique per env»                 | «unique per env»             |
 | `JWT_REFRESH_SECRET` | «unique per env»              | «unique per env»                 | «unique per env»             |
 | `JWT_ACCESS_TTL`     | `900`                         | `900`                            | `900`                        |
@@ -76,16 +82,21 @@ the Neon integration and must not be set by hand.
 
 ## 4. One-time setup
 
-### 4a. Neon (database branching)
+### 4a. Neon (database branching) — done
 
-1. Create a Neon project for Ensyncro. Its default branch is `production`.
-2. Create branches `staging` and `demo` off `production` (Neon → Branches).
-3. Install the **Vercel ↔ Neon integration**; connect it to both the API Vercel
-   project and each environment, mapping:
-   - Vercel Production → Neon `production`
+Project `neon-bronze-pocket` (Vercel-managed Neon org). Its default branch
+`main` is the production branch; `staging` and `demo` branches were added off it.
+Because the org is Vercel-managed, projects can't be created via `neonctl`
+(branch writes are allowed) — provision new projects from the Vercel dashboard.
+
+Remaining:
+
+1. Install / open the **Vercel ↔ Neon integration** on the API Vercel project and
+   map each environment to its branch:
+   - Vercel Production → Neon `main`
    - Vercel `staging`   → Neon `staging`
    - Vercel `demo`      → Neon `demo`
-4. Confirm the integration injects `DATABASE_URL` (pooled) and `DIRECT_URL`
+2. Confirm the integration injects `DATABASE_URL` (pooled) and `DIRECT_URL`
    (unpooled, for migrations) into each environment.
 
 ### 4b. Vercel (two projects, custom environments)
