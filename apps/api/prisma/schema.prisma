@@ -16,20 +16,72 @@ datasource db {
 }
 
 // ─────────────────────────────────────────────────────────────
-// Real feature models are NOT defined yet — this is a skeleton.
-// The v1 data model (users, founder_profiles, investor_profiles,
-// admin_profiles, data_room_files, data_room_access_log, matches,
-// cms_content, platform_stats, ...) will be added when feature work
-// begins. See Docs/Ensyncro_PRD_v1.md section 7.
-//
-// The single model below is a TEMPORARY placeholder: Prisma cannot
-// generate a client from a schema with zero models, and the backend
-// instantiates PrismaClient at startup. Delete it once the first real
-// model is added.
+// Auth models (task #5). This is the minimal slice needed for
+// signup / login / JWT / mock OTP. The full v1 data model
+// (founder_profiles, investor_profiles, admin_profiles,
+// data_room_files, data_room_access_log, matches, cms_content,
+// platform_stats, ...) lands with the schema migration in task #10.
+// See Docs/Ensyncro_PRD_v1.md section 7.
 // ─────────────────────────────────────────────────────────────
-model ScaffoldProbe {
-  id        String   @id @default(uuid())
-  createdAt DateTime @default(now())
 
-  @@map("_scaffold_probe")
+enum Role {
+  FOUNDER
+  INVESTOR
+  ADMIN
+}
+
+enum UserStatus {
+  PENDING_VERIFICATION
+  ACTIVE
+  DISABLED
+}
+
+enum OtpChannel {
+  EMAIL
+  MOBILE
+}
+
+model User {
+  id             String     @id @default(uuid())
+  email          String     @unique
+  mobile         String?    @unique
+  passwordHash   String
+  role           Role
+  status         UserStatus @default(PENDING_VERIFICATION)
+  emailVerified  Boolean    @default(false)
+  mobileVerified Boolean    @default(false)
+  createdAt      DateTime   @default(now())
+  updatedAt      DateTime   @updatedAt
+
+  otpCodes      OtpCode[]
+  refreshTokens RefreshToken[]
+
+  @@map("users")
+}
+
+model OtpCode {
+  id         String     @id @default(uuid())
+  userId     String
+  user       User       @relation(fields: [userId], references: [id], onDelete: Cascade)
+  channel    OtpChannel
+  codeHash   String
+  expiresAt  DateTime
+  consumedAt DateTime?
+  createdAt  DateTime   @default(now())
+
+  @@index([userId, channel])
+  @@map("otp_codes")
+}
+
+model RefreshToken {
+  id        String    @id @default(uuid())
+  userId    String
+  user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  tokenHash String    @unique
+  expiresAt DateTime
+  revokedAt DateTime?
+  createdAt DateTime  @default(now())
+
+  @@index([userId])
+  @@map("refresh_tokens")
 }
