@@ -1,0 +1,13 @@
+<header class="site-header">
+  <a class="brand" routerLink="/">Ensyncro</a>
+  <span class="env-badge" [class.env-prod]="env === 'production'">{{ env }}</span>
+</header>
+
+<main class="site-main">
+  <router-outlet />
+</main>
+
+<footer class="site-footer">
+  <span>© {{ year }} Ensyncro</span>
+  <span class="muted">Funding marketplace — skeleton build</span>
+</footer>

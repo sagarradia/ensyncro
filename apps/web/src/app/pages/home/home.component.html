@@ -1,0 +1,17 @@
+<section class="hero">
+  <h1>Where founders and investors sync up.</h1>
+  <p class="lede">
+    Ensyncro is a funding marketplace connecting founders raising capital with investors
+    across the full spectrum — angel, seed, VC, syndicate, and crowdfunding.
+  </p>
+  <p class="note">This is the frontend scaffold. Feature screens are not built yet.</p>
+</section>
+
+<section class="roles">
+  @for (role of roles; track role.title) {
+    <article class="role-card">
+      <h2>{{ role.title }}</h2>
+      <p>{{ role.blurb }}</p>
+    </article>
+  }
+</section>

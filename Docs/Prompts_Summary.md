@@ -25,6 +25,7 @@ A running log of prompts/decisions from this chat and from Claude Code, in execu
 | 2 | 2026-07-19 | Maintain this Prompts_Summary log; append a row per commit within the same commit | `753ba30` | Pushed |
 | 3 | 2026-07-19 | Document the "same commit, fill hashes at push" logging convention | `1f6a6a0` | Pushed |
 | 4 | 2026-07-19 | Init git repo, connect GitHub remote (origin), commit and push | [`origin/main`](https://github.com/sagarradia/ensyncro/tree/main) | Pushed |
+| 5 | 2026-07-19 | Scaffold Angular frontend app: root shell, home page, routing, favicon, .editorconfig; verified `ng build` | `_pending_` | Committed locally |
 
 ---
 
