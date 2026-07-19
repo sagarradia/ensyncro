@@ -22,10 +22,18 @@ A running log of prompts/decisions from this chat and from Claude Code, in execu
 | # | Date | Prompt given to Claude Code | Commit / PR | Status |
 |---|---|---|---|---|
 | 1 | 2026-07-19 | Scaffold monorepo skeleton: Angular + NestJS + Prisma, env config for demo/staging/production, git init, README | `6dc5415` | Committed locally (push pending repo URL) |
-| 2 | 2026-07-19 | Maintain this Prompts_Summary log; append a row per commit within the same commit | _(this commit — finalize on push)_ | Committed locally (push pending repo URL) |
+| 2 | 2026-07-19 | Maintain this Prompts_Summary log; append a row per commit within the same commit | `_pending_` | Committed locally (push pending repo URL) |
+| 3 | 2026-07-19 | Document the "same commit, fill hashes at push" logging convention | `_pending_` | Committed locally (push pending repo URL) |
 
 ---
 
-## Instruction to paste into Claude Code (once, at project start)
+## Logging convention
 
-> Maintain a file at `docs/Prompts_Summary.md` in this repo. Every time you execute a prompt that results in a commit, append a row to the "Claude Code" table: the date, a one-line summary of what was asked, the commit hash or PR link, and status. Do this as part of the same commit, not a separate one. If the file doesn't exist yet, create it with this structure.
+A commit's hash is derived from its contents, so a commit can never contain its own final hash. To keep rows in the **same commit** as the change (as requested) while still producing references that resolve on GitHub:
+
+1. When a prompt produces a commit, append its row in **that same commit**, with the `Commit / PR` cell set to `` `_pending_` ``.
+2. **Right before pushing**, replace every `` `_pending_` `` cell with the real, now-final short hash (in one reconciliation step), then push. Rows for earlier commits reference ancestors, so their hashes resolve correctly on the remote.
+
+The `Date` uses the current date; the `Prompt` cell is a one-line summary of what was asked; `Status` tracks committed/pushed state.
+
+> Original instruction (kept for reference): _Maintain a file at `docs/Prompts_Summary.md`. Every time you execute a prompt that results in a commit, append a row to the "Claude Code" table: the date, a one-line summary of what was asked, the commit hash or PR link, and status. Do this as part of the same commit, not a separate one._
