@@ -28,7 +28,7 @@ A running log of prompts/decisions from this chat and from Claude Code, in execu
 | 5 | 2026-07-19 | Scaffold Angular frontend app: root shell, home page, routing, favicon, .editorconfig; verified `ng build` | `0388a49` | Pushed |
 | 6 | 2026-07-19 | Scaffold NestJS backend app: HealthModule (/api/health + DB status), tsconfig.build, validation deps, placeholder Prisma model; verified build + live health request | `2ff6f74` | Pushed |
 | 7 | 2026-07-19 | Plan task #4 — Env config for demo/staging/production: boot-time env validation (fail-fast + prod warnings), monorepo-root .env loading, ENVIRONMENTS.md; add execution plan to repo | `a31c4d4` | Pushed |
-| 8 | 2026-07-19 | Plan task #5 — Auth: signup, login, JWT, mock OTP. Minimal User/OtpCode/RefreshToken models (replaces ScaffoldProbe), AuthModule (bcrypt, JWT access + revocable refresh, mock OTP), guard + /me; verified build, routes, validation/guard, security primitives (DB round-trip pending a database) | `_pending_` | Committed locally |
+| 8 | 2026-07-19 | Plan task #5 — Auth: signup, login, JWT, mock OTP. Minimal User/OtpCode/RefreshToken models (replaces ScaffoldProbe), AuthModule (bcrypt, JWT access + revocable refresh, mock OTP), guard + /me; verified build, routes, validation/guard, security primitives (DB round-trip pending a database) | `8da08a8` | Pushed |
 
 ---
 
