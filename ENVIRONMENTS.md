@@ -73,18 +73,23 @@ wired into `ConfigModule`):
 
 ## Frontend variables
 
-The Angular app ships **public** build-time values only (never secrets). They
-live in `apps/web/src/environments/` and are swapped per build configuration in
-`angular.json`:
+The Angular app ships **public** build-time values only (never secrets). Angular
+does not read `process.env` at runtime, so `apps/web/scripts/set-env.mjs`
+(wired to the `prebuild` hook) generates `src/environments/environment.ts` from
+environment variables before `ng build`:
 
-| Build config | File                        | `apiBaseUrl`                        |
-| ------------ | --------------------------- | ----------------------------------- |
-| demo         | `environment.demo.ts`       | `https://demo-api.ensyncro.app/api` |
-| staging      | `environment.staging.ts`    | `https://staging-api.ensyncro.app/api` |
-| production   | `environment.production.ts` | `https://api.ensyncro.app/api`      |
+| Variable       | Purpose                                                 | Default (per `APP_ENV`)                |
+| -------------- | ------------------------------------------------------- | -------------------------------------- |
+| `APP_ENV`      | `demo` \| `staging` \| `production`                     | `production`                           |
+| `API_BASE_URL` | Overrides the API base URL for the selected environment | demo → `https://demo-api.ensyncro.app/api`, staging → `https://staging-api.ensyncro.app/api`, production → `https://api.ensyncro.app/api` |
+
+On **Vercel**, set `APP_ENV` and (optionally) `API_BASE_URL` in the frontend
+project's Environment Variables — `prebuild` bakes them into the bundle during
+the build. Point `API_BASE_URL` at the deployed API for that environment.
 
 ```bash
-npm run web:build:demo
-npm run web:build:staging
-npm run web:build:production
+npm run web:build             # APP_ENV / API_BASE_URL from the environment
+npm run web:build:demo        # forces APP_ENV=demo
+npm run web:build:staging     # forces APP_ENV=staging
+npm run web:build:production  # forces APP_ENV=production
 ```

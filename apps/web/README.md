@@ -34,10 +34,27 @@ content-hashed assets. The API is a **separate** Vercel project (Root Directory
 
 ## Environments
 
-Build-time values live in `src/environments/`. `environment.ts` is the default
-(demo); `angular.json` swaps it for `environment.staging.ts` /
-`environment.production.ts` per configuration. These hold **public** values only
-(e.g. `apiBaseUrl`) — no secrets or DB connection strings ever ship in the bundle.
+Angular does not read `process.env` at runtime, so configuration is injected at
+**build time**. `scripts/set-env.mjs` (wired to the `prebuild` hook) generates
+`src/environments/environment.ts` from environment variables before `ng build`:
+
+| Variable       | Purpose                                                    | Default                              |
+| -------------- | ---------------------------------------------------------- | ------------------------------------ |
+| `APP_ENV`      | `demo` \| `staging` \| `production` (selects behaviour)    | `production`                         |
+| `API_BASE_URL` | Overrides the API base URL for the chosen environment      | per-env default in `set-env.mjs`     |
+
+```bash
+npm run build                 # uses APP_ENV / API_BASE_URL from the environment
+npm run build:demo            # forces APP_ENV=demo
+npm run build:staging         # forces APP_ENV=staging
+npm run build:production      # forces APP_ENV=production
+```
+
+On **Vercel**, set `APP_ENV` and (optionally) `API_BASE_URL` in the project's
+Environment Variables; `prebuild` bakes them into the bundle. Only **public**
+values ever ship — no secrets or DB connection strings. `environment.ts` is a
+generated file (a committed default keeps the repo type-checking); edit
+`set-env.mjs` or `environment.model.ts`, never `environment.ts` directly.
 
 ## Structure
 
@@ -48,7 +65,9 @@ src/
 │   ├── app.config.ts        # standalone providers (router, http)
 │   ├── app.routes.ts        # route table
 │   └── pages/home/          # landing page
-├── environments/            # demo / staging / production
+├── environments/
+│   ├── environment.model.ts # Environment type (AppEnv union)
+│   └── environment.ts       # GENERATED at build time by scripts/set-env.mjs
 ├── favicon.svg
 ├── index.html
 ├── main.ts
