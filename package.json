@@ -1,0 +1,22 @@
+{
+  "name": "ensyncro",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Ensyncro — funding marketplace connecting founders with investors. Monorepo skeleton.",
+  "workspaces": [
+    "apps/*",
+    "packages/*"
+  ],
+  "engines": {
+    "node": ">=20.0.0"
+  },
+  "scripts": {
+    "api:dev": "npm run start:dev --workspace @ensyncro/api",
+    "api:build": "npm run build --workspace @ensyncro/api",
+    "web:dev": "npm run start --workspace @ensyncro/web",
+    "web:build": "npm run build --workspace @ensyncro/web",
+    "prisma:generate": "npm run prisma:generate --workspace @ensyncro/api",
+    "prisma:migrate": "npm run prisma:migrate --workspace @ensyncro/api",
+    "lint": "npm run lint --workspaces --if-present"
+  }
+}

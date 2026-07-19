@@ -1,0 +1,24 @@
+// Ensyncro — Prisma schema
+// Connection string is read from the DATABASE_URL environment variable.
+// It is NOT hardcoded: Vercel's Neon integration injects it per environment
+// (demo / staging / production). See the repo README for details.
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+  // directUrl is used for migrations when DATABASE_URL points at a pooled
+  // (PgBouncer/Neon) endpoint. Also injected by the Neon integration.
+  directUrl = env("DIRECT_URL")
+}
+
+// ─────────────────────────────────────────────────────────────
+// Models are intentionally NOT defined yet — this is a skeleton.
+// The v1 data model (users, founder_profiles, investor_profiles,
+// admin_profiles, data_room_files, data_room_access_log, matches,
+// cms_content, platform_stats, ...) will be added when feature work
+// begins. See Docs/Ensyncro_PRD_v1.md section 7.
+// ─────────────────────────────────────────────────────────────
