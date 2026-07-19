@@ -14,6 +14,24 @@ npm run web:build:staging    # staging build
 npm run web:build:production # production build
 ```
 
+## Deployment (Vercel)
+
+This app deploys as its **own Vercel project**, independent of the API. Create a
+Vercel project from the GitHub repo and set:
+
+- **Root Directory** → `apps/web`
+- Build command / output are read from [`vercel.json`](vercel.json):
+  `npm run build` → `dist/web/browser` (Angular's application-builder output).
+
+`vercel.json` also adds a SPA fallback (`/(.*)` → `/index.html`) so Angular
+client-side routing works on refresh, and long-cache headers for the
+content-hashed assets. The API is a **separate** Vercel project (Root Directory
+`apps/api`), so the two deploy and scale independently.
+
+> Tip: in the project's *Git → Ignored Build Step*, use
+> `git diff --quiet HEAD^ HEAD -- .` so the web project only rebuilds when
+> `apps/web` actually changes.
+
 ## Environments
 
 Build-time values live in `src/environments/`. `environment.ts` is the default

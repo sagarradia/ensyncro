@@ -30,6 +30,7 @@ A running log of prompts/decisions from this chat and from Claude Code, in execu
 | 7 | 2026-07-19 | Plan task #4 — Env config for demo/staging/production: boot-time env validation (fail-fast + prod warnings), monorepo-root .env loading, ENVIRONMENTS.md; add execution plan to repo | `a31c4d4` | Pushed |
 | 8 | 2026-07-19 | Plan task #5 — Auth: signup, login, JWT, mock OTP. Minimal User/OtpCode/RefreshToken models (replaces ScaffoldProbe), AuthModule (bcrypt, JWT access + revocable refresh, mock OTP), guard + /me; verified build, routes, validation/guard, security primitives (DB round-trip pending a database) | `8da08a8` | Pushed |
 | 9 | 2026-07-19 | Fix Vercel build TS2305 (@prisma/client missing Role/OtpChannel): confirmed enums in schema; add prisma generate via postinstall + prebuild in apps/api; verified from a clean state with npm run api:build | `c978a3c` | Pushed |
+| 10 | 2026-07-19 | Confirm frontend is its own app (apps/web) and make it independently deployable: add apps/web/vercel.json (static SPA, outputDirectory dist/web/browser, SPA rewrite, asset caching) + README deploy notes | `_pending_` | Committed locally |
 
 ---
 
