@@ -75,7 +75,7 @@ All homepage/marketing copy, pricing tiers, and stats are editable by Admins thr
 - Backend: NestJS (Node/TypeScript)
 - DB: PostgreSQL (Prisma or TypeORM)
 - File storage: S3-compatible, private bucket, signed URLs only
-- Environments: Demo / Staging / Production — separate DBs, secrets, subdomains
+- Environment: **single environment for now** — one `main` branch, one Vercel project per app, one Neon database. Multi-environment separation (Demo / Staging / Production with separate DBs, secrets, subdomains) is **deferred** until real usage justifies it (see §10).
 
 ## 9. Out of scope for phase 1 (flag for phase 2)
 - Real payment/escrow processing
@@ -85,6 +85,11 @@ All homepage/marketing copy, pricing tiers, and stats are editable by Admins thr
 - Native push notifications
 
 ## 10. Decisions log
+
+**Single environment (multi-env deferred) — 2026-07-20**
+- Simplified to a **single environment**: one `main` branch, one Vercel project per app (`ensyncro-web`, `ensyncro-api`), one Neon database (`main` branch).
+- The demo/staging/production separation (separate branches, DBs, secrets, subdomains) added significant setup and operational overhead with no real users yet. **Deferred** until there's actual usage to justify it — at which point staging/demo can be reintroduced per the earlier Option A plan.
+- Consequence: the per-environment stats behaviour below (demo seeded / staging live / production gated) collapses to a single production configuration for now.
 
 **Color palette — Charcoal green (locked)**
 | Token | Hex | Use |

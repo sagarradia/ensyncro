@@ -1,141 +1,78 @@
-# Deployment & environments — runbook
+# Deployment & environment — runbook
 
-Ensyncro uses **Option A**: long-lived Git branches, each mapped to a **Vercel
-Custom Environment**, each backed by its own **Neon database branch**. The
-application code is identical across environments — behaviour differs only by the
-`APP_ENV` variable and the per-environment values injected at build/runtime.
+Ensyncro runs as a **single environment** for now. Multi-environment
+(demo / staging / production separation) is **deferred** until real usage
+justifies the added complexity — see PRD §8 and the decisions log (§10).
 
-> **Secrets are never committed.** This file documents *structure and
-> placeholders only*. Real values live in the Vercel dashboard (and are injected
-> from the Neon integration). The tracked `.env.*.example` files are templates.
+> **Secrets are never committed.** This file documents structure and
+> placeholders only. Real values live in the Vercel dashboard (DB connection
+> strings are injected by the Neon integration). The tracked `.env*.example`
+> files are templates.
 
-## 1. Environment ↔ branch ↔ Neon mapping
+## Layout
 
-| Environment    | Git branch | Vercel environment   | Web domain               | API domain                   | Neon branch  |
-| -------------- | ---------- | -------------------- | ------------------------ | ---------------------------- | ------------ |
-| **production** | `main`     | Production           | `ensyncro.app`           | `api.ensyncro.app`           | `main`       |
-| **staging**    | `staging`  | Custom → `staging`   | `staging.ensyncro.app`   | `staging-api.ensyncro.app`   | `staging`    |
-| **demo**       | `demo`     | Custom → `demo`      | `demo.ensyncro.app`      | `demo-api.ensyncro.app`      | `demo`       |
+| Piece | Value |
+| ----- | ----- |
+| Git branch | `main` (the only long-lived branch) |
+| Frontend (Vercel project) | `ensyncro-web` — Root Directory `apps/web` |
+| Backend (Vercel project) | `ensyncro-api` — Root Directory `apps/api` |
+| Database | one Neon project, its default `main` branch |
 
-Domains above are the assumed scheme — adjust to the real domains you attach in
-Vercel. The two apps deploy as **separate Vercel projects** (`apps/web`,
-`apps/api`), each configured with all three environments.
+Each app is its own Vercel project, both deploying from `main`.
 
-> **Actual Neon setup:** the database lives in the Vercel-managed Neon project
-> `neon-bronze-pocket` (org `org-purple-recipe-42632303`). Its **default branch
-> `main` is the production branch** (kept as-is, not renamed, so the Vercel–Neon
-> integration's default-branch expectation is preserved); `staging` and `demo`
-> branches were added off `main`.
+## Environment variables (set once, in each Vercel project)
 
-## 2. Branch strategy
+### `ensyncro-api`
 
-- `main` is the trunk and the **production** source of truth (protect it: PRs +
-  review before merge).
-- `staging` and `demo` are **long-lived deployment branches**. Promote by
-  fast-forwarding from `main`:
+| Variable                                | Value                                   |
+| --------------------------------------- | --------------------------------------- |
+| `APP_ENV`                               | `production`                            |
+| `CORS_ORIGIN`                           | the deployed web URL                    |
+| `DATABASE_URL` / `DIRECT_URL`           | **injected by the Neon integration**    |
+| `JWT_ACCESS_SECRET` / `_REFRESH_SECRET` | «unique random values»                  |
+| `JWT_ACCESS_TTL` / `_REFRESH_TTL`       | `900` / `1209600`                       |
+| `OTP_MODE`                              | `mock` (real provider is phase 2)       |
 
-  ```bash
-  git switch staging && git merge --ff-only main && git push
-  git switch demo    && git merge --ff-only main && git push
-  git switch main
-  ```
+Generate JWT secrets with `openssl rand -hex 32`. `NODE_ENV` is set to
+`production` automatically by Vercel — do not add it.
 
-- Each push to a mapped branch triggers a deploy to its Vercel environment.
-- (Optional stricter flow to adopt later: land changes on `staging` for QA
-  first, then promote `staging` → `main` for production.)
+### `ensyncro-web`
 
-## 3. Environment variable matrix
+| Variable       | Value                                |
+| -------------- | ------------------------------------ |
+| `APP_ENV`      | `production`                         |
+| `API_BASE_URL` | the deployed API URL, incl. `/api`   |
 
-Set these in each Vercel project under the matching **Environment**. Values shown
-as «…» are placeholders you fill in the dashboard; "injected" values come from
-the Neon integration and must not be set by hand.
+These are **public** build-time values (baked into the bundle by
+`scripts/set-env.mjs` via the `prebuild` hook) — never secrets.
 
-### API project (`apps/api`)
+## One-time setup
 
-| Variable             | demo                          | staging                          | production                   |
-| -------------------- | ----------------------------- | -------------------------------- | ---------------------------- |
-| `APP_ENV`            | `demo`                        | `staging`                        | `production`                 |
-| `NODE_ENV`           | `production`                  | `production`                     | `production`                 |
-| `API_PORT`           | `3000`                        | `3000`                           | `3000`                       |
-| `CORS_ORIGIN`        | `https://demo.ensyncro.app`   | `https://staging.ensyncro.app`   | `https://ensyncro.app`       |
-| `DATABASE_URL`       | injected (Neon `demo`)        | injected (Neon `staging`)        | injected (Neon `main`)       |
-| `DIRECT_URL`         | injected (Neon `demo`)        | injected (Neon `staging`)        | injected (Neon `main`)       |
-| `JWT_ACCESS_SECRET`  | «unique per env»              | «unique per env»                 | «unique per env»             |
-| `JWT_REFRESH_SECRET` | «unique per env»              | «unique per env»                 | «unique per env»             |
-| `JWT_ACCESS_TTL`     | `900`                         | `900`                            | `900`                        |
-| `JWT_REFRESH_TTL`    | `1209600`                     | `1209600`                        | `1209600`                    |
-| `OTP_MODE`           | `mock`                        | `mock`                           | `live`                       |
+1. **Neon:** one project; the Vercel–Neon integration on `ensyncro-api`
+   injects `DATABASE_URL` (pooled) + `DIRECT_URL` (unpooled) for Production.
+2. **Vercel (each app):** create the project from the GitHub repo, set the
+   **Root Directory** (`apps/web` / `apps/api`), set **Framework Preset =
+   Other** and **Build Command = `npm run build`** (so the app's own build,
+   incl. `prebuild`, runs — not a raw `ng build`), and add the variables above.
+3. **Production Branch = `main`** (Settings → Git).
 
-### Web project (`apps/web`)
+## Deploying
 
-| Variable       | demo                                  | staging                                  | production                        |
-| -------------- | ------------------------------------- | ---------------------------------------- | --------------------------------- |
-| `APP_ENV`      | `demo`                                | `staging`                                | `production`                      |
-| `API_BASE_URL` | `https://demo-api.ensyncro.app/api`   | `https://staging-api.ensyncro.app/api`   | `https://api.ensyncro.app/api`    |
+Push to `main` → both projects deploy. Note: Vercel **skips builds with no
+changes in the project's Root Directory**, so an *empty* commit will be
+canceled at 0ms — trigger a real deploy with an actual change, or use the
+dashboard **Redeploy** button / `vercel redeploy`.
 
-> **Generate JWT secrets uniquely per environment** — never reuse across envs:
-> ```bash
-> openssl rand -hex 32   # run once per secret, per environment
-> ```
-> `OTP_MODE=live` requires a real SMS/email provider (phase 2, PRD §9); until
-> then production OTP is not delivered — keep production gated accordingly.
+## Verification
 
-## 4. One-time setup
+- **API:** `GET https://<api-url>/api/health` → `{ "status":"ok",
+  "env":"production", "db":"up" }` (DB is empty until the schema migration).
+- **Web:** the page renders and the env badge shows `production`.
+- The web app calls the correct API (`API_BASE_URL`).
 
-### 4a. Neon (database branching) — done
+## How config flows
 
-Project `neon-bronze-pocket` (Vercel-managed Neon org). Its default branch
-`main` is the production branch; `staging` and `demo` branches were added off it.
-Because the org is Vercel-managed, projects can't be created via `neonctl`
-(branch writes are allowed) — provision new projects from the Vercel dashboard.
-
-Remaining:
-
-1. Install / open the **Vercel ↔ Neon integration** on the API Vercel project and
-   map each environment to its branch:
-   - Vercel Production → Neon `main`
-   - Vercel `staging`   → Neon `staging`
-   - Vercel `demo`      → Neon `demo`
-2. Confirm the integration injects `DATABASE_URL` (pooled) and `DIRECT_URL`
-   (unpooled, for migrations) into each environment.
-
-### 4b. Vercel (two projects, custom environments)
-
-For **each** app (`apps/api`, then `apps/web`):
-
-1. Create a Vercel project from the GitHub repo `sagarradia/ensyncro`.
-2. Set **Root Directory** → `apps/api` (API) or `apps/web` (web). Build/output
-   come from each app's `vercel.json` / package scripts.
-3. Under **Settings → Environments**, create Custom Environments `staging` and
-   `demo`; keep the built-in **Production**. Track branches:
-   - Production ← `main`
-   - `staging`  ← `staging` branch
-   - `demo`     ← `demo` branch
-4. Add the variables from §3 to each environment (API vs web tables).
-5. Attach the domains from §1 to each environment.
-6. Redeploy each branch and verify (§5).
-
-## 5. Per-environment verification
-
-After a deploy, for each environment:
-
-- **API**: `GET https://<api-domain>/api/health` →
-  `{ "status": "ok", "env": "<demo|staging|production>", "db": "up" }`.
-  `env` must match the environment and `db` must be `up` (not `not-configured`)
-  once Neon is connected.
-- **Web**: the page renders and the environment badge shows the correct label
-  (`demo` / `staging` / `production`) — it reflects the injected `APP_ENV`, so a
-  wrong badge means the env var is missing.
-- Confirm the web app calls the correct API (`API_BASE_URL`) for that env.
-
-## 6. How `APP_ENV` flows
-
-- **Web**: `scripts/set-env.mjs` (via the `prebuild` hook) reads `APP_ENV` /
-  `API_BASE_URL` at build time and generates `src/environments/environment.ts`,
-  which drives the badge and API base URL. See [ENVIRONMENTS.md](ENVIRONMENTS.md).
-- **API**: `APP_ENV` is read + validated at boot (`src/config/env.validation.ts`)
-  and surfaced at `/api/health`.
-
-Because config is build/boot-time, **the environment is only as separated as the
-Vercel env vars + Neon branches are** — this runbook is the source of truth for
-what to set where.
+- **Web:** `scripts/set-env.mjs` (`prebuild`) reads `APP_ENV` / `API_BASE_URL`
+  at build time → `src/environments/environment.ts`. See [ENVIRONMENTS.md](ENVIRONMENTS.md).
+- **API:** `APP_ENV` is validated at boot (`src/config/env.validation.ts`) and
+  surfaced at `/api/health`.
