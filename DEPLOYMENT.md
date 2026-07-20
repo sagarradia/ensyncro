@@ -28,7 +28,8 @@ Each app is its own Vercel project, both deploying from `main`.
 | --------------------------------------- | --------------------------------------- |
 | `APP_ENV`                               | `production`                            |
 | `CORS_ORIGIN`                           | the deployed web URL                    |
-| `DATABASE_URL` / `DIRECT_URL`           | **injected by the Neon integration**    |
+| `DATABASE_URL`                          | pooled URL — **injected** by the Neon integration |
+| `DIRECT_URL`                            | unpooled URL for migrations — **set manually** (see Database migrations) |
 | `JWT_ACCESS_SECRET` / `_REFRESH_SECRET` | «unique random values»                  |
 | `JWT_ACCESS_TTL` / `_REFRESH_TTL`       | `900` / `1209600`                       |
 | `OTP_MODE`                              | `mock` (real provider is phase 2)       |
@@ -49,12 +50,39 @@ These are **public** build-time values (baked into the bundle by
 ## One-time setup
 
 1. **Neon:** one project; the Vercel–Neon integration on `ensyncro-api`
-   injects `DATABASE_URL` (pooled) + `DIRECT_URL` (unpooled) for Production.
+   injects `DATABASE_URL` (pooled). Set `DIRECT_URL` (unpooled) manually —
+   see [Database migrations](#database-migrations).
 2. **Vercel (each app):** create the project from the GitHub repo, set the
    **Root Directory** (`apps/web` / `apps/api`), set **Framework Preset =
    Other** and **Build Command = `npm run build`** (so the app's own build,
    incl. `prebuild`, runs — not a raw `ng build`), and add the variables above.
 3. **Production Branch = `main`** (Settings → Git).
+
+## Database migrations
+
+Prisma migrations live in `apps/api/prisma/migrations/` and are applied with
+`prisma migrate deploy` (`npm run prisma:deploy`).
+
+**Gotcha — you can't read the DB connection string back from Vercel.** Env vars
+added to a Vercel project are stored as **Sensitive (write-only)**: `vercel env
+pull` returns *stubs*, not the real values. So you cannot recover the production
+connection string that way, and Prisma's `directUrl` needs the **unpooled**
+endpoint. Get it from **Neon** instead (capture to a shell variable — never
+print it):
+
+```bash
+# from apps/api
+DBURL=$(neonctl connection-string main --project-id dry-bonus-70315470 --pooled false)
+DATABASE_URL="$DBURL" DIRECT_URL="$DBURL" npx prisma migrate deploy
+unset DBURL
+```
+
+`DIRECT_URL` is also set as a Vercel env var on `ensyncro-api` (the unpooled
+string) so a migration run from the Vercel build context wouldn't need this.
+**Caveat:** it's a manual copy — if the Neon password is rotated, the integration
+auto-updates `DATABASE_URL`/`DATABASE_URL_UNPOOLED` but **not** the hand-set
+`DIRECT_URL`; re-set it after any rotation (pipe the new string to `vercel env
+add DIRECT_URL production --value "$DBURL"`).
 
 ## Deploying
 
@@ -66,7 +94,8 @@ dashboard **Redeploy** button / `vercel redeploy`.
 ## Verification
 
 - **API:** `GET https://<api-url>/api/health` → `{ "status":"ok",
-  "env":"production", "db":"up" }` (DB is empty until the schema migration).
+  "env":"production", "db":"up" }`. The initial schema (auth tables) is migrated;
+  `db:"up"` = connectivity.
 - **Web:** the page renders and the env badge shows `production`.
 - The web app calls the correct API (`API_BASE_URL`).
 
