@@ -4,12 +4,9 @@
   "private": true,
   "description": "Ensyncro Angular frontend",
   "scripts": {
-    "start": "node scripts/set-env.mjs demo && ng serve",
+    "start": "node scripts/set-env.mjs && ng serve",
     "prebuild": "node scripts/set-env.mjs",
     "build": "ng build",
-    "build:demo": "node scripts/set-env.mjs demo && ng build",
-    "build:staging": "node scripts/set-env.mjs staging && ng build",
-    "build:production": "node scripts/set-env.mjs production && ng build",
     "lint": "ng lint"
   },
   "dependencies": {
