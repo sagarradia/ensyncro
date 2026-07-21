@@ -10,6 +10,7 @@ import { AuthModule } from './auth/auth.module';
 import { AdminModule } from './admin/admin.module';
 import { ProfilesModule } from './profiles/profiles.module';
 import { PublicConfigModule } from './public-config/public-config.module';
+import { DiscoverModule } from './discover/discover.module';
 
 // Local env files live at the monorepo root and are selected by APP_ENV.
 // In hosted environments (Vercel) variables are injected directly, so these
@@ -37,6 +38,7 @@ const envFilePath = [
     AdminModule,
     ProfilesModule,
     PublicConfigModule,
+    DiscoverModule,
     // Further feature modules (founders, investors, data-room, cms, ...)
     // will be registered here as they are built. See PRD §5 / §7.
   ],
