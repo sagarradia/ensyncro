@@ -1,0 +1,81 @@
+<section class="card form-card">
+  @if (loading()) {
+    <p class="muted">Loading your profile…</p>
+  } @else if (done()) {
+    <h1>Company profile saved</h1>
+    <p class="muted">
+      Your profile is complete. Investors discovering founders will be able to find
+      {{ form.controls.companyName.value }}.
+    </p>
+    <button type="button" class="btn secondary" (click)="done.set(false); step.set(1)">
+      Edit profile
+    </button>
+  } @else {
+    <ol class="steps" aria-label="Onboarding progress">
+      <li [class.active]="step() === 1">1. Company</li>
+      <li [class.active]="step() === 2">2. Funding</li>
+      <li [class.active]="step() === 3">3. About</li>
+    </ol>
+
+    <h1>Tell us about your company</h1>
+    <p class="muted">Step {{ step() }} of {{ totalSteps }}. Progress is saved as you go.</p>
+
+    @if (error()) {
+      <p class="alert" role="alert">{{ error() }}</p>
+    }
+
+    <form [formGroup]="form" (ngSubmit)="$event.preventDefault()" novalidate>
+      @if (step() === 1) {
+        <label for="companyName">Company name</label>
+        <input id="companyName" formControlName="companyName" />
+        @if (form.controls.companyName.touched && form.controls.companyName.invalid) {
+          <small class="field-error">At least 2 characters.</small>
+        }
+
+        <label for="sector">Sector</label>
+        <input id="sector" formControlName="sector" placeholder="Fintech, Health, Climate…" />
+        @if (form.controls.sector.touched && form.controls.sector.invalid) {
+          <small class="field-error">At least 2 characters.</small>
+        }
+
+        <label for="stage">Stage</label>
+        <select id="stage" formControlName="stage">
+          @for (s of stages; track s.value) {
+            <option [value]="s.value">{{ s.label }}</option>
+          }
+        </select>
+      } @else if (step() === 2) {
+        <label for="fundingSought">Funding sought (whole currency units)</label>
+        <input id="fundingSought" type="number" min="0" formControlName="fundingSought" />
+
+        <label for="teamSize">Team size</label>
+        <input id="teamSize" type="number" min="1" formControlName="teamSize" />
+
+        <label for="location">Location</label>
+        <input id="location" formControlName="location" placeholder="Bengaluru, India" />
+
+        <label for="website">Website</label>
+        <input id="website" formControlName="website" placeholder="https://example.com" />
+      } @else {
+        <label for="description">What are you building?</label>
+        <textarea id="description" rows="6" formControlName="description"></textarea>
+        <small class="muted">This is what investors see first.</small>
+      }
+
+      <div class="wizard-actions">
+        @if (step() > 1) {
+          <button type="button" class="btn secondary" (click)="back()" [disabled]="saving()">Back</button>
+        }
+        @if (step() < totalSteps) {
+          <button type="button" class="btn" (click)="next()" [disabled]="saving()">
+            {{ saving() ? 'Saving…' : 'Save and continue' }}
+          </button>
+        } @else {
+          <button type="button" class="btn" (click)="finish()" [disabled]="saving()">
+            {{ saving() ? 'Saving…' : 'Finish' }}
+          </button>
+        }
+      </div>
+    </form>
+  }
+</section>
