@@ -1,0 +1,68 @@
+<section class="discover">
+  <h1>Intros</h1>
+  <p class="muted">
+    Ensyncro doesn't do messaging in v1. An intro request is the whole handshake —
+    contact details are shared only once the other side accepts.
+  </p>
+
+  @if (error()) { <p class="alert" role="alert">{{ error() }}</p> }
+
+  @if (loading()) {
+    <p class="muted">Loading…</p>
+  } @else {
+  @if (inbox(); as i) {
+    <h2 class="section-heading">Received</h2>
+    @if (i.received.length === 0) {
+      <p class="card muted">No one has asked for an intro yet.</p>
+    } @else {
+      <div class="cards">
+        @for (r of i.received; track r.id) {
+          <article class="card result-card" [attr.data-intro]="r.id">
+            <header>
+              <h2>{{ r.counterparty.name }}</h2>
+              <span class="pill">{{ r.status }}</span>
+            </header>
+            <p class="meta">{{ r.counterparty.role }} · {{ r.counterparty.detail }}</p>
+            @if (r.note) { <p>"{{ r.note }}"</p> }
+            <p class="meta">{{ r.createdAt | date: 'medium' }}</p>
+
+            @if (r.status === 'PENDING') {
+              <button type="button" (click)="respond(r.id, 'ACCEPTED')" [attr.data-accept]="r.id">Accept</button>
+              <button type="button" class="secondary" (click)="respond(r.id, 'DECLINED')">Decline</button>
+            } @else if (r.status === 'ACCEPTED' && r.contact) {
+              <p class="contact" [attr.data-contact]="r.id">
+                <strong>{{ r.contact.email }}</strong>
+                @if (r.contact.mobile) { <span> · {{ r.contact.mobile }}</span> }
+              </p>
+            } @else {
+              <p class="muted">Declined.</p>
+            }
+          </article>
+        }
+      </div>
+    }
+
+    <h2 class="section-heading">Sent</h2>
+    @if (i.sent.length === 0) {
+      <p class="card muted">
+        You haven't requested any intros. Browse <a routerLink="/discover/founders">founders</a>
+        or <a routerLink="/discover/investors">investors</a> to get started.
+      </p>
+    } @else {
+      <div class="cards">
+        @for (r of i.sent; track r.id) {
+          <article class="card result-card">
+            <header>
+              <h2>{{ r.counterparty.name }}</h2>
+              <span class="pill">{{ r.status }}</span>
+            </header>
+            <p class="meta">{{ r.counterparty.role }} · {{ r.counterparty.detail }}</p>
+            @if (r.note) { <p class="muted">"{{ r.note }}"</p> }
+            <p class="meta">Sent {{ r.createdAt | date: 'medium' }}</p>
+          </article>
+        }
+      </div>
+    }
+  }
+  }
+</section>

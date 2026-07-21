@@ -61,6 +61,8 @@
         @if (f.website) {
           <a class="muted" [href]="f.website" target="_blank" rel="noopener noreferrer">{{ f.website }}</a>
         }
+        <a class="view-product" [routerLink]="['/founders', f.userId]"
+           [attr.data-view]="f.companyName">View product page →</a>
       </article>
     }
   </div>

@@ -7,6 +7,9 @@ import { InvestorOnboardingComponent } from './pages/investor-onboarding/investo
 import { DiscoverFoundersComponent } from './pages/discover-founders/discover-founders.component';
 import { DiscoverInvestorsComponent } from './pages/discover-investors/discover-investors.component';
 import { DataRoomComponent } from './pages/data-room/data-room.component';
+import { FounderContentComponent } from './pages/founder-content/founder-content.component';
+import { ProductComponent } from './pages/product/product.component';
+import { IntrosComponent } from './pages/intros/intros.component';
 import { roleGuard } from './core/auth.guard';
 
 /**
@@ -39,5 +42,22 @@ export const routes: Routes = [
     canActivate: [roleGuard('FOUNDER', 'ADMIN')],
   },
   { path: 'data-room', component: DataRoomComponent, canActivate: [roleGuard('FOUNDER')] },
+  {
+    path: 'founder/content',
+    component: FounderContentComponent,
+    canActivate: [roleGuard('FOUNDER')],
+  },
+  // Any signed-in member can open a founder's product page; the gated sections
+  // inside it are authorised separately by the API.
+  {
+    path: 'founders/:userId',
+    component: ProductComponent,
+    canActivate: [roleGuard('FOUNDER', 'INVESTOR', 'ADMIN')],
+  },
+  {
+    path: 'intros',
+    component: IntrosComponent,
+    canActivate: [roleGuard('FOUNDER', 'INVESTOR')],
+  },
   { path: '**', redirectTo: '' },
 ];

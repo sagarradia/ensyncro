@@ -1,0 +1,137 @@
+<section class="discover">
+  @if (loading()) {
+    <p class="muted">Loading…</p>
+  } @else if (error()) {
+    <p class="alert" role="alert">{{ error() }}</p>
+  } @else {
+  @if (product(); as p) {
+    <header class="product-head">
+      @if (p.logoUrl) {
+        <img class="logo" [src]="p.logoUrl" [alt]="p.companyName + ' logo'" data-testid="logo" />
+      }
+      <div>
+        <h1 data-testid="product-title">{{ p.productName || p.companyName }}</h1>
+        @if (p.tagline) { <p class="tagline" data-testid="tagline">{{ p.tagline }}</p> }
+        <p class="meta">
+          {{ p.companyName }} · {{ p.sector }} · {{ p.stage }}
+          @if (p.location) { <span> · {{ p.location }}</span> }
+          @if (p.teamSize) { <span> · {{ p.teamSize }} people</span> }
+        </p>
+        @if (p.categories.length) {
+          <p>
+            @for (c of p.categories; track c) {
+              <span class="pill">{{ c }}</span>
+            }
+          </p>
+        }
+      </div>
+    </header>
+
+    @if (p.video; as v) {
+      <div class="card">
+        @if (v.source === 'link') {
+          <iframe class="video" [src]="embed(v.embedUrl)" title="Pitch video"
+                  allow="accelerometer; clipboard-write; encrypted-media; picture-in-picture"
+                  allowfullscreen data-testid="video"></iframe>
+        } @else if (v.playbackUrl) {
+          <video class="video" [src]="v.playbackUrl" controls data-testid="video"></video>
+        }
+      </div>
+    }
+
+    <div class="card">
+      <h2>About</h2>
+      <p>{{ p.productDescription || p.description || 'No description yet.' }}</p>
+      @if (p.website) {
+        <p><a [href]="p.website" target="_blank" rel="noopener noreferrer">{{ p.website }}</a></p>
+      }
+      @if (p.fundingSought) {
+        <p class="meta">Raising {{ money(p.fundingSought) }}</p>
+      }
+    </div>
+
+    <!-- ── Gated: financials ─────────────────────────────────── -->
+    <h2 class="section-heading">Financials &amp; milestones</h2>
+    @if (!p.access.financials) {
+      <p class="card muted" data-testid="financials-locked">
+        🔒 The founder has not shared financials with you.
+      </p>
+    } @else {
+      @if (financials(); as f) {
+      <div class="card" data-testid="financials">
+        <dl class="stats">
+          <div><dt>MRR</dt><dd>{{ money(f.mrr) }}</dd></div>
+          <div><dt>ARR</dt><dd>{{ money(f.arr) }}</dd></div>
+          <div><dt>Monthly burn</dt><dd>{{ money(f.monthlyBurn) }}</dd></div>
+          <div><dt>Runway</dt><dd>{{ f.runwayMonths ?? '—' }} months</dd></div>
+        </dl>
+        @if (f.useOfFunds) {
+          <h3>Use of funds</h3>
+          <p>{{ f.useOfFunds }}</p>
+        }
+        @if (f.milestones.length) {
+          <h3>Milestones</h3>
+          <ul class="timeline">
+            @for (m of f.milestones; track m.id) {
+              <li>
+                <strong>{{ m.title }}</strong>
+                <span class="pill">{{ m.achieved ? 'Achieved' : 'Planned' }}</span>
+                <span class="meta">{{ m.occurredOn | date: 'MMM y' }}</span>
+                @if (m.description) { <p class="muted">{{ m.description }}</p> }
+              </li>
+            }
+          </ul>
+        }
+      </div>
+      }
+    }
+
+    <!-- ── Gated: funding history ────────────────────────────── -->
+    <h2 class="section-heading">Funding history</h2>
+    @if (!p.access.fundingHistory) {
+      <p class="card muted" data-testid="funding-locked">
+        🔒 The founder has not shared their funding history with you.
+      </p>
+    } @else {
+      @if (funding(); as fh) {
+      <div class="card" data-testid="funding">
+        <p class="meta">Total raised: {{ money(fh.totalRaised) }}</p>
+        <table class="log">
+          <thead>
+            <tr><th>Stage</th><th>Raised</th><th>Pre-money</th><th>Post-money</th><th>Closed</th><th>Lead</th></tr>
+          </thead>
+          <tbody>
+            @for (r of fh.rounds; track r.id) {
+              <tr>
+                <td>{{ r.stage }}</td>
+                <td>{{ money(r.amountRaised) }}</td>
+                <td>{{ money(r.preMoney) }}</td>
+                <td>{{ money(r.postMoney) }}</td>
+                <td>{{ r.closedOn | date: 'MMM y' }}</td>
+                <td>{{ r.leadInvestor ?? '—' }}</td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      </div>
+      }
+    }
+
+    <!-- ── Request intro ─────────────────────────────────────── -->
+    <h2 class="section-heading">Request an intro</h2>
+    <div class="card">
+      @if (introNotice()) {
+        <p class="alert info" data-testid="intro-notice">{{ introNotice() }}</p>
+      }
+      @if (!introSent()) {
+        <label for="introNote">Add a note (optional)</label>
+        <textarea id="introNote" rows="3" [(ngModel)]="introNote" name="introNote"
+                  placeholder="Why you'd like to connect" data-testid="intro-note"></textarea>
+        <button type="button" (click)="requestIntro()" data-testid="request-intro">Request intro</button>
+      } @else {
+        <p><a routerLink="/intros">See your intro requests →</a></p>
+      }
+    </div>
+  }
+  }
+</section>

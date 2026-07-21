@@ -1,0 +1,233 @@
+<section class="discover">
+  <h1>Your public profile</h1>
+  <p class="muted">
+    The product page is visible to any signed-in member. Financials and funding history
+    stay private until you choose to share them — and every view is recorded.
+  </p>
+
+  @if (error()) {
+    <p class="alert" role="alert" data-testid="fc-error">{{ error() }}</p>
+  }
+  @if (notice()) {
+    <p class="alert info" data-testid="fc-notice">{{ notice() }}</p>
+  }
+
+  @if (usage(); as u) {
+    <div class="card">
+      <h2>Storage</h2>
+      <p class="meta" data-testid="quota">
+        {{ mb(u.usedBytes) }}MB of {{ mb(u.quotaBytes) }}MB used · {{ mb(u.remainingBytes) }}MB free
+      </p>
+      <div class="quota-bar" role="progressbar" [attr.aria-valuenow]="quotaPercent()">
+        <span [style.width.%]="quotaPercent()"></span>
+      </div>
+      <small class="muted">Your pitch video does not count towards this.</small>
+    </div>
+  }
+
+  <!-- ── Media ─────────────────────────────────────────────── -->
+  <h2 class="section-heading">Pitch video</h2>
+  <div class="card">
+    @if (media()?.video; as v) {
+      @if (v.source === 'link') {
+        <iframe class="video" [src]="embed(v.embedUrl)" title="Pitch video"
+                allow="accelerometer; clipboard-write; encrypted-media; picture-in-picture"
+                allowfullscreen data-testid="video-embed"></iframe>
+        <p class="meta">Hosted on {{ v.provider }} · <a [href]="v.watchUrl" target="_blank" rel="noopener noreferrer">open original</a></p>
+      } @else {
+        @if (v.playbackUrl) {
+          <video class="video" [src]="v.playbackUrl" controls data-testid="video-upload"></video>
+        }
+        <p class="meta">Uploaded · {{ v.fileName }}</p>
+      }
+      <button type="button" class="secondary" (click)="removeVideo()" data-testid="remove-video">Remove video</button>
+    } @else {
+      <p class="muted">No pitch video yet. Paste a link, or upload a file.</p>
+    }
+
+    <label for="videoUrl">YouTube, Vimeo or Loom link</label>
+    <input id="videoUrl" type="url" [(ngModel)]="videoUrl" name="videoUrl"
+           placeholder="https://youtu.be/…" data-testid="video-url" />
+    <button type="button" (click)="saveVideoLink()" data-testid="save-video-url">Save link</button>
+
+    <label for="videoFile">…or upload a video</label>
+    <input id="videoFile" type="file" accept="video/*" (change)="onVideoSelected($event)"
+           [disabled]="videoProgress() !== null" data-testid="video-file" />
+    <small class="muted">Up to {{ videoMaxMb }}MB. Uploads go straight to storage, so large files are fine.</small>
+    @if (videoProgress() !== null) {
+      <div class="quota-bar"><span [style.width.%]="videoProgress()"></span></div>
+      <p class="muted">Uploading… {{ videoProgress() }}%</p>
+    }
+  </div>
+
+  <!-- ── Product page ──────────────────────────────────────── -->
+  <h2 class="section-heading">Product</h2>
+  <div class="card">
+    <label for="productName">Product name</label>
+    <input id="productName" [(ngModel)]="productName" name="productName" data-testid="product-name" />
+
+    <label for="tagline">Tagline</label>
+    <input id="tagline" [(ngModel)]="tagline" name="tagline"
+           placeholder="One line on what it does" data-testid="tagline" />
+
+    <label for="productDescription">Description</label>
+    <textarea id="productDescription" rows="4" [(ngModel)]="productDescription"
+              name="productDescription" data-testid="product-description"></textarea>
+
+    <label for="categories">Category tags</label>
+    <input id="categories" [(ngModel)]="categoriesText" name="categories"
+           placeholder="climate, b2b saas, analytics" data-testid="categories" />
+    <small class="muted">Comma separated — these sit alongside your sector.</small>
+
+    <label for="website">Website</label>
+    <input id="website" type="url" [(ngModel)]="website" name="website" data-testid="website" />
+    <button type="button" class="secondary" (click)="saveWebsite()">Save website</button>
+
+    <label for="logoFile">Logo</label>
+    <input id="logoFile" type="file" accept="image/*" (change)="onLogoSelected($event)"
+           [disabled]="logoProgress() !== null" data-testid="logo-file" />
+    <small class="muted">Up to {{ logoMaxMb }}MB.</small>
+    @if (logoProgress() !== null) {
+      <p class="muted">Uploading logo… {{ logoProgress() }}%</p>
+    }
+
+    <button type="button" (click)="saveProduct()" data-testid="save-product">Save product page</button>
+  </div>
+
+  <!-- ── Financials ────────────────────────────────────────── -->
+  <h2 class="section-heading">Financials &amp; milestones</h2>
+  <div class="card">
+    @if (financials(); as f) {
+      <label for="finVis">Who can see this</label>
+      <select id="finVis" [value]="f.financialsVisibility"
+              (change)="setVisibility('FINANCIALS', $event)" data-testid="financials-visibility">
+        @for (o of visibilityOptions; track o.value) {
+          <option [value]="o.value">{{ o.label }}</option>
+        }
+      </select>
+    }
+
+    <label for="mrr">MRR</label>
+    <input id="mrr" type="number" [(ngModel)]="fin.mrr" name="mrr" data-testid="mrr" />
+
+    <label for="arr">ARR</label>
+    <input id="arr" type="number" [(ngModel)]="fin.arr" name="arr" data-testid="arr" />
+
+    <label for="burn">Monthly burn</label>
+    <input id="burn" type="number" [(ngModel)]="fin.monthlyBurn" name="burn" data-testid="burn" />
+
+    <label for="runway">Runway (months)</label>
+    <input id="runway" type="number" [(ngModel)]="fin.runwayMonths" name="runway" data-testid="runway" />
+
+    <label for="useOfFunds">Use of funds</label>
+    <textarea id="useOfFunds" rows="3" [(ngModel)]="fin.useOfFunds" name="useOfFunds"
+              data-testid="use-of-funds"></textarea>
+
+    <button type="button" (click)="saveFinancials()" data-testid="save-financials">Save financials</button>
+  </div>
+
+  <div class="card">
+    <h3>Milestones</h3>
+    @if (financials()?.milestones?.length) {
+      <ul class="timeline">
+        @for (m of financials()!.milestones; track m.id) {
+          <li>
+            <strong>{{ m.title }}</strong>
+            <span class="pill">{{ m.achieved ? 'Achieved' : 'Planned' }}</span>
+            <span class="meta">{{ m.occurredOn | date: 'MMM y' }}</span>
+            @if (m.description) { <p class="muted">{{ m.description }}</p> }
+            <button type="button" class="link" (click)="removeMilestone(m.id)">Remove</button>
+          </li>
+        }
+      </ul>
+    } @else {
+      <p class="muted">No milestones yet.</p>
+    }
+
+    <label for="msTitle">Title</label>
+    <input id="msTitle" [(ngModel)]="milestone.title" name="msTitle" data-testid="milestone-title" />
+    <label for="msDate">Date</label>
+    <input id="msDate" type="date" [(ngModel)]="milestone.occurredOn" name="msDate" data-testid="milestone-date" />
+    <label for="msDesc">Detail</label>
+    <input id="msDesc" [(ngModel)]="milestone.description" name="msDesc" />
+    <label class="inline">
+      <input type="checkbox" [(ngModel)]="milestone.achieved" name="msDone" /> Already achieved
+    </label>
+    <button type="button" (click)="addMilestone()" data-testid="add-milestone">Add milestone</button>
+  </div>
+
+  <!-- ── Funding history ───────────────────────────────────── -->
+  <h2 class="section-heading">Funding history</h2>
+  <div class="card">
+    @if (funding(); as fh) {
+      <p class="meta">Total raised: {{ money(fh.totalRaised) }}</p>
+      @if (fh.rounds.length) {
+        <table class="log">
+          <thead>
+            <tr><th>Stage</th><th>Raised</th><th>Pre</th><th>Post</th><th>Closed</th><th>Lead</th><th></th></tr>
+          </thead>
+          <tbody>
+            @for (r of fh.rounds; track r.id) {
+              <tr>
+                <td>{{ r.stage }}</td>
+                <td>{{ money(r.amountRaised) }}</td>
+                <td>{{ money(r.preMoney) }}</td>
+                <td>{{ money(r.postMoney) }}</td>
+                <td>{{ r.closedOn | date: 'MMM y' }}</td>
+                <td>{{ r.leadInvestor ?? '—' }}</td>
+                <td><button type="button" class="link" (click)="removeRound(r.id)">Remove</button></td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      } @else {
+        <p class="muted">No rounds recorded yet.</p>
+      }
+    }
+
+    <label for="fhVis">Who can see this</label>
+    <select id="fhVis" (change)="setVisibility('FUNDING_HISTORY', $event)" data-testid="funding-visibility">
+      @for (o of visibilityOptions; track o.value) {
+        <option [value]="o.value">{{ o.label }}</option>
+      }
+    </select>
+
+    <label for="rStage">Stage</label>
+    <select id="rStage" [(ngModel)]="round.stage" name="rStage" data-testid="round-stage">
+      @for (s of stages; track s.value) {
+        <option [value]="s.value">{{ s.label }}</option>
+      }
+    </select>
+    <label for="rAmount">Amount raised</label>
+    <input id="rAmount" type="number" [(ngModel)]="round.amountRaised" name="rAmount" data-testid="round-amount" />
+    <label for="rPre">Pre-money valuation</label>
+    <input id="rPre" type="number" [(ngModel)]="round.preMoney" name="rPre" />
+    <label for="rPost">Post-money valuation</label>
+    <input id="rPost" type="number" [(ngModel)]="round.postMoney" name="rPost" />
+    <label for="rClosed">Date closed</label>
+    <input id="rClosed" type="date" [(ngModel)]="round.closedOn" name="rClosed" data-testid="round-closed" />
+    <label for="rLead">Lead investor</label>
+    <input id="rLead" [(ngModel)]="round.leadInvestor" name="rLead" />
+    <button type="button" (click)="addRound()" data-testid="add-round">Add round</button>
+  </div>
+
+  <!-- ── Who looked ────────────────────────────────────────── -->
+  <h2 class="section-heading">Who viewed your gated sections</h2>
+  @if (sectionLog().length === 0) {
+    <p class="card muted">No one has opened your financials or funding history yet.</p>
+  } @else {
+    <table class="log" data-testid="section-log">
+      <thead><tr><th>Section</th><th>Viewer</th><th>Role</th><th>When</th></tr></thead>
+      <tbody>
+        @for (e of sectionLog(); track e.id) {
+          <tr>
+            <td>{{ e.section === 'FINANCIALS' ? 'Financials' : 'Funding history' }}</td>
+            <td>{{ e.viewer.email }}</td>
+            <td>{{ e.viewer.role }}</td>
+            <td>{{ e.viewedAt | date: 'medium' }}</td>
+          </tr>
+        }
+      </tbody>
+    </table>
+  }
+</section>

@@ -184,3 +184,134 @@ export interface AccessLogEntry {
 
 /** Matches MAX_FILE_BYTES in the API — per file, not a per-founder quota. */
 export const MAX_FILE_BYTES = 25 * 1024 * 1024;
+
+// ── Media, product page, gated sections ───────────────────────
+export type MediaKind = 'DOCUMENT' | 'PITCH_VIDEO' | 'PRODUCT_IMAGE' | 'LOGO';
+
+/** Mirrors MAX_BYTES_BY_KIND in the API. */
+export const MAX_BYTES_BY_KIND: Readonly<Record<MediaKind, number>> = {
+  DOCUMENT: 25 * 1024 * 1024,
+  PITCH_VIDEO: 200 * 1024 * 1024,
+  PRODUCT_IMAGE: 10 * 1024 * 1024,
+  LOGO: 10 * 1024 * 1024,
+};
+
+/** Total storage per founder. The pitch video does not count towards it. */
+export const FOUNDER_QUOTA_BYTES = 500 * 1024 * 1024;
+
+export interface StorageUsage {
+  usedBytes: number;
+  quotaBytes: number;
+  remainingBytes: number;
+}
+
+export type VideoProvider = 'YOUTUBE' | 'VIMEO' | 'LOOM';
+
+export type PitchVideo =
+  | { source: 'link'; provider: VideoProvider; embedUrl: string; watchUrl: string }
+  | { source: 'upload'; fileName: string; playbackUrl: string | null };
+
+export interface FounderMedia {
+  website: string | null;
+  video: PitchVideo | null;
+}
+
+export interface ProductPage {
+  id: string;
+  userId: string;
+  companyName: string;
+  sector: string;
+  stage: FundingStage;
+  fundingSought: number | null;
+  description: string | null;
+  website: string | null;
+  location: string | null;
+  teamSize: number | null;
+  productName: string | null;
+  tagline: string | null;
+  productDescription: string | null;
+  categories: string[];
+  logoUrl: string | null;
+  video: PitchVideo | null;
+  /** Lets the UI show a locked state without firing a request that 404s. */
+  access: { financials: boolean; fundingHistory: boolean };
+}
+
+export interface Milestone {
+  id: string;
+  title: string;
+  description: string | null;
+  occurredOn: string;
+  achieved: boolean;
+}
+
+export interface Financials {
+  mrr: number | null;
+  arr: number | null;
+  monthlyBurn: number | null;
+  runwayMonths: number | null;
+  useOfFunds: string | null;
+  financialsVisibility: DataRoomVisibility;
+  milestones: Milestone[];
+}
+
+export interface FundingRound {
+  id: string;
+  stage: FundingStage;
+  amountRaised: number;
+  preMoney: number | null;
+  postMoney: number | null;
+  closedOn: string;
+  leadInvestor: string | null;
+}
+
+export interface FundingHistory {
+  rounds: FundingRound[];
+  totalRaised: number;
+}
+
+export type ProfileSection = 'FINANCIALS' | 'FUNDING_HISTORY';
+
+export interface SectionAccessLogEntry {
+  id: string;
+  section: ProfileSection;
+  viewedAt: string;
+  viewer: { id: string; email: string; role: Role };
+}
+
+// ── Direct-to-storage upload ──────────────────────────────────
+export type UploadTicket =
+  | { mode: 'multipart' }
+  | {
+      mode: 'presigned-put';
+      fileId: string;
+      uploadUrl: string;
+      headers: Record<string, string>;
+      expiresInSeconds: number;
+    };
+
+// ── Request intro (PRD §10) ───────────────────────────────────
+export type IntroStatus = 'PENDING' | 'ACCEPTED' | 'DECLINED';
+
+export interface IntroCounterparty {
+  userId: string;
+  role: Role;
+  name: string;
+  detail: string;
+}
+
+export interface IntroRequest {
+  id: string;
+  status: IntroStatus;
+  note: string | null;
+  createdAt: string;
+  updatedAt: string;
+  counterparty: IntroCounterparty;
+  /** Only present on received requests, and only once accepted. */
+  contact?: { email: string; mobile: string | null } | null;
+}
+
+export interface IntroInbox {
+  sent: IntroRequest[];
+  received: IntroRequest[];
+}

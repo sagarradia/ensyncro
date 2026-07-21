@@ -1,5 +1,6 @@
 import { Component, inject, signal } from '@angular/core';
 import { FormBuilder, ReactiveFormsModule } from '@angular/forms';
+import { RouterLink } from '@angular/router';
 import { DiscoverService } from '../../core/discover.service';
 import { FUNDING_STAGES, FounderCard } from '../../core/models';
 
@@ -7,7 +8,7 @@ import { FUNDING_STAGES, FounderCard } from '../../core/models';
 @Component({
   selector: 'app-discover-founders',
   standalone: true,
-  imports: [ReactiveFormsModule],
+  imports: [ReactiveFormsModule, RouterLink],
   templateUrl: './discover-founders.component.html',
 })
 export class DiscoverFoundersComponent {
