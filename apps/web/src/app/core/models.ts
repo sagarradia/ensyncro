@@ -114,3 +114,73 @@ export interface SignupResponse {
   /** Present only while OTP_MODE=mock, so the wizard can pre-fill the codes. */
   devOtp?: { email?: string | null; mobile?: string | null };
 }
+
+// ── Discovery (task #11) ──────────────────────────────────────
+export interface DiscoverResult<T> {
+  total: number;
+  take: number;
+  skip: number;
+  items: T[];
+}
+
+export interface FounderCard {
+  id: string;
+  userId: string;
+  companyName: string;
+  sector: string;
+  stage: FundingStage;
+  fundingSought: number | null;
+  location: string | null;
+  teamSize: number | null;
+  description: string | null;
+  website: string | null;
+}
+
+export interface InvestorCard {
+  id: string;
+  userId: string;
+  name: string;
+  investorTypes: InvestorType[];
+  sectors: string[];
+  ticketMin: number | null;
+  ticketMax: number | null;
+  location: string | null;
+  description: string | null;
+  website: string | null;
+}
+
+// ── Data room (tasks #12 / #13) ───────────────────────────────
+export type DataRoomVisibility = 'PRIVATE' | 'SHARED_ON_REQUEST' | 'VISIBLE_TO_INVESTORS';
+
+export const VISIBILITY_OPTIONS: ReadonlyArray<{ value: DataRoomVisibility; label: string }> = [
+  { value: 'PRIVATE', label: 'Private — only me' },
+  { value: 'SHARED_ON_REQUEST', label: 'Shared on request' },
+  { value: 'VISIBLE_TO_INVESTORS', label: 'Visible to investors' },
+];
+
+export interface DataRoomFile {
+  id: string;
+  fileName: string;
+  contentType: string | null;
+  sizeBytes: number | null;
+  visibility: DataRoomVisibility;
+  uploadedAt: string;
+  _count?: { accessLogs: number };
+}
+
+export interface SignedLink {
+  fileId: string;
+  fileName: string;
+  expiresInSeconds: number;
+  url: string;
+}
+
+export interface AccessLogEntry {
+  id: string;
+  viewedAt: string;
+  file: { id: string; fileName: string };
+  viewer: { id: string; email: string; role: Role };
+}
+
+/** Matches MAX_FILE_BYTES in the API — per file, not a per-founder quota. */
+export const MAX_FILE_BYTES = 10 * 1024 * 1024;

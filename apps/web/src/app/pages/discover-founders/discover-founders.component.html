@@ -1,0 +1,67 @@
+<section class="discover">
+  <h1>Discover founders</h1>
+  <p class="muted">Browse founders raising capital. Filter by sector, stage and amount sought.</p>
+
+  <form class="card filters" [formGroup]="filters" (ngSubmit)="search()" novalidate>
+    <div class="filter-grid">
+      <div>
+        <label for="sector">Sector</label>
+        <input id="sector" formControlName="sector" placeholder="Climate, Fintech…" />
+      </div>
+      <div>
+        <label for="stage">Stage</label>
+        <select id="stage" formControlName="stage">
+          <option value="">Any stage</option>
+          @for (s of stages; track s.value) {
+            <option [value]="s.value">{{ s.label }}</option>
+          }
+        </select>
+      </div>
+      <div>
+        <label for="fundingMin">Seeking at least</label>
+        <input id="fundingMin" type="number" min="0" formControlName="fundingMin" />
+      </div>
+      <div>
+        <label for="fundingMax">Seeking at most</label>
+        <input id="fundingMax" type="number" min="0" formControlName="fundingMax" />
+      </div>
+    </div>
+    <div class="wizard-actions">
+      <button type="submit" class="btn" [disabled]="loading()">
+        {{ loading() ? 'Searching…' : 'Apply filters' }}
+      </button>
+      <button type="button" class="btn secondary" (click)="reset()">Reset</button>
+    </div>
+  </form>
+
+  @if (error()) {
+    <p class="alert" role="alert">{{ error() }}</p>
+  }
+
+  <p class="muted result-count">{{ total() }} founder(s) found</p>
+
+  @if (!loading() && items().length === 0) {
+    <p class="card muted">No founders match those filters.</p>
+  }
+
+  <div class="cards">
+    @for (f of items(); track f.id) {
+      <article class="card result-card" [attr.data-company]="f.companyName">
+        <header>
+          <h2>{{ f.companyName }}</h2>
+          <span class="pill">{{ f.stage }}</span>
+        </header>
+        <p class="meta">
+          {{ f.sector }}@if (f.location) { · {{ f.location }} }@if (f.teamSize) { · {{ f.teamSize }} people }
+        </p>
+        <p class="seeking">Seeking <strong>{{ money(f.fundingSought) }}</strong></p>
+        @if (f.description) {
+          <p class="desc">{{ f.description }}</p>
+        }
+        @if (f.website) {
+          <a class="muted" [href]="f.website" target="_blank" rel="noopener noreferrer">{{ f.website }}</a>
+        }
+      </article>
+    }
+  </div>
+</section>

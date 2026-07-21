@@ -1,0 +1,74 @@
+<section class="discover">
+  <h1>Discover investors</h1>
+  <p class="muted">Find investors whose focus and cheque size match your raise.</p>
+
+  <form class="card filters" [formGroup]="filters" (ngSubmit)="search()" novalidate>
+    <div class="filter-grid">
+      <div>
+        <label for="investorType">Investor type</label>
+        <select id="investorType" formControlName="investorType">
+          <option value="">Any type</option>
+          @for (t of investorTypes; track t.value) {
+            <option [value]="t.value">{{ t.label }}</option>
+          }
+        </select>
+      </div>
+      <div>
+        <label for="sector">Sector of interest</label>
+        <input id="sector" formControlName="sector" placeholder="Climate, Fintech…" />
+      </div>
+      <div>
+        <label for="ticketMin">Cheque at least</label>
+        <input id="ticketMin" type="number" min="0" formControlName="ticketMin" />
+      </div>
+      <div>
+        <label for="ticketMax">Cheque at most</label>
+        <input id="ticketMax" type="number" min="0" formControlName="ticketMax" />
+      </div>
+    </div>
+    <div class="wizard-actions">
+      <button type="submit" class="btn" [disabled]="loading()">
+        {{ loading() ? 'Searching…' : 'Apply filters' }}
+      </button>
+      <button type="button" class="btn secondary" (click)="reset()">Reset</button>
+    </div>
+  </form>
+
+  @if (error()) {
+    <p class="alert" role="alert">{{ error() }}</p>
+  }
+
+  <p class="muted result-count">{{ total() }} investor(s) found</p>
+
+  @if (!loading() && items().length === 0) {
+    <p class="card muted">No investors match those filters.</p>
+  }
+
+  <div class="cards">
+    @for (i of items(); track i.id) {
+      <article class="card result-card" [attr.data-investor]="i.name">
+        <header>
+          <h2>{{ i.name }}</h2>
+        </header>
+        <p class="meta">
+          @if (i.location) { {{ i.location }} }
+        </p>
+        <p class="tags">
+          @for (t of i.investorTypes; track t) {
+            <span class="pill">{{ typeLabel(t) }}</span>
+          }
+        </p>
+        @if (i.sectors.length) {
+          <p class="muted">Sectors: {{ i.sectors.join(', ') }}</p>
+        }
+        <p class="seeking">Cheque size <strong>{{ ticketRange(i) }}</strong></p>
+        @if (i.description) {
+          <p class="desc">{{ i.description }}</p>
+        }
+        @if (i.website) {
+          <a class="muted" [href]="i.website" target="_blank" rel="noopener noreferrer">{{ i.website }}</a>
+        }
+      </article>
+    }
+  </div>
+</section>

@@ -1,0 +1,87 @@
+<section class="discover">
+  <h1>Data room</h1>
+  <p class="muted">
+    Upload your deck, cap table and financials. Files are never public — every view goes
+    through a permission check and a short-lived link, and is recorded below.
+  </p>
+
+  @if (error()) {
+    <p class="alert" role="alert" data-testid="dr-error">{{ error() }}</p>
+  }
+  @if (notice()) {
+    <p class="alert info" data-testid="dr-notice">{{ notice() }}</p>
+  }
+
+  <div class="card">
+    <h2>Upload a file</h2>
+    <label for="visibility">Visibility for new upload</label>
+    <select id="visibility" [(ngModel)]="selectedVisibility" name="visibility" [ngModelOptions]="{ standalone: true }">
+      @for (o of visibilityOptions; track o.value) {
+        <option [value]="o.value">{{ o.label }}</option>
+      }
+    </select>
+
+    <label for="fileInput">File</label>
+    <input id="fileInput" type="file" (change)="onFileSelected($event)" [disabled]="uploading()" />
+    <small class="muted">Maximum {{ mb(maxBytes) }}MB per file.</small>
+    @if (uploading()) {
+      <p class="muted">Uploading…</p>
+    }
+  </div>
+
+  <h2 class="section-heading">Your files</h2>
+  @if (loading()) {
+    <p class="muted">Loading…</p>
+  } @else if (files().length === 0) {
+    <p class="card muted">No files yet. Upload your first document above.</p>
+  } @else {
+    <div class="cards">
+      @for (f of files(); track f.id) {
+        <article class="card result-card" [attr.data-file]="f.fileName">
+          <header>
+            <h2>{{ f.fileName }}</h2>
+            <span class="pill">{{ f.visibility }}</span>
+          </header>
+          <p class="meta">{{ kb(f.sizeBytes) }} · {{ f._count?.accessLogs ?? 0 }} view(s)</p>
+
+          <label [attr.for]="'vis-' + f.id">Visibility</label>
+          <select [attr.id]="'vis-' + f.id" [attr.data-vis-for]="f.fileName"
+                  [value]="f.visibility" (change)="changeVisibility(f, $event)">
+            @for (o of visibilityOptions; track o.value) {
+              <option [value]="o.value">{{ o.label }}</option>
+            }
+          </select>
+
+          <div class="wizard-actions">
+            <button type="button" class="btn" [attr.data-view-for]="f.fileName" (click)="view(f)">
+              View securely
+            </button>
+          </div>
+        </article>
+      }
+    </div>
+  }
+
+  <h2 class="section-heading">Who has accessed your data room</h2>
+  @if (log().length === 0) {
+    <p class="card muted">No views recorded yet.</p>
+  } @else {
+    <div class="card">
+      <table class="audit-table" data-testid="audit-table">
+        <thead>
+          <tr><th>File</th><th>Viewer</th><th>Role</th><th>When</th></tr>
+        </thead>
+        <tbody>
+          @for (e of log(); track e.id) {
+            <tr>
+              <td>{{ e.file.fileName }}</td>
+              <td>{{ e.viewer.email }}</td>
+              <td>{{ e.viewer.role }}</td>
+              <td>{{ e.viewedAt }}</td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    </div>
+  }
+</section>

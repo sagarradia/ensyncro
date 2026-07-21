@@ -4,6 +4,9 @@ import { LoginComponent } from './pages/login/login.component';
 import { SignupComponent } from './pages/signup/signup.component';
 import { FounderOnboardingComponent } from './pages/founder-onboarding/founder-onboarding.component';
 import { InvestorOnboardingComponent } from './pages/investor-onboarding/investor-onboarding.component';
+import { DiscoverFoundersComponent } from './pages/discover-founders/discover-founders.component';
+import { DiscoverInvestorsComponent } from './pages/discover-investors/discover-investors.component';
+import { DataRoomComponent } from './pages/data-room/data-room.component';
 import { roleGuard } from './core/auth.guard';
 
 /**
@@ -24,5 +27,17 @@ export const routes: Routes = [
     component: InvestorOnboardingComponent,
     canActivate: [roleGuard('INVESTOR')],
   },
+  // Cross-side discovery: investors browse founders, founders browse investors.
+  {
+    path: 'discover/founders',
+    component: DiscoverFoundersComponent,
+    canActivate: [roleGuard('INVESTOR', 'ADMIN')],
+  },
+  {
+    path: 'discover/investors',
+    component: DiscoverInvestorsComponent,
+    canActivate: [roleGuard('FOUNDER', 'ADMIN')],
+  },
+  { path: 'data-room', component: DataRoomComponent, canActivate: [roleGuard('FOUNDER')] },
   { path: '**', redirectTo: '' },
 ];
