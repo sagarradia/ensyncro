@@ -2,6 +2,7 @@ import { Component, inject, signal } from '@angular/core';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { Router, RouterLink } from '@angular/router';
 import { AuthService } from '../../core/auth.service';
+import { DEMO_SHORTCUTS, DemoRole } from '../../core/models';
 
 @Component({
   selector: 'app-login',
@@ -14,7 +15,11 @@ export class LoginComponent {
   private readonly auth = inject(AuthService);
   private readonly router = inject(Router);
 
+  readonly shortcuts = DEMO_SHORTCUTS;
+
   readonly submitting = signal(false);
+  /** Which shortcut is mid-flight, so only that button shows a spinner. */
+  readonly demoLoading = signal<DemoRole | null>(null);
   readonly error = signal<string | null>(null);
 
   readonly form = this.fb.nonNullable.group({
@@ -32,10 +37,7 @@ export class LoginComponent {
 
     const { email, password } = this.form.getRawValue();
     this.auth.login(email, password).subscribe({
-      next: (res) => {
-        const returnUrl = new URLSearchParams(location.search).get('returnUrl');
-        void this.router.navigateByUrl(returnUrl || this.auth.homeRouteFor(res.user.role));
-      },
+      next: (res) => this.goAfterLogin(res.user.role),
       error: (err) => {
         this.submitting.set(false);
         this.error.set(
@@ -45,5 +47,30 @@ export class LoginComponent {
         );
       },
     });
+  }
+
+  demoLogin(role: DemoRole): void {
+    if (this.demoLoading()) return;
+    this.demoLoading.set(role);
+    this.error.set(null);
+
+    this.auth.demoLogin(role).subscribe({
+      next: (res) => this.goAfterLogin(res.user.role),
+      error: (err) => {
+        this.demoLoading.set(null);
+        this.error.set(
+          err?.status === 404
+            ? 'Demo accounts are not seeded on this environment yet.'
+            : err?.status === 403
+              ? 'Demo logins are disabled on this environment.'
+              : 'Could not start the demo session.',
+        );
+      },
+    });
+  }
+
+  private goAfterLogin(role: string): void {
+    const returnUrl = new URLSearchParams(location.search).get('returnUrl');
+    void this.router.navigateByUrl(returnUrl || this.auth.homeRouteFor(role as never));
   }
 }

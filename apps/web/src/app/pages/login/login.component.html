@@ -25,4 +25,25 @@
   </form>
 
   <p class="muted">No account yet? <a routerLink="/signup">Create one</a>.</p>
+
+  <div class="divider"><span>Pitch shortcuts</span></div>
+
+  <p class="muted shortcuts-intro">Jump straight in as any role — no password needed.</p>
+
+  <div class="shortcuts">
+    @for (s of shortcuts; track s.role) {
+      <button
+        type="button"
+        class="shortcut"
+        [attr.data-role]="s.role"
+        [disabled]="demoLoading() !== null"
+        (click)="demoLogin(s.role)"
+      >
+        <span class="shortcut-title">{{ s.title }}</span>
+        <span class="shortcut-detail">
+          {{ demoLoading() === s.role ? 'Signing in…' : s.detail }}
+        </span>
+      </button>
+    }
+  </div>
 </section>

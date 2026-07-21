@@ -129,6 +129,69 @@ form button[disabled],
   font-weight: 700;
 }
 
+/* ── Divider with centred label (login "Pitch shortcuts") ── */
+.divider {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  margin: 1.75rem 0 1rem;
+  color: var(--color-text-secondary);
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+}
+
+.divider::before,
+.divider::after {
+  content: '';
+  flex: 1;
+  height: 1px;
+  background: var(--color-border);
+}
+
+.shortcuts-intro {
+  margin-top: 0;
+}
+
+.shortcuts {
+  display: grid;
+  gap: 0.6rem;
+}
+
+.shortcut {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 0.15rem;
+  width: 100%;
+  padding: 0.7rem 0.9rem;
+  background: var(--color-bg);
+  border: 1px solid var(--color-border);
+  border-radius: 8px;
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+
+.shortcut:hover:not([disabled]) {
+  border-color: var(--color-accent);
+}
+
+.shortcut[disabled] {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.shortcut-title {
+  font-weight: 600;
+  font-size: 0.95rem;
+}
+
+.shortcut-detail {
+  color: var(--color-text-secondary);
+  font-size: 0.85rem;
+}
+
 .wizard-actions {
   display: flex;
   gap: 0.75rem;

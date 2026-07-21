@@ -28,4 +28,10 @@ export default () => ({
     refreshTtl: parseInt(process.env.JWT_REFRESH_TTL ?? '1209600', 10),
   },
   otpMode: process.env.OTP_MODE ?? 'mock',
+  /**
+   * One-click demo logins (task #18). Enabled by default so the pitch
+   * shortcuts work; set DEMO_LOGINS_ENABLED=false to switch them off without
+   * a redeploy.
+   */
+  demoLoginsEnabled: (process.env.DEMO_LOGINS_ENABLED ?? 'true').toLowerCase() !== 'false',
 });

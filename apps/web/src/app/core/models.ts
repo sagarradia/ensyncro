@@ -22,6 +22,18 @@ export interface LoginResponse extends TokenPair {
   user: AuthUser;
 }
 
+export type DemoRole = 'ADMIN' | 'FOUNDER' | 'INVESTOR';
+
+/**
+ * One-click demo shortcuts (task #18). Labels only — no credentials live in
+ * the frontend; POST /auth/demo-login resolves the account server-side.
+ */
+export const DEMO_SHORTCUTS: ReadonlyArray<{ role: DemoRole; title: string; detail: string }> = [
+  { role: 'ADMIN', title: 'Admin', detail: 'Full platform access' },
+  { role: 'FOUNDER', title: 'Founder', detail: 'Verdant Labs' },
+  { role: 'INVESTOR', title: 'Investor', detail: 'Lumen Capital' },
+];
+
 export type FundingStage =
   | 'IDEA'
   | 'PRE_SEED'

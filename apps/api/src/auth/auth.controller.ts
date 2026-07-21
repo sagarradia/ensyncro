@@ -12,6 +12,7 @@ import { SignupDto } from './dto/signup.dto';
 import { LoginDto } from './dto/login.dto';
 import { VerifyOtpDto } from './dto/verify-otp.dto';
 import { RefreshDto } from './dto/refresh.dto';
+import { DemoLoginDto } from './dto/demo-login.dto';
 import { JwtAuthGuard } from './guards/jwt-auth.guard';
 import { CurrentUser } from './decorators/current-user.decorator';
 import { AccessTokenPayload } from './tokens/token.service';
@@ -35,6 +36,16 @@ export class AuthController {
   @HttpCode(HttpStatus.OK)
   login(@Body() dto: LoginDto) {
     return this.auth.login(dto);
+  }
+
+  /**
+   * One-click demo login for the pitch shortcuts (task #18). Public, but only
+   * ever issues a token for one of the three fixed seeded demo accounts.
+   */
+  @Post('demo-login')
+  @HttpCode(HttpStatus.OK)
+  demoLogin(@Body() dto: DemoLoginDto) {
+    return this.auth.demoLogin(dto.role);
   }
 
   @Post('refresh')

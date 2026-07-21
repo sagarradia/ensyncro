@@ -3,7 +3,7 @@ import { Injectable, computed, inject, signal } from '@angular/core';
 import { Observable, tap } from 'rxjs';
 import { environment } from '../../environments/environment';
 import { TokenStorageService } from './token-storage.service';
-import { AuthUser, LoginResponse, OtpChannel, Role, SignupResponse } from './models';
+import { AuthUser, DemoRole, LoginResponse, OtpChannel, Role, SignupResponse } from './models';
 
 export interface SignupPayload {
   email: string;
@@ -40,6 +40,16 @@ export class AuthService {
   login(email: string, password: string): Observable<LoginResponse> {
     return this.http
       .post<LoginResponse>(`${this.base}/auth/login`, { email, password })
+      .pipe(tap((res) => this.startSession(res)));
+  }
+
+  /**
+   * One-click demo login (task #18). The server resolves which fixed demo
+   * account this role maps to, so no demo credentials ship in the bundle.
+   */
+  demoLogin(role: DemoRole): Observable<LoginResponse> {
+    return this.http
+      .post<LoginResponse>(`${this.base}/auth/demo-login`, { role })
       .pipe(tap((res) => this.startSession(res)));
   }
 

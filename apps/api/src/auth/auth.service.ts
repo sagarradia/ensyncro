@@ -1,11 +1,15 @@
 import {
+  BadRequestException,
   ConflictException,
   ForbiddenException,
   Injectable,
+  NotFoundException,
   UnauthorizedException,
 } from '@nestjs/common';
+import { ConfigService } from '@nestjs/config';
 import { OtpChannel, Prisma, User, UserStatus } from '@prisma/client';
 import { PrismaService } from '../prisma/prisma.service';
+import { DEMO_ACCOUNTS, DEMO_EMAILS } from './demo-accounts';
 import { PasswordService } from './password/password.service';
 import { TokenService, TokenPair } from './tokens/token.service';
 import { OtpService } from './otp/otp.service';
@@ -23,6 +27,7 @@ export class AuthService {
     private readonly passwords: PasswordService,
     private readonly tokens: TokenService,
     private readonly otp: OtpService,
+    private readonly config: ConfigService,
   ) {}
 
   async signup(dto: SignupDto) {
@@ -119,6 +124,37 @@ export class AuthService {
     }
     if (user.status === UserStatus.DISABLED) {
       throw new ForbiddenException('Account disabled');
+    }
+
+    const pair = await this.tokens.issuePair(user);
+    return { ...pair, user: toSafeUser(user) };
+  }
+
+  /**
+   * One-click demo login (task #18).
+   *
+   * Deliberately separate from the password path: it will only ever issue a
+   * token for one of the three fixed seeded demo accounts, so no demo
+   * credentials need to exist in frontend code. Can be switched off at runtime
+   * with DEMO_LOGINS_ENABLED=false.
+   */
+  async demoLogin(role: keyof typeof DEMO_ACCOUNTS): Promise<TokenPair & { user: SafeUser }> {
+    if (!this.config.get<boolean>('demoLoginsEnabled')) {
+      throw new ForbiddenException('Demo logins are disabled');
+    }
+
+    const account = DEMO_ACCOUNTS[role];
+    if (!account) throw new BadRequestException('Unknown demo role');
+
+    const user = await this.prisma.user.findUnique({ where: { email: account.email } });
+    // Belt and braces: the email must be in the allow-list AND the row must
+    // still be the expected role, so a renamed/repurposed account can't be
+    // used to mint a token.
+    if (!user || !DEMO_EMAILS.includes(user.email) || user.role !== account.role) {
+      throw new NotFoundException('Demo account not seeded. Run `npm run seed:demo`.');
+    }
+    if (user.status !== UserStatus.ACTIVE) {
+      throw new ForbiddenException('Demo account is not active');
     }
 
     const pair = await this.tokens.issuePair(user);
