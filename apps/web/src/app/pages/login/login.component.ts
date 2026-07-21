@@ -2,6 +2,7 @@ import { Component, inject, signal } from '@angular/core';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { Router, RouterLink } from '@angular/router';
 import { AuthService } from '../../core/auth.service';
+import { AppConfigService } from '../../core/app-config.service';
 import { DEMO_SHORTCUTS, DemoRole } from '../../core/models';
 
 @Component({
@@ -14,8 +15,15 @@ export class LoginComponent {
   private readonly fb = inject(FormBuilder);
   private readonly auth = inject(AuthService);
   private readonly router = inject(Router);
+  private readonly appConfig = inject(AppConfigService);
 
   readonly shortcuts = DEMO_SHORTCUTS;
+  /** Hides the whole shortcuts section when the API has them switched off. */
+  readonly demoLoginsEnabled = this.appConfig.demoLoginsEnabled;
+
+  constructor() {
+    this.appConfig.load();
+  }
 
   readonly submitting = signal(false);
   /** Which shortcut is mid-flight, so only that button shows a spinner. */
