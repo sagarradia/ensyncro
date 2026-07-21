@@ -185,6 +185,9 @@ export class DataRoomService {
 
     const actualBytes = await this.storage.statSize(fileId);
     if (actualBytes === null) {
+      // The upload never landed (or storage rejected it). Drop the reservation
+      // rather than leaving an orphaned PENDING row behind.
+      await this.prisma.dataRoomFile.delete({ where: { id: fileId } });
       throw new BadRequestException('No uploaded file found for this reservation');
     }
 
