@@ -1,0 +1,28 @@
+<section class="card form-card">
+  <h1>Log in</h1>
+  <p class="muted">Welcome back to Ensyncro.</p>
+
+  @if (error()) {
+    <p class="alert" role="alert">{{ error() }}</p>
+  }
+
+  <form [formGroup]="form" (ngSubmit)="submit()" novalidate>
+    <label for="email">Email</label>
+    <input id="email" type="email" formControlName="email" autocomplete="email" />
+    @if (form.controls.email.touched && form.controls.email.invalid) {
+      <small class="field-error">Enter a valid email address.</small>
+    }
+
+    <label for="password">Password</label>
+    <input id="password" type="password" formControlName="password" autocomplete="current-password" />
+    @if (form.controls.password.touched && form.controls.password.invalid) {
+      <small class="field-error">Password is required.</small>
+    }
+
+    <button type="submit" [disabled]="submitting()">
+      {{ submitting() ? 'Logging in…' : 'Log in' }}
+    </button>
+  </form>
+
+  <p class="muted">No account yet? <a routerLink="/signup">Create one</a>.</p>
+</section>

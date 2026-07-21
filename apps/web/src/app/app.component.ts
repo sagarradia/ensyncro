@@ -1,6 +1,7 @@
-import { Component } from '@angular/core';
-import { RouterOutlet, RouterLink } from '@angular/router';
+import { Component, inject } from '@angular/core';
+import { Router, RouterLink, RouterOutlet } from '@angular/router';
 import { environment } from '../environments/environment';
+import { AuthService } from './core/auth.service';
 
 @Component({
   selector: 'app-root',
@@ -10,6 +11,14 @@ import { environment } from '../environments/environment';
   styleUrl: './app.component.css',
 })
 export class AppComponent {
+  private readonly router = inject(Router);
+  readonly auth = inject(AuthService);
+
   readonly env = environment.appEnv;
   readonly year = new Date().getFullYear();
+
+  logout(): void {
+    this.auth.logout();
+    void this.router.navigateByUrl('/');
+  }
 }

@@ -21,6 +21,39 @@
   text-decoration: none;
 }
 
+.site-nav {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.site-nav a {
+  color: var(--color-card);
+  text-decoration: none;
+  font-size: 0.9rem;
+}
+
+.site-nav a.cta {
+  background: var(--color-accent);
+  padding: 0.4rem 0.8rem;
+  border-radius: 6px;
+}
+
+.who {
+  color: var(--color-border);
+  font-size: 0.85rem;
+}
+
+.link-button {
+  background: none;
+  border: none;
+  color: var(--color-card);
+  font-size: 0.9rem;
+  cursor: pointer;
+  padding: 0;
+  text-decoration: underline;
+}
+
 .env-badge {
   font-size: 0.75rem;
   text-transform: uppercase;

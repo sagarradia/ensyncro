@@ -1,6 +1,16 @@
 <header class="site-header">
   <a class="brand" routerLink="/">Ensyncro</a>
-  <span class="env-badge" [class.env-prod]="env === 'production'">{{ env }}</span>
+
+  <nav class="site-nav">
+    @if (auth.isAuthenticated()) {
+      <span class="who">{{ auth.user()?.email }}</span>
+      <button type="button" class="link-button" (click)="logout()">Log out</button>
+    } @else {
+      <a routerLink="/login">Log in</a>
+      <a class="cta" routerLink="/signup">Sign up</a>
+    }
+    <span class="env-badge" [class.env-prod]="env === 'production'">{{ env }}</span>
+  </nav>
 </header>
 
 <main class="site-main">
@@ -9,5 +19,5 @@
 
 <footer class="site-footer">
   <span>© {{ year }} Ensyncro</span>
-  <span class="muted">Funding marketplace — skeleton build</span>
+  <span class="muted">Funding marketplace</span>
 </footer>

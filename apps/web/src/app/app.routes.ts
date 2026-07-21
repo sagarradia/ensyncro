@@ -1,12 +1,15 @@
 import { Routes } from '@angular/router';
 import { HomeComponent } from './pages/home/home.component';
+import { LoginComponent } from './pages/login/login.component';
+import { SignupComponent } from './pages/signup/signup.component';
 
 /**
- * Public marketing, auth, founder, investor, and admin routes
- * (see PRD §5 site map) will be added when feature work begins.
- * For now only the landing page is wired up.
+ * Route table. Guards here are UX only — the API enforces the same rules
+ * server-side on every request (PRD §4).
  */
 export const routes: Routes = [
   { path: '', component: HomeComponent },
+  { path: 'login', component: LoginComponent },
+  { path: 'signup', component: SignupComponent },
   { path: '**', redirectTo: '' },
 ];
