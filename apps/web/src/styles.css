@@ -39,7 +39,10 @@ body {
   font-size: 0.9rem;
 }
 
-form label {
+/* Cards are used as ad-hoc forms across the app, so the same field styling
+   applies inside a .card as inside a <form>. */
+form label,
+.card label {
   display: block;
   margin: 1rem 0 0.35rem;
   font-size: 0.85rem;
@@ -48,7 +51,10 @@ form label {
 
 form input,
 form select,
-form textarea {
+form textarea,
+.card input,
+.card select,
+.card textarea {
   width: 100%;
   padding: 0.6rem 0.7rem;
   border: 1px solid var(--color-border);
@@ -60,7 +66,10 @@ form textarea {
 
 form input:focus,
 form select:focus,
-form textarea:focus {
+form textarea:focus,
+.card input:focus,
+.card select:focus,
+.card textarea:focus {
   outline: 2px solid var(--color-accent);
   outline-offset: 1px;
 }
@@ -344,6 +353,11 @@ form button[disabled],
   background: var(--bone, #f6f5f1);
   padding: 0.6rem 0.8rem;
   border-radius: 6px;
+}
+
+/* Checkboxes are the exception — they should not stretch. */
+.card label.inline input[type='checkbox'] {
+  width: auto;
 }
 
 label.inline {
