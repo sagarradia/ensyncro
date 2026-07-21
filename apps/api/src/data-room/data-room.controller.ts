@@ -80,11 +80,19 @@ export class DataRoomController {
     @Query('token') token: string,
     @Res() res: Response,
   ) {
-    const { file, content } = await this.dataRoom.readSigned(id, token);
-    res.setHeader('Content-Type', file.contentType ?? 'application/octet-stream');
-    res.setHeader('Content-Disposition', `inline; filename="${file.fileName}"`);
+    const { file, content, redirectUrl } = await this.dataRoom.readSigned(id, token);
     // Never let a proxy or browser cache private material.
     res.setHeader('Cache-Control', 'no-store, private');
+
+    if (redirectUrl) {
+      // Bytes come straight from private object storage via a short-lived
+      // presigned URL; the access check and audit already happened above.
+      res.redirect(302, redirectUrl);
+      return;
+    }
+
+    res.setHeader('Content-Type', file.contentType ?? 'application/octet-stream');
+    res.setHeader('Content-Disposition', `inline; filename="${file.fileName}"`);
     res.send(content);
   }
 

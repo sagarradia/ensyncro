@@ -183,4 +183,4 @@ export interface AccessLogEntry {
 }
 
 /** Matches MAX_FILE_BYTES in the API — per file, not a per-founder quota. */
-export const MAX_FILE_BYTES = 10 * 1024 * 1024;
+export const MAX_FILE_BYTES = 25 * 1024 * 1024;

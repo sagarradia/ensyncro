@@ -28,6 +28,12 @@ export default () => ({
     refreshTtl: parseInt(process.env.JWT_REFRESH_TTL ?? '1209600', 10),
   },
   otpMode: process.env.OTP_MODE ?? 'mock',
+  s3: {
+    bucket: process.env.AWS_S3_BUCKET ?? '',
+    region: process.env.AWS_REGION ?? '',
+    accessKeyId: process.env.AWS_ACCESS_KEY_ID ?? '',
+    secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY ?? '',
+  },
   /**
    * One-click demo logins (task #18). Enabled by default so the pitch
    * shortcuts work; set DEMO_LOGINS_ENABLED=false to switch them off without

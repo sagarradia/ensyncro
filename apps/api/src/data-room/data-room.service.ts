@@ -12,8 +12,8 @@ import { PrismaService } from '../prisma/prisma.service';
 import { FileStorage } from './storage.service';
 import { AccessTokenPayload } from '../auth/tokens/token.service';
 
-/** Hard cap — Postgres bytea is not the place for large media. */
-export const MAX_FILE_BYTES = 10 * 1024 * 1024;
+/** Per-file cap for documents. Not a per-founder quota. */
+export const MAX_FILE_BYTES = 25 * 1024 * 1024;
 
 /** Signed download links are deliberately very short-lived. */
 const SIGNED_URL_TTL_SECONDS = 60;
@@ -70,7 +70,7 @@ export class DataRoomService {
       },
     });
 
-    await this.storage.put(record.id, file.buffer);
+    await this.storage.put(record.id, file.buffer, file.mimetype);
     return record;
   }
 
@@ -170,15 +170,20 @@ export class DataRoomService {
       role: viewer.role,
     });
 
-    const content = await this.storage.get(file.id);
-    if (!content) throw new NotFoundException('File contents missing');
-
-    // Task #13 — audit every actual view.
+    // Audit BEFORE handing over any means of reading the bytes, so a view is
+    // recorded whether we stream or redirect to a presigned URL (task #13).
     await this.prisma.dataRoomAccessLog.create({
       data: { fileId: file.id, viewerId: viewer.id },
     });
 
-    return { file, content };
+    // Prefer a presigned redirect: a serverless function must not proxy large
+    // media, and the bucket itself stays private.
+    const redirectUrl = await this.storage.presign(file.id, file.fileName, file.contentType);
+    if (redirectUrl) return { file, redirectUrl, content: null };
+
+    const content = await this.storage.get(file.id);
+    if (!content) throw new NotFoundException('File contents missing');
+    return { file, redirectUrl: null, content };
   }
 
   setVisibility(fileId: string, owner: AccessTokenPayload, visibility: DataRoomVisibility) {
