@@ -20,7 +20,7 @@ export const DEMO_ACCOUNTS: Readonly<Record<'ADMIN' | 'FOUNDER' | 'INVESTOR', De
   ADMIN: {
     role: Role.ADMIN,
     email: 'demo.admin@ensyncro.com',
-    label: 'Full platform access',
+    label: 'Ops-level platform access',
   },
   FOUNDER: {
     role: Role.FOUNDER,
@@ -38,7 +38,12 @@ export const DEMO_EMAILS: readonly string[] = Object.values(DEMO_ACCOUNTS).map((
 
 /** Profile content seeded alongside the demo accounts. */
 export const DEMO_SEED = {
-  adminRole: AdminRole.SUPER,
+  /**
+   * Deliberately OPS, not SUPER: the demo login needs no password, so anyone
+   * who finds the endpoint gets this account. OPS keeps that blast radius off
+   * SUPER-only actions (e.g. inviting admins).
+   */
+  adminRole: AdminRole.OPS,
   founderProfile: {
     companyName: 'Verdant Labs',
     sector: 'Climate Tech',

@@ -29,7 +29,7 @@ export type DemoRole = 'ADMIN' | 'FOUNDER' | 'INVESTOR';
  * the frontend; POST /auth/demo-login resolves the account server-side.
  */
 export const DEMO_SHORTCUTS: ReadonlyArray<{ role: DemoRole; title: string; detail: string }> = [
-  { role: 'ADMIN', title: 'Admin', detail: 'Full platform access' },
+  { role: 'ADMIN', title: 'Admin', detail: 'Ops-level platform access' },
   { role: 'FOUNDER', title: 'Founder', detail: 'Verdant Labs' },
   { role: 'INVESTOR', title: 'Investor', detail: 'Lumen Capital' },
 ];
