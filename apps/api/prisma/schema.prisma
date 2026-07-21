@@ -226,9 +226,22 @@ model DataRoomFile {
   uploadedAt  DateTime           @default(now())
 
   accessLogs DataRoomAccessLog[]
+  blob       DataRoomFileBlob?
 
   @@index([ownerId])
   @@map("data_room_files")
+}
+
+/// File bytes, kept in a separate table so listing files never pulls blobs.
+/// Interim backend: PRD §8 specifies S3-compatible private storage. The
+/// StorageService interface isolates this, so swapping to S3 is one
+/// implementation change with no effect on the permission/signed-URL layer.
+model DataRoomFileBlob {
+  fileId  String       @id
+  file    DataRoomFile @relation(fields: [fileId], references: [id], onDelete: Cascade)
+  content Bytes
+
+  @@map("data_room_file_blobs")
 }
 
 model DataRoomAccessLog {
