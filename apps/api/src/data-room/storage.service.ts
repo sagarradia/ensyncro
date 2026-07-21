@@ -3,14 +3,29 @@ import { ConfigService } from '@nestjs/config';
 import {
   DeleteObjectCommand,
   GetObjectCommand,
+  HeadObjectCommand,
   PutObjectCommand,
   S3Client,
 } from '@aws-sdk/client-s3';
 import { getSignedUrl } from '@aws-sdk/s3-request-presigner';
 import { PrismaService } from '../prisma/prisma.service';
 
-/** Presigned links are deliberately short-lived. */
+/** Presigned download links are deliberately short-lived. */
 export const PRESIGN_TTL_SECONDS = 60;
+
+/**
+ * Uploads get a longer window than downloads: a 200MB video on a slow
+ * connection needs time, and this URL only permits writing to one exact key at
+ * one exact length.
+ */
+export const UPLOAD_PRESIGN_TTL_SECONDS = 15 * 60;
+
+/** What the browser needs in order to send bytes straight to storage. */
+export interface PresignedUpload {
+  url: string;
+  /** Headers the client MUST send — they are part of the signature. */
+  headers: Record<string, string>;
+}
 
 /**
  * Byte storage for uploaded files.
@@ -26,6 +41,24 @@ export abstract class FileStorage {
   abstract get(fileId: string): Promise<Buffer | null>;
   abstract remove(fileId: string): Promise<void>;
   abstract presign(fileId: string, fileName: string, contentType?: string | null): Promise<string | null>;
+
+  /**
+   * A URL the browser can PUT bytes to directly, bypassing the API entirely.
+   * Required rather than merely nice: Vercel rejects request bodies over
+   * ~4.5MB at the edge, so any sizeable upload cannot travel through a
+   * function. Backends that cannot do this return null and the caller falls
+   * back to multipart.
+   */
+  abstract presignUpload(
+    fileId: string,
+    contentType: string,
+    sizeBytes: number,
+  ): Promise<PresignedUpload | null>;
+
+  /** Actual stored size, or null if the object is absent. Used to confirm an
+   * upload really happened and really is the size that was declared. */
+  abstract statSize(fileId: string): Promise<number | null>;
+
   abstract readonly kind: 'postgres' | 's3';
 }
 
@@ -61,6 +94,19 @@ export class PostgresFileStorage extends FileStorage {
   /** No presigning — the API streams these. */
   async presign(): Promise<string | null> {
     return null;
+  }
+
+  /** No direct uploads either; callers fall back to multipart. */
+  async presignUpload(): Promise<PresignedUpload | null> {
+    return null;
+  }
+
+  async statSize(fileId: string): Promise<number | null> {
+    const row = await this.prisma.dataRoomFileBlob.findUnique({
+      where: { fileId },
+      select: { content: true },
+    });
+    return row ? row.content.length : null;
   }
 }
 
@@ -116,6 +162,41 @@ export class S3FileStorage extends FileStorage {
     await this.client.send(
       new DeleteObjectCommand({ Bucket: this.bucket, Key: this.key(fileId) }),
     );
+  }
+
+  /**
+   * Short-lived presigned PUT for one exact key. `ContentLength` and
+   * `ContentType` are signed, so the URL cannot be reused to store a different
+   * amount of data than was authorised — the client's request is rejected by
+   * S3 if either header disagrees with the signature.
+   */
+  async presignUpload(
+    fileId: string,
+    contentType: string,
+    sizeBytes: number,
+  ): Promise<PresignedUpload> {
+    const url = await getSignedUrl(
+      this.client,
+      new PutObjectCommand({
+        Bucket: this.bucket,
+        Key: this.key(fileId),
+        ContentType: contentType,
+        ContentLength: sizeBytes,
+      }),
+      { expiresIn: UPLOAD_PRESIGN_TTL_SECONDS },
+    );
+    return { url, headers: { 'Content-Type': contentType } };
+  }
+
+  async statSize(fileId: string): Promise<number | null> {
+    try {
+      const head = await this.client.send(
+        new HeadObjectCommand({ Bucket: this.bucket, Key: this.key(fileId) }),
+      );
+      return head.ContentLength ?? null;
+    } catch {
+      return null;
+    }
   }
 
   /**

@@ -1,6 +1,7 @@
 import {
   Body,
   Controller,
+  Delete,
   Get,
   Param,
   ParseUUIDPipe,
@@ -14,7 +15,7 @@ import {
 } from '@nestjs/common';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { Response } from 'express';
-import { DataRoomVisibility, Role } from '@prisma/client';
+import { DataRoomVisibility, MediaKind, Role } from '@prisma/client';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { RolesGuard } from '../auth/guards/roles.guard';
 import { Roles } from '../auth/decorators/roles.decorator';
@@ -22,12 +23,48 @@ import { CurrentUser } from '../auth/decorators/current-user.decorator';
 import { AccessTokenPayload } from '../auth/tokens/token.service';
 import { DataRoomService, MAX_FILE_BYTES } from './data-room.service';
 import { SetVisibilityDto } from './dto/set-visibility.dto';
+import { CreateUploadUrlDto } from './dto/create-upload-url.dto';
 
 @Controller('data-room')
 export class DataRoomController {
   constructor(private readonly dataRoom: DataRoomService) {}
 
-  /** Founders upload to their own data room (deck, cap table, financials). */
+  /**
+   * Preferred upload path. Returns a URL the browser PUTs bytes to directly,
+   * because the platform rejects request bodies over ~4.5MB before they ever
+   * reach this function — so anything larger cannot be posted here at all.
+   * Falls back to `{ mode: 'multipart' }` when storage cannot presign.
+   */
+  @Post('files/upload-url')
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(Role.FOUNDER)
+  createUploadUrl(@CurrentUser() user: AccessTokenPayload, @Body() dto: CreateUploadUrlDto) {
+    return this.dataRoom.createUploadUrl(user, dto);
+  }
+
+  /** Confirms the bytes arrived; the file is unusable until this succeeds. */
+  @Post('files/:id/complete')
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(Role.FOUNDER)
+  completeUpload(
+    @Param('id', ParseUUIDPipe) id: string,
+    @CurrentUser() user: AccessTokenPayload,
+  ) {
+    return this.dataRoom.completeUpload(id, user);
+  }
+
+  /** Storage used against the per-founder quota. */
+  @Get('usage')
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(Role.FOUNDER)
+  usage(@CurrentUser() user: AccessTokenPayload) {
+    return this.dataRoom.usage(user.sub);
+  }
+
+  /**
+   * Multipart upload, kept for the Postgres fallback (local development) and
+   * small files. Subject to the same platform body limit noted above.
+   */
   @Post('files')
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles(Role.FOUNDER)
@@ -36,8 +73,21 @@ export class DataRoomController {
     @CurrentUser() user: AccessTokenPayload,
     @UploadedFile() file: Express.Multer.File,
     @Body('visibility') visibility?: DataRoomVisibility,
+    @Body('kind') kind?: MediaKind,
   ) {
-    return this.dataRoom.upload(user, file, visibility ?? DataRoomVisibility.PRIVATE);
+    return this.dataRoom.upload(
+      user,
+      file,
+      visibility ?? DataRoomVisibility.PRIVATE,
+      kind ?? MediaKind.DOCUMENT,
+    );
+  }
+
+  @Delete('files/:id')
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(Role.FOUNDER)
+  remove(@Param('id', ParseUUIDPipe) id: string, @CurrentUser() user: AccessTokenPayload) {
+    return this.dataRoom.remove(id, user);
   }
 
   @Get('files')

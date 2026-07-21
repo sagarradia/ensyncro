@@ -213,6 +213,25 @@ enum DataRoomVisibility {
   VISIBLE_TO_INVESTORS
 }
 
+/// What a stored file is, which decides its size cap and whether it counts
+/// against the founder's storage quota. Everything shares one storage,
+/// permission and audit pipeline; only the limits differ.
+enum MediaKind {
+  DOCUMENT
+  PITCH_VIDEO
+  PRODUCT_IMAGE
+  LOGO
+}
+
+/// Direct-to-S3 uploads exist as a row before their bytes do: the row is
+/// created to mint a presigned PUT, then confirmed once the object is
+/// verified in the bucket. Rows that are never confirmed stay PENDING and are
+/// invisible to every read path.
+enum UploadStatus {
+  PENDING
+  READY
+}
+
 model DataRoomFile {
   id          String             @id @default(uuid())
   ownerId     String
@@ -223,12 +242,17 @@ model DataRoomFile {
   contentType String?
   sizeBytes   Int?
   visibility  DataRoomVisibility @default(PRIVATE)
+  kind        MediaKind          @default(DOCUMENT)
+  /// Defaults to READY so anything written by the multipart path (and every
+  /// pre-existing row) is immediately usable; the presigned flow sets PENDING.
+  status      UploadStatus       @default(READY)
   uploadedAt  DateTime           @default(now())
 
   accessLogs DataRoomAccessLog[]
   blob       DataRoomFileBlob?
 
   @@index([ownerId])
+  @@index([ownerId, kind])
   @@map("data_room_files")
 }
 
