@@ -33,9 +33,30 @@ Each app is its own Vercel project, both deploying from `main`.
 | `JWT_ACCESS_SECRET` / `_REFRESH_SECRET` | «unique random values»                  |
 | `JWT_ACCESS_TTL` / `_REFRESH_TTL`       | `900` / `1209600`                       |
 | `OTP_MODE`                              | `mock` (real provider is phase 2)       |
+| `AWS_S3_BUCKET`                         | private bucket for uploaded files       |
+| `AWS_REGION`                            | region **code**, e.g. `ap-southeast-2`  |
+| `AWS_ACCESS_KEY_ID` / `_SECRET_ACCESS_KEY` | IAM user limited to that bucket      |
 
 Generate JWT secrets with `openssl rand -hex 32`. `NODE_ENV` is set to
 `production` automatically by Vercel — do not add it.
+
+**File storage.** With all four `AWS_*` values present the API stores uploads in
+S3; otherwise it falls back to storing bytes in Postgres, which is what makes
+local development work without AWS credentials. Check the boot log line from
+`FileStorage` to see which backend is active — if credentials are set but the
+region is unusable it logs an error naming the variable rather than silently
+falling back.
+
+> **Gotcha — `AWS_REGION` must be the region code.** The AWS console displays
+> regions as `Asia Pacific (Sydney) ap-southeast-2`, and pasting that whole
+> string in makes every upload fail with *"Region not accepted: … is not a valid
+> hostname component"*, because the SDK builds the endpoint hostname from it.
+> The API now extracts the code from such a label, but set it correctly anyway.
+
+The bucket must stay **private** — no public read, no public listing. Downloads
+never come from a public URL: the API authorises the request, records the view,
+then 302-redirects to a 60-second presigned URL, so a serverless function never
+has to proxy large media.
 
 ### `ensyncro-web`
 
