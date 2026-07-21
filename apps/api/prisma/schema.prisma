@@ -1,7 +1,6 @@
 // Ensyncro — Prisma schema
 // Connection string is read from the DATABASE_URL environment variable.
-// It is NOT hardcoded: Vercel's Neon integration injects it per environment
-// (demo / staging / production). See the repo README for details.
+// It is NOT hardcoded: Vercel's Neon integration injects it. See DEPLOYMENT.md.
 
 generator client {
   provider = "prisma-client-js"
@@ -10,24 +9,26 @@ generator client {
 datasource db {
   provider = "postgresql"
   url      = env("DATABASE_URL")
-  // directUrl is used for migrations when DATABASE_URL points at a pooled
-  // (PgBouncer/Neon) endpoint. Also injected by the Neon integration.
+  // directUrl is the unpooled endpoint, used for migrations.
   directUrl = env("DIRECT_URL")
 }
 
 // ─────────────────────────────────────────────────────────────
-// Auth models (task #5). This is the minimal slice needed for
-// signup / login / JWT / mock OTP. The full v1 data model
-// (founder_profiles, investor_profiles, admin_profiles,
-// data_room_files, data_room_access_log, matches, cms_content,
-// platform_stats, ...) lands with the schema migration in task #10.
-// See Docs/Ensyncro_PRD_v1.md section 7.
+// Auth (task #5)
 // ─────────────────────────────────────────────────────────────
 
 enum Role {
   FOUNDER
   INVESTOR
   ADMIN
+}
+
+/// Admin sub-roles (PRD §3). Held on AdminProfile; admins are invite-only.
+enum AdminRole {
+  SUPER
+  FINANCE
+  LEGAL
+  OPS
 }
 
 enum UserStatus {
@@ -55,6 +56,21 @@ model User {
 
   otpCodes      OtpCode[]
   refreshTokens RefreshToken[]
+
+  founderProfile  FounderProfile?
+  investorProfile InvestorProfile?
+  adminProfile    AdminProfile?
+
+  dataRoomFiles DataRoomFile[]
+  dataRoomViews DataRoomAccessLog[]
+
+  shortlistsMade    SavedShortlist[] @relation("ShortlistInvestor")
+  shortlistedAs     SavedShortlist[] @relation("ShortlistFounder")
+  introRequestsSent IntroRequest[]   @relation("IntroFrom")
+  introRequestsRecv IntroRequest[]   @relation("IntroTo")
+
+  cmsUpdates       CmsContent[]
+  adminInvitesSent AdminInvite[]     @relation("InviteCreatedBy")
 
   @@map("users")
 }
@@ -84,4 +100,225 @@ model RefreshToken {
 
   @@index([userId])
   @@map("refresh_tokens")
+}
+
+// ─────────────────────────────────────────────────────────────
+// Profiles (tasks #7 / #8 / #9) — PRD §7
+// ─────────────────────────────────────────────────────────────
+
+/// Company stage for a founder raising capital.
+enum FundingStage {
+  IDEA
+  PRE_SEED
+  SEED
+  SERIES_A
+  SERIES_B
+  SERIES_C_PLUS
+}
+
+/// Investor types (PRD §3) — multi-select on InvestorProfile.
+enum InvestorType {
+  ANGEL
+  PRE_SEED
+  SEED_VC
+  SERIES_A_PLUS_VC
+  MICRO_VC
+  SYNDICATE
+  CROWDFUNDING
+  CORPORATE_VC
+  FAMILY_OFFICE
+  ACCELERATOR_INCUBATOR
+  GOVERNMENT_INSTITUTIONAL
+}
+
+model FounderProfile {
+  id            String       @id @default(uuid())
+  userId        String       @unique
+  user          User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+  companyName   String
+  sector        String
+  stage         FundingStage
+  /// Amount sought, whole currency units (no cents).
+  fundingSought Int?
+  description   String?
+  website       String?
+  location      String?
+  teamSize      Int?
+  /// Set true when the onboarding wizard is finished.
+  completed     Boolean      @default(false)
+  createdAt     DateTime     @default(now())
+  updatedAt     DateTime     @updatedAt
+
+  @@index([sector])
+  @@index([stage])
+  @@map("founder_profiles")
+}
+
+model InvestorProfile {
+  id            String         @id @default(uuid())
+  userId        String         @unique
+  user          User           @relation(fields: [userId], references: [id], onDelete: Cascade)
+  /// Fund name, or the individual's name for angels.
+  name          String
+  investorTypes InvestorType[]
+  sectors       String[]
+  /// Ticket size range, whole currency units.
+  ticketMin     Int?
+  ticketMax     Int?
+  description   String?
+  website       String?
+  location      String?
+  completed     Boolean        @default(false)
+  createdAt     DateTime       @default(now())
+  updatedAt     DateTime       @updatedAt
+
+  @@map("investor_profiles")
+}
+
+model AdminProfile {
+  id        String    @id @default(uuid())
+  userId    String    @unique
+  user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  adminRole AdminRole
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+
+  @@map("admin_profiles")
+}
+
+/// Invite-only admin creation (task #9). Token is stored hashed.
+model AdminInvite {
+  id          String    @id @default(uuid())
+  email       String
+  adminRole   AdminRole
+  tokenHash   String    @unique
+  expiresAt   DateTime
+  consumedAt  DateTime?
+  createdById String?
+  createdBy   User?     @relation("InviteCreatedBy", fields: [createdById], references: [id], onDelete: SetNull)
+  createdAt   DateTime  @default(now())
+
+  @@index([email])
+  @@map("admin_invites")
+}
+
+// ─────────────────────────────────────────────────────────────
+// Data room (tasks #12 / #13) — PRD §4: no file is ever reachable
+// by a public URL; access is checked then served via signed URL.
+// ─────────────────────────────────────────────────────────────
+
+enum DataRoomVisibility {
+  PRIVATE
+  SHARED_ON_REQUEST
+  VISIBLE_TO_INVESTORS
+}
+
+model DataRoomFile {
+  id          String             @id @default(uuid())
+  ownerId     String
+  owner       User               @relation(fields: [ownerId], references: [id], onDelete: Cascade)
+  /// Key in private object storage — never a public URL.
+  fileKey     String             @unique
+  fileName    String
+  contentType String?
+  sizeBytes   Int?
+  visibility  DataRoomVisibility @default(PRIVATE)
+  uploadedAt  DateTime           @default(now())
+
+  accessLogs DataRoomAccessLog[]
+
+  @@index([ownerId])
+  @@map("data_room_files")
+}
+
+model DataRoomAccessLog {
+  id       String       @id @default(uuid())
+  fileId   String
+  file     DataRoomFile @relation(fields: [fileId], references: [id], onDelete: Cascade)
+  viewerId String
+  viewer   User         @relation(fields: [viewerId], references: [id], onDelete: Cascade)
+  viewedAt DateTime     @default(now())
+
+  @@index([fileId])
+  @@index([viewerId])
+  @@map("data_room_access_log")
+}
+
+// ─────────────────────────────────────────────────────────────
+// Discovery (task #11)
+// ─────────────────────────────────────────────────────────────
+
+enum ShortlistStatus {
+  SAVED
+  CONTACTED
+  ARCHIVED
+}
+
+/// Investor -> founder shortlist ("matches / saved_shortlist" in PRD §7).
+model SavedShortlist {
+  id         String          @id @default(uuid())
+  investorId String
+  investor   User            @relation("ShortlistInvestor", fields: [investorId], references: [id], onDelete: Cascade)
+  founderId  String
+  founder    User            @relation("ShortlistFounder", fields: [founderId], references: [id], onDelete: Cascade)
+  status     ShortlistStatus @default(SAVED)
+  createdAt  DateTime        @default(now())
+  updatedAt  DateTime        @updatedAt
+
+  @@unique([investorId, founderId])
+  @@index([founderId])
+  @@map("saved_shortlist")
+}
+
+enum IntroRequestStatus {
+  PENDING
+  ACCEPTED
+  DECLINED
+}
+
+/// PRD §10 decision: threaded messaging is NOT in v1 — it is replaced by a
+/// lightweight "Request intro" action (notification + email). So there is
+/// deliberately no `messages` table; this models the v1 behaviour instead.
+/// Full messaging is deferred to phase 2.
+model IntroRequest {
+  id         String             @id @default(uuid())
+  fromUserId String
+  fromUser   User               @relation("IntroFrom", fields: [fromUserId], references: [id], onDelete: Cascade)
+  toUserId   String
+  toUser     User               @relation("IntroTo", fields: [toUserId], references: [id], onDelete: Cascade)
+  status     IntroRequestStatus @default(PENDING)
+  note       String?
+  createdAt  DateTime           @default(now())
+  updatedAt  DateTime           @updatedAt
+
+  @@index([fromUserId])
+  @@index([toUserId])
+  @@map("intro_requests")
+}
+
+// ─────────────────────────────────────────────────────────────
+// CMS + marketing stats (tasks #14 / #16)
+// ─────────────────────────────────────────────────────────────
+
+/// Editable homepage/marketing copy and pricing tiers (PRD §6).
+model CmsContent {
+  id          String   @id @default(uuid())
+  key         String   @unique
+  value       String
+  updatedById String?
+  updatedBy   User?    @relation(fields: [updatedById], references: [id], onDelete: SetNull)
+  updatedAt   DateTime @updatedAt
+  createdAt   DateTime @default(now())
+
+  @@map("cms_content")
+}
+
+/// Live counters for the homepage (PRD §6 / §10).
+model PlatformStat {
+  id         String   @id @default(uuid())
+  metricName String   @unique
+  value      Int      @default(0)
+  computedAt DateTime @default(now())
+
+  @@map("platform_stats")
 }
