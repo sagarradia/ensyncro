@@ -64,6 +64,9 @@ model User {
   dataRoomFiles DataRoomFile[]
   dataRoomViews DataRoomAccessLog[]
 
+  sectionViewsOfMine ProfileSectionAccessLog[] @relation("SectionLogFounder")
+  sectionViewsMade   ProfileSectionAccessLog[] @relation("SectionLogViewer")
+
   shortlistsMade    SavedShortlist[] @relation("ShortlistInvestor")
   shortlistedAs     SavedShortlist[] @relation("ShortlistFounder")
   introRequestsSent IntroRequest[]   @relation("IntroFrom")
@@ -131,6 +134,15 @@ enum InvestorType {
   GOVERNMENT_INSTITUTIONAL
 }
 
+/// Where an externally hosted pitch video lives. Only the provider and the
+/// video id are stored — the embed URL is rebuilt by us, so a founder-supplied
+/// URL is never reflected straight into an iframe.
+enum VideoProvider {
+  YOUTUBE
+  VIMEO
+  LOOM
+}
+
 model FounderProfile {
   id            String       @id @default(uuid())
   userId        String       @unique
@@ -149,9 +161,99 @@ model FounderProfile {
   createdAt     DateTime     @default(now())
   updatedAt     DateTime     @updatedAt
 
+  // ── Media ────────────────────────────────────────────────────
+  /// A pitch video is either hosted elsewhere (provider + id) or uploaded
+  /// (pitchVideoFile). Not both — the API clears one when the other is set.
+  pitchVideoProvider VideoProvider?
+  pitchVideoId       String?
+  pitchVideoFileId   String?        @unique
+  pitchVideoFile     DataRoomFile?  @relation("FounderPitchVideo", fields: [pitchVideoFileId], references: [id], onDelete: SetNull)
+
+  // ── Public product page ──────────────────────────────────────
+  productName        String?
+  tagline            String?
+  productDescription String?
+  /// Free-form category tags, extending the single `sector` field.
+  categories         String[]
+  logoFileId         String?       @unique
+  logoFile           DataRoomFile? @relation("FounderLogo", fields: [logoFileId], references: [id], onDelete: SetNull)
+
+  // ── Gated commercial detail ──────────────────────────────────
+  /// Whole currency units per month / per year.
+  mrr             Int?
+  arr             Int?
+  monthlyBurn     Int?
+  runwayMonths    Int?
+  useOfFunds      String?
+  /// Reuses the data room's visibility model so gating behaves identically.
+  financialsVisibility     DataRoomVisibility @default(PRIVATE)
+  fundingHistoryVisibility DataRoomVisibility @default(PRIVATE)
+
+  milestones    FounderMilestone[]
+  fundingRounds FundingRound[]
+
   @@index([sector])
   @@index([stage])
   @@map("founder_profiles")
+}
+
+/// Traction timeline shown alongside financials, and gated with them.
+model FounderMilestone {
+  id          String         @id @default(uuid())
+  founderId   String
+  founder     FounderProfile @relation(fields: [founderId], references: [id], onDelete: Cascade)
+  title       String
+  description String?
+  /// When it happened, or is expected to.
+  occurredOn  DateTime
+  achieved    Boolean        @default(false)
+  createdAt   DateTime       @default(now())
+  updatedAt   DateTime       @updatedAt
+
+  @@index([founderId])
+  @@map("founder_milestones")
+}
+
+/// One closed round in the founder's funding history.
+model FundingRound {
+  id            String         @id @default(uuid())
+  founderId     String
+  founder       FounderProfile @relation(fields: [founderId], references: [id], onDelete: Cascade)
+  stage         FundingStage
+  /// Whole currency units.
+  amountRaised  Int
+  preMoney      Int?
+  postMoney     Int?
+  closedOn      DateTime
+  /// Optional free text — not a link to an InvestorProfile on purpose, since
+  /// most historical leads will not be users of the platform.
+  leadInvestor  String?
+  createdAt     DateTime       @default(now())
+  updatedAt     DateTime       @updatedAt
+
+  @@index([founderId])
+  @@map("funding_rounds")
+}
+
+/// Which gated profile section a viewer opened. The data room audits file
+/// views; this is the equivalent for financials and funding history.
+enum ProfileSection {
+  FINANCIALS
+  FUNDING_HISTORY
+}
+
+model ProfileSectionAccessLog {
+  id        String         @id @default(uuid())
+  founderId String
+  founder   User           @relation("SectionLogFounder", fields: [founderId], references: [id], onDelete: Cascade)
+  viewerId  String
+  viewer    User           @relation("SectionLogViewer", fields: [viewerId], references: [id], onDelete: Cascade)
+  section   ProfileSection
+  viewedAt  DateTime       @default(now())
+
+  @@index([founderId])
+  @@index([viewerId])
+  @@map("profile_section_access_log")
 }
 
 model InvestorProfile {
@@ -250,6 +352,9 @@ model DataRoomFile {
 
   accessLogs DataRoomAccessLog[]
   blob       DataRoomFileBlob?
+  /// Set when this file is the founder's pitch video or logo.
+  pitchVideoFor FounderProfile? @relation("FounderPitchVideo")
+  logoFor       FounderProfile? @relation("FounderLogo")
 
   @@index([ownerId])
   @@index([ownerId, kind])

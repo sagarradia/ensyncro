@@ -40,7 +40,12 @@ export abstract class FileStorage {
   abstract put(fileId: string, content: Buffer, contentType?: string): Promise<void>;
   abstract get(fileId: string): Promise<Buffer | null>;
   abstract remove(fileId: string): Promise<void>;
-  abstract presign(fileId: string, fileName: string, contentType?: string | null): Promise<string | null>;
+  abstract presign(
+    fileId: string,
+    fileName: string,
+    contentType?: string | null,
+    ttlSeconds?: number,
+  ): Promise<string | null>;
 
   /**
    * A URL the browser can PUT bytes to directly, bypassing the API entirely.
@@ -203,7 +208,12 @@ export class S3FileStorage extends FileStorage {
    * Short-lived presigned GET. Only ever handed out after the caller has been
    * authorised and the view recorded — the bucket itself stays private.
    */
-  async presign(fileId: string, fileName: string, contentType?: string | null): Promise<string> {
+  async presign(
+    fileId: string,
+    fileName: string,
+    contentType?: string | null,
+    ttlSeconds: number = PRESIGN_TTL_SECONDS,
+  ): Promise<string> {
     return getSignedUrl(
       this.client,
       new GetObjectCommand({
@@ -212,7 +222,7 @@ export class S3FileStorage extends FileStorage {
         ResponseContentDisposition: `inline; filename="${fileName.replace(/"/g, '')}"`,
         ...(contentType ? { ResponseContentType: contentType } : {}),
       }),
-      { expiresIn: PRESIGN_TTL_SECONDS },
+      { expiresIn: ttlSeconds },
     );
   }
 }
