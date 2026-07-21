@@ -1,0 +1,87 @@
+<section class="card form-card">
+  @if (loading()) {
+    <p class="muted">Loading your profile…</p>
+  } @else if (done()) {
+    <h1>Investor profile saved</h1>
+    <p class="muted">
+      {{ form.controls.name.value }} is set up. You can now discover founders matching your focus.
+    </p>
+    <button type="button" class="btn secondary" (click)="done.set(false); step.set(1)">
+      Edit profile
+    </button>
+  } @else {
+    <ol class="steps" aria-label="Onboarding progress">
+      <li [class.active]="step() === 1">1. Identity</li>
+      <li [class.active]="step() === 2">2. Focus</li>
+      <li [class.active]="step() === 3">3. About</li>
+    </ol>
+
+    <h1>Set up your investor profile</h1>
+    <p class="muted">Step {{ step() }} of {{ totalSteps }}. Progress is saved as you go.</p>
+
+    @if (error()) {
+      <p class="alert" role="alert">{{ error() }}</p>
+    }
+
+    <form [formGroup]="form" (ngSubmit)="$event.preventDefault()" novalidate>
+      @if (step() === 1) {
+        <label for="name">Fund or investor name</label>
+        <input id="name" formControlName="name" placeholder="Northwind Ventures, or your name" />
+        @if (form.controls.name.touched && form.controls.name.invalid) {
+          <small class="field-error">At least 2 characters.</small>
+        }
+
+        <label for="location">Location</label>
+        <input id="location" formControlName="location" placeholder="Mumbai, India" />
+      } @else if (step() === 2) {
+        <fieldset>
+          <legend>Investor type <span class="muted">(select all that apply)</span></legend>
+          <div class="checkbox-grid">
+            @for (t of investorTypeOptions; track t.value) {
+              <label>
+                <input
+                  type="checkbox"
+                  [attr.data-type]="t.value"
+                  [checked]="isSelected(t.value)"
+                  (change)="toggleType(t.value)"
+                />
+                {{ t.label }}
+              </label>
+            }
+          </div>
+        </fieldset>
+
+        <label for="sectors">Sectors of interest</label>
+        <input id="sectors" formControlName="sectors" placeholder="Fintech, Climate, Health" />
+        <small class="muted">Comma-separated.</small>
+
+        <label for="ticketMin">Ticket size — minimum</label>
+        <input id="ticketMin" type="number" min="0" formControlName="ticketMin" />
+
+        <label for="ticketMax">Ticket size — maximum</label>
+        <input id="ticketMax" type="number" min="0" formControlName="ticketMax" />
+      } @else {
+        <label for="description">About your fund / thesis</label>
+        <textarea id="description" rows="6" formControlName="description"></textarea>
+
+        <label for="website">Website</label>
+        <input id="website" formControlName="website" placeholder="https://example.com" />
+      }
+
+      <div class="wizard-actions">
+        @if (step() > 1) {
+          <button type="button" class="btn secondary" (click)="back()" [disabled]="saving()">Back</button>
+        }
+        @if (step() < totalSteps) {
+          <button type="button" class="btn" (click)="next()" [disabled]="saving()">
+            {{ saving() ? 'Saving…' : 'Save and continue' }}
+          </button>
+        } @else {
+          <button type="button" class="btn" (click)="finish()" [disabled]="saving()">
+            {{ saving() ? 'Saving…' : 'Finish' }}
+          </button>
+        }
+      </div>
+    </form>
+  }
+</section>

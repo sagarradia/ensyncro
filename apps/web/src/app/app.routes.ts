@@ -3,6 +3,7 @@ import { HomeComponent } from './pages/home/home.component';
 import { LoginComponent } from './pages/login/login.component';
 import { SignupComponent } from './pages/signup/signup.component';
 import { FounderOnboardingComponent } from './pages/founder-onboarding/founder-onboarding.component';
+import { InvestorOnboardingComponent } from './pages/investor-onboarding/investor-onboarding.component';
 import { roleGuard } from './core/auth.guard';
 
 /**
@@ -17,6 +18,11 @@ export const routes: Routes = [
     path: 'founder/onboarding',
     component: FounderOnboardingComponent,
     canActivate: [roleGuard('FOUNDER')],
+  },
+  {
+    path: 'investor/onboarding',
+    component: InvestorOnboardingComponent,
+    canActivate: [roleGuard('INVESTOR')],
   },
   { path: '**', redirectTo: '' },
 ];
