@@ -1,6 +1,8 @@
-import { Controller, ForbiddenException, Get, UseGuards } from '@nestjs/common';
+import { Body, Controller, ForbiddenException, Get, Post, UseGuards } from '@nestjs/common';
 import { AdminRole, Role } from '@prisma/client';
 import { PrismaService } from '../prisma/prisma.service';
+import { AdminInvitesService } from './admin-invites.service';
+import { CreateInviteDto } from './dto/create-invite.dto';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { RolesGuard } from '../auth/guards/roles.guard';
 import { AdminRolesGuard } from '../auth/guards/admin-roles.guard';
@@ -18,7 +20,10 @@ import { AccessTokenPayload } from '../auth/tokens/token.service';
 @UseGuards(JwtAuthGuard, RolesGuard, AdminRolesGuard)
 @Roles(Role.ADMIN)
 export class AdminController {
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(
+    private readonly prisma: PrismaService,
+    private readonly invites: AdminInvitesService,
+  ) {}
 
   /** The signed-in admin's own profile, including sub-role. */
   @Get('me')
@@ -29,6 +34,23 @@ export class AdminController {
     });
     if (!profile) throw new ForbiddenException('No admin profile for this account');
     return { userId: user.sub, email: user.email, adminRole: profile.adminRole };
+  }
+
+  /**
+   * Invite a new admin (Super Admin only — PRD §3: invite-only, no public
+   * admin signup). Returns the raw token once; only its hash is stored.
+   */
+  @Post('invites')
+  @AdminRoles(AdminRole.SUPER)
+  createInvite(@Body() dto: CreateInviteDto, @CurrentUser() user: AccessTokenPayload) {
+    return this.invites.create(dto, user.sub);
+  }
+
+  /** Pending (unconsumed, unexpired) invites — Super Admin only. */
+  @Get('invites')
+  @AdminRoles(AdminRole.SUPER)
+  listInvites() {
+    return this.invites.list();
   }
 
   /** Platform-wide counts — Ops/Super only. Demonstrates sub-role narrowing. */

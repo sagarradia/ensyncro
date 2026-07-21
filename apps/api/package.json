@@ -11,6 +11,7 @@
     "start:dev": "nest start --watch",
     "start:prod": "node dist/main.js",
     "lint": "eslint \"{src,test}/**/*.ts\" --fix",
+    "admin:bootstrap": "node scripts/bootstrap-admin.mjs",
     "prisma:generate": "prisma generate",
     "prisma:migrate": "prisma migrate dev",
     "prisma:deploy": "prisma migrate deploy"
