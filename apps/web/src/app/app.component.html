@@ -1,5 +1,7 @@
 <header class="flex items-center justify-between gap-4 px-6 py-4 bg-surface-900 text-surface-0">
-  <a class="text-xl font-bold tracking-wide text-surface-0 no-underline" routerLink="/">Ensyncro</a>
+  <a routerLink="/" class="inline-flex items-center shrink-0" aria-label="Ensyncro home">
+    <img src="assets/logo/ensyncro-logo-white-on-transparent.png" alt="Ensyncro" class="h-11 w-auto" />
+  </a>
 
   <nav class="flex items-center gap-4">
     @if (auth.isAuthenticated()) {
@@ -35,6 +37,9 @@
 </main>
 
 <footer class="flex flex-wrap items-center justify-between gap-3 px-6 py-5 border-t border-surface-200 text-muted-color text-sm">
-  <span>© {{ year }} Ensyncro</span>
+  <span class="flex items-center gap-2.5">
+    <img src="assets/logo/ensyncro-logo-dark-on-transparent.png" alt="Ensyncro" class="h-7 w-auto" />
+    © {{ year }} Ensyncro
+  </span>
   <span>Funding marketplace</span>
 </footer>
