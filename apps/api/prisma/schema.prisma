@@ -86,6 +86,11 @@ model User {
   adminInvitesSent      AdminInvite[]      @relation("InviteCreatedBy")
   consultantInvitesSent ConsultantInvite[] @relation("ConsultantInviteCreatedBy")
 
+  dealsAsFounder   Deal[]      @relation("DealFounder")
+  dealsAsInvestor  Deal[]      @relation("DealInvestor")
+  dealEventsActed  DealEvent[] @relation("DealEventActor")
+  dealTasksCreated DealTask[]  @relation("DealTaskCreatedBy")
+
   @@map("users")
 }
 
@@ -785,9 +790,100 @@ model IntroRequest {
   createdAt  DateTime           @default(now())
   updatedAt  DateTime           @updatedAt
 
+  deal Deal?
+
   @@index([fromUserId])
   @@index([toUserId])
   @@map("intro_requests")
+}
+
+// ─────────────────────────────────────────────────────────────
+// Deal Management (PRD v2 §5) — the platform's central object.
+// A Deal is created when an intro request is accepted, then tracked
+// through stages, with a timeline, comments and a task checklist.
+// ─────────────────────────────────────────────────────────────
+
+/// Simplified deal lifecycle (from the full 19-step spec).
+enum DealStage {
+  INTEREST
+  MEETING_SCHEDULED
+  NDA
+  DATA_ROOM_ACCESS
+  DUE_DILIGENCE
+  OFFER
+  NEGOTIATION
+  CLOSED_WON
+  CLOSED_LOST
+}
+
+enum DealStatus {
+  OPEN
+  WON
+  LOST
+}
+
+/// Every significant deal action produces one of these (PRD v2 §3.5:
+/// event → timeline). Comments and task changes are timeline entries too.
+enum DealEventKind {
+  CREATED
+  STAGE_CHANGED
+  COMMENT
+  TASK_ADDED
+  TASK_COMPLETED
+}
+
+model Deal {
+  id             String       @id @default(uuid())
+  /// One deal per accepted intro — a deal is never created from scratch.
+  introRequestId String       @unique
+  introRequest   IntroRequest @relation(fields: [introRequestId], references: [id], onDelete: Cascade)
+  founderId      String
+  founder        User         @relation("DealFounder", fields: [founderId], references: [id], onDelete: Cascade)
+  investorId     String
+  investor       User         @relation("DealInvestor", fields: [investorId], references: [id], onDelete: Cascade)
+  stage          DealStage    @default(INTEREST)
+  status         DealStatus   @default(OPEN)
+  createdAt      DateTime     @default(now())
+  updatedAt      DateTime     @updatedAt
+
+  events DealEvent[]
+  tasks  DealTask[]
+
+  @@index([founderId])
+  @@index([investorId])
+  @@map("deals")
+}
+
+/// The deal timeline — reuses the append-only audit/event pattern.
+model DealEvent {
+  id        String        @id @default(uuid())
+  dealId    String
+  deal      Deal          @relation(fields: [dealId], references: [id], onDelete: Cascade)
+  actorId   String?
+  actor     User?         @relation("DealEventActor", fields: [actorId], references: [id], onDelete: SetNull)
+  kind      DealEventKind
+  /// Human-readable summary: comment text, "Interest → NDA", a task title, …
+  body      String
+  createdAt DateTime      @default(now())
+
+  @@index([dealId])
+  @@map("deal_events")
+}
+
+/// A simple checklist item on a deal (not a full task manager).
+model DealTask {
+  id          String    @id @default(uuid())
+  dealId      String
+  deal        Deal      @relation(fields: [dealId], references: [id], onDelete: Cascade)
+  title       String
+  done        Boolean   @default(false)
+  createdById String?
+  createdBy   User?     @relation("DealTaskCreatedBy", fields: [createdById], references: [id], onDelete: SetNull)
+  createdAt   DateTime  @default(now())
+  completedAt DateTime?
+
+  @@index([dealId])
+  @@map("deal_tasks")
 }
 
 // ─────────────────────────────────────────────────────────────
