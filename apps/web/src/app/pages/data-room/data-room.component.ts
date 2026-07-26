@@ -1,4 +1,5 @@
 import { Component, inject, signal } from '@angular/core';
+import { DatePipe } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { CardModule } from 'primeng/card';
 import { ButtonModule } from 'primeng/button';
@@ -20,6 +21,7 @@ import {
   selector: 'app-data-room',
   standalone: true,
   imports: [
+    DatePipe,
     FormsModule,
     CardModule,
     ButtonModule,

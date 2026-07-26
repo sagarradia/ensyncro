@@ -93,23 +93,27 @@
   @if (log().length === 0) {
     <p-card styleClass="text-muted-color">No views recorded yet.</p-card>
   } @else {
-    <p-table [value]="log()" [rows]="10" styleClass="p-datatable-sm" data-testid="audit-table">
-      <ng-template pTemplate="header">
-        <tr>
-          <th>File</th>
-          <th>Viewer</th>
-          <th>Role</th>
-          <th>When</th>
-        </tr>
-      </ng-template>
-      <ng-template pTemplate="body" let-e>
-        <tr>
-          <td>{{ e.file.fileName }}</td>
-          <td>{{ e.viewer.email }}</td>
-          <td>{{ e.viewer.role }}</td>
-          <td>{{ e.viewedAt }}</td>
-        </tr>
-      </ng-template>
-    </p-table>
+    <!-- Scroll the wide table within its own container so it never forces the
+         page to scroll horizontally on small screens. -->
+    <div class="overflow-x-auto">
+      <p-table [value]="log()" [rows]="10" styleClass="p-datatable-sm min-w-[32rem]" data-testid="audit-table">
+        <ng-template pTemplate="header">
+          <tr>
+            <th>File</th>
+            <th>Viewer</th>
+            <th>Role</th>
+            <th>When</th>
+          </tr>
+        </ng-template>
+        <ng-template pTemplate="body" let-e>
+          <tr>
+            <td>{{ e.file.fileName }}</td>
+            <td>{{ e.viewer.email }}</td>
+            <td>{{ e.viewer.role }}</td>
+            <td>{{ e.viewedAt | date: 'medium' }}</td>
+          </tr>
+        </ng-template>
+      </p-table>
+    </div>
   }
 </section>
