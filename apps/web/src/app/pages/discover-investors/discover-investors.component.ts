@@ -1,5 +1,11 @@
 import { Component, inject, signal } from '@angular/core';
 import { FormBuilder, ReactiveFormsModule } from '@angular/forms';
+import { CardModule } from 'primeng/card';
+import { ButtonModule } from 'primeng/button';
+import { InputTextModule } from 'primeng/inputtext';
+import { SelectModule } from 'primeng/select';
+import { TagModule } from 'primeng/tag';
+import { MessageModule } from 'primeng/message';
 import { DiscoverService } from '../../core/discover.service';
 import { INVESTOR_TYPES, InvestorCard } from '../../core/models';
 
@@ -7,14 +13,23 @@ import { INVESTOR_TYPES, InvestorCard } from '../../core/models';
 @Component({
   selector: 'app-discover-investors',
   standalone: true,
-  imports: [ReactiveFormsModule],
+  imports: [
+    ReactiveFormsModule,
+    CardModule,
+    ButtonModule,
+    InputTextModule,
+    SelectModule,
+    TagModule,
+    MessageModule,
+  ],
   templateUrl: './discover-investors.component.html',
 })
 export class DiscoverInvestorsComponent {
   private readonly fb = inject(FormBuilder);
   private readonly discover = inject(DiscoverService);
 
-  readonly investorTypes = INVESTOR_TYPES;
+  // Mutable copy for p-select's options input (rejects the readonly source).
+  readonly investorTypes = [...INVESTOR_TYPES];
   readonly loading = signal(true);
   readonly error = signal<string | null>(null);
   readonly total = signal(0);

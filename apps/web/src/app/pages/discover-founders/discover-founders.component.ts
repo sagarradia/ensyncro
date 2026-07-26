@@ -1,6 +1,12 @@
 import { Component, inject, signal } from '@angular/core';
 import { FormBuilder, ReactiveFormsModule } from '@angular/forms';
 import { RouterLink } from '@angular/router';
+import { CardModule } from 'primeng/card';
+import { ButtonModule } from 'primeng/button';
+import { InputTextModule } from 'primeng/inputtext';
+import { SelectModule } from 'primeng/select';
+import { TagModule } from 'primeng/tag';
+import { MessageModule } from 'primeng/message';
 import { DiscoverService } from '../../core/discover.service';
 import { FUNDING_STAGES, FounderCard } from '../../core/models';
 
@@ -8,14 +14,24 @@ import { FUNDING_STAGES, FounderCard } from '../../core/models';
 @Component({
   selector: 'app-discover-founders',
   standalone: true,
-  imports: [ReactiveFormsModule, RouterLink],
+  imports: [
+    ReactiveFormsModule,
+    RouterLink,
+    CardModule,
+    ButtonModule,
+    InputTextModule,
+    SelectModule,
+    TagModule,
+    MessageModule,
+  ],
   templateUrl: './discover-founders.component.html',
 })
 export class DiscoverFoundersComponent {
   private readonly fb = inject(FormBuilder);
   private readonly discover = inject(DiscoverService);
 
-  readonly stages = FUNDING_STAGES;
+  // Mutable copy for p-select's options input (rejects the readonly source).
+  readonly stageOptions = [...FUNDING_STAGES];
   readonly loading = signal(true);
   readonly error = signal<string | null>(null);
   readonly total = signal(0);

@@ -1,74 +1,81 @@
-<section class="discover">
-  <h1>Discover investors</h1>
-  <p class="muted">Find investors whose focus and cheque size match your raise.</p>
+<section>
+  <h1 class="text-2xl font-bold text-surface-900 m-0">Discover investors</h1>
+  <p class="text-muted-color mt-1 mb-5">Find investors whose focus and cheque size match your raise.</p>
 
-  <form class="card filters" [formGroup]="filters" (ngSubmit)="search()" novalidate>
-    <div class="filter-grid">
-      <div>
-        <label for="investorType">Investor type</label>
-        <select id="investorType" formControlName="investorType">
-          <option value="">Any type</option>
-          @for (t of investorTypes; track t.value) {
-            <option [value]="t.value">{{ t.label }}</option>
-          }
-        </select>
+  <p-card styleClass="mb-5">
+    <form [formGroup]="filters" (ngSubmit)="search()" novalidate>
+      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+        <div class="flex flex-col gap-1.5">
+          <label for="investorType" class="text-sm font-medium">Investor type</label>
+          <p-select
+            inputId="investorType"
+            formControlName="investorType"
+            [options]="investorTypes"
+            optionLabel="label"
+            optionValue="value"
+            placeholder="Any type"
+            [showClear]="true"
+            styleClass="w-full"
+          />
+        </div>
+        <div class="flex flex-col gap-1.5">
+          <label for="sector" class="text-sm font-medium">Sector of interest</label>
+          <input pInputText id="sector" formControlName="sector" placeholder="Climate, Fintech…" class="w-full" />
+        </div>
+        <div class="flex flex-col gap-1.5">
+          <label for="ticketMin" class="text-sm font-medium">Cheque at least</label>
+          <input pInputText id="ticketMin" type="number" min="0" formControlName="ticketMin" class="w-full" />
+        </div>
+        <div class="flex flex-col gap-1.5">
+          <label for="ticketMax" class="text-sm font-medium">Cheque at most</label>
+          <input pInputText id="ticketMax" type="number" min="0" formControlName="ticketMax" class="w-full" />
+        </div>
       </div>
-      <div>
-        <label for="sector">Sector of interest</label>
-        <input id="sector" formControlName="sector" placeholder="Climate, Fintech…" />
+      <div class="flex gap-3 mt-4">
+        <p-button
+          type="submit"
+          [label]="loading() ? 'Searching…' : 'Apply filters'"
+          [loading]="loading()"
+          [disabled]="loading()"
+        />
+        <p-button label="Reset" severity="secondary" [outlined]="true" (onClick)="reset()" />
       </div>
-      <div>
-        <label for="ticketMin">Cheque at least</label>
-        <input id="ticketMin" type="number" min="0" formControlName="ticketMin" />
-      </div>
-      <div>
-        <label for="ticketMax">Cheque at most</label>
-        <input id="ticketMax" type="number" min="0" formControlName="ticketMax" />
-      </div>
-    </div>
-    <div class="wizard-actions">
-      <button type="submit" class="btn" [disabled]="loading()">
-        {{ loading() ? 'Searching…' : 'Apply filters' }}
-      </button>
-      <button type="button" class="btn secondary" (click)="reset()">Reset</button>
-    </div>
-  </form>
+    </form>
+  </p-card>
 
   @if (error()) {
-    <p class="alert" role="alert">{{ error() }}</p>
+    <p-message severity="error" styleClass="w-full mb-4" role="alert">{{ error() }}</p-message>
   }
 
-  <p class="muted result-count">{{ total() }} investor(s) found</p>
+  <p class="text-muted-color mb-4">{{ total() }} investor(s) found</p>
 
   @if (!loading() && items().length === 0) {
-    <p class="card muted">No investors match those filters.</p>
+    <p-card styleClass="text-muted-color">No investors match those filters.</p-card>
   }
 
-  <div class="cards">
+  <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
     @for (i of items(); track i.id) {
-      <article class="card result-card" [attr.data-investor]="i.name">
-        <header>
-          <h2>{{ i.name }}</h2>
-        </header>
-        <p class="meta">
-          @if (i.location) { {{ i.location }} }
-        </p>
-        <p class="tags">
-          @for (t of i.investorTypes; track t) {
-            <span class="pill">{{ typeLabel(t) }}</span>
-          }
-        </p>
-        @if (i.sectors.length) {
-          <p class="muted">Sectors: {{ i.sectors.join(', ') }}</p>
+      <p-card [attr.data-investor]="i.name">
+        <h2 class="text-lg font-semibold m-0">{{ i.name }}</h2>
+        @if (i.location) {
+          <p class="text-muted-color text-sm my-1">{{ i.location }}</p>
         }
-        <p class="seeking">Cheque size <strong>{{ ticketRange(i) }}</strong></p>
+        <div class="flex flex-wrap gap-1.5 my-2">
+          @for (t of i.investorTypes; track t) {
+            <p-tag [value]="typeLabel(t)" severity="secondary" [rounded]="true" />
+          }
+        </div>
+        @if (i.sectors.length) {
+          <p class="text-muted-color text-sm">Sectors: {{ i.sectors.join(', ') }}</p>
+        }
+        <p class="text-sm my-2">Cheque size <strong>{{ ticketRange(i) }}</strong></p>
         @if (i.description) {
-          <p class="desc">{{ i.description }}</p>
+          <p class="text-sm">{{ i.description }}</p>
         }
         @if (i.website) {
-          <a class="muted" [href]="i.website" target="_blank" rel="noopener noreferrer">{{ i.website }}</a>
+          <a class="text-muted-color text-sm break-all" [href]="i.website" target="_blank" rel="noopener noreferrer">{{ i.website }}</a>
         }
-      </article>
+      </p-card>
     }
   </div>
 </section>
