@@ -14,6 +14,7 @@ import { DiscoverModule } from './discover/discover.module';
 import { DataRoomModule } from './data-room/data-room.module';
 import { IntroRequestsModule } from './intro-requests/intro-requests.module';
 import { ConsultantModule } from './consultant/consultant.module';
+import { DealsModule } from './deals/deals.module';
 
 // Local env files live at the monorepo root and are selected by APP_ENV.
 // In hosted environments (Vercel) variables are injected directly, so these
@@ -45,6 +46,7 @@ const envFilePath = [
     DataRoomModule,
     IntroRequestsModule,
     ConsultantModule,
+    DealsModule,
     // Further feature modules (founders, investors, data-room, cms, ...)
     // will be registered here as they are built. See PRD §5 / §7.
   ],

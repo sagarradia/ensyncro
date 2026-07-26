@@ -7,6 +7,7 @@ import {
 import { IntroRequestStatus, Role } from '@prisma/client';
 import { PrismaService } from '../prisma/prisma.service';
 import { AccessTokenPayload } from '../auth/tokens/token.service';
+import { DealsService } from '../deals/deals.service';
 
 /**
  * PRD §10: v1 has no threaded messaging. "Request intro" is the whole
@@ -15,7 +16,10 @@ import { AccessTokenPayload } from '../auth/tokens/token.service';
  */
 @Injectable()
 export class IntroRequestsService {
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(
+    private readonly prisma: PrismaService,
+    private readonly deals: DealsService,
+  ) {}
 
   private readonly counterpart: Partial<Record<Role, Role>> = {
     [Role.INVESTOR]: Role.FOUNDER,
@@ -151,6 +155,12 @@ export class IntroRequestsService {
       data: { status },
       select: { id: true, status: true, updatedAt: true },
     });
+
+    // Accepting an intro is what spawns the Deal — the central object is never
+    // created from scratch (PRD v2 §5).
+    if (status === IntroRequestStatus.ACCEPTED) {
+      await this.deals.createFromAcceptedIntro(request.id);
+    }
 
     return {
       ...updated,
