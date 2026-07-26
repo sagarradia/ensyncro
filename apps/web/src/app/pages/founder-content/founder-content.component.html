@@ -25,6 +25,17 @@
     </div>
   }
 
+  @if (sections(); as s) {
+    <div class="card">
+      <h2>Profile completeness</h2>
+      <p class="meta" data-testid="completion">{{ s.completionScore }}% complete</p>
+      <div class="quota-bar" role="progressbar" [attr.aria-valuenow]="s.completionScore">
+        <span [style.width.%]="s.completionScore"></span>
+      </div>
+      <small class="muted">The more sections you fill in, the stronger your teaser and IM.</small>
+    </div>
+  }
+
   <!-- ── Media ─────────────────────────────────────────────── -->
   <h2 class="section-heading">Pitch video</h2>
   <div class="card">
@@ -92,6 +103,73 @@
     }
 
     <button type="button" (click)="saveProduct()" data-testid="save-product">Save product page</button>
+  </div>
+
+  <!-- ── Classification / Funding / Operations (public) ────── -->
+  <h2 class="section-heading">Classification</h2>
+  <div class="card">
+    <label>Nature of business</label>
+    <div class="checkbox-grid" data-testid="nature">
+      @for (n of natureOptions; track n.value) {
+        <label>
+          <input type="checkbox" [checked]="isNature(n.value)" (change)="toggleNature(n.value)"
+                 [attr.data-nature]="n.value" />
+          {{ n.label }}
+        </label>
+      }
+    </div>
+
+    <label for="bizStage">Business stage</label>
+    <select id="bizStage" [(ngModel)]="meta.businessStage" name="bizStage" data-testid="business-stage">
+      <option value="">—</option>
+      @for (o of stageOptions; track o.value) { <option [value]="o.value">{{ o.label }}</option> }
+    </select>
+
+    <label for="companyClass">Company classification</label>
+    <select id="companyClass" [(ngModel)]="meta.companyClassification" name="companyClass" data-testid="company-class">
+      <option value="">—</option>
+      @for (o of classificationOptions; track o.value) { <option [value]="o.value">{{ o.label }}</option> }
+    </select>
+
+    <label for="sectorSel">Sector</label>
+    <select id="sectorSel" [(ngModel)]="meta.sector" name="sectorSel" data-testid="sector">
+      <option value="">—</option>
+      @for (o of sectorOptions(); track o.id) { <option [value]="o.name">{{ o.name }}</option> }
+    </select>
+
+    <button type="button" (click)="saveMeta()" data-testid="save-classification">Save classification</button>
+  </div>
+
+  <!-- ── Funding requirement (public ask) ──────────────────── -->
+  <h2 class="section-heading">Funding requirement</h2>
+  <div class="card">
+    <label for="frType">Funding type</label>
+    <select id="frType" [(ngModel)]="meta.fundingRequirementType" name="frType" data-testid="funding-type">
+      <option value="">—</option>
+      @for (o of fundingTypeOptions; track o.value) { <option [value]="o.value">{{ o.label }}</option> }
+    </select>
+
+    <label for="frAmount">Amount sought</label>
+    <input id="frAmount" type="number" [(ngModel)]="meta.fundingSought" name="frAmount" data-testid="funding-amount" />
+
+    <label for="frInstrument">Instrument</label>
+    <input id="frInstrument" [(ngModel)]="meta.fundingInstrument" name="frInstrument"
+           placeholder="Equity, Convertible, Debt" />
+
+    <label for="frUse">Use of funds (summary)</label>
+    <textarea id="frUse" rows="2" [(ngModel)]="meta.fundingUseSummary" name="frUse" data-testid="funding-use"></textarea>
+
+    <button type="button" (click)="saveMeta()" data-testid="save-funding">Save funding requirement</button>
+  </div>
+
+  <!-- ── Operations (public) ───────────────────────────────── -->
+  <h2 class="section-heading">Operations</h2>
+  <div class="card">
+    <label for="mfg">Manufacturing</label>
+    <textarea id="mfg" rows="2" [(ngModel)]="meta.manufacturing" name="mfg" data-testid="manufacturing"></textarea>
+    <label for="ops">Operations</label>
+    <textarea id="ops" rows="2" [(ngModel)]="meta.operations" name="ops" data-testid="operations"></textarea>
+    <button type="button" (click)="saveMeta()" data-testid="save-operations">Save operations</button>
   </div>
 
   <!-- ── USP / Business model / Market (public) ─────────────── -->
@@ -194,6 +272,50 @@
     <label for="psDesc">Description</label>
     <textarea id="psDesc" rows="2" [(ngModel)]="newProdSvc.description" name="psDesc"></textarea>
     <button type="button" (click)="addProdSvc()" data-testid="add-prodsvc">Add product / service</button>
+  </div>
+
+  <!-- ── Customers (public) ────────────────────────────────── -->
+  <h2 class="section-heading">Key customers</h2>
+  <div class="card">
+    @if (sections()?.keyCustomers?.length) {
+      <ul class="timeline" data-testid="customer-list">
+        @for (c of sections()!.keyCustomers; track c.id) {
+          <li>
+            <strong>{{ c.name }}</strong>
+            @if (c.description) { <p class="muted">{{ c.description }}</p> }
+            <button type="button" class="link" (click)="removeCustomer(c.id)">Remove</button>
+          </li>
+        }
+      </ul>
+    } @else { <p class="muted">No customers added yet.</p> }
+
+    <label for="custName">Customer name</label>
+    <input id="custName" [(ngModel)]="newCustomer.name" name="custName" data-testid="customer-name" />
+    <label for="custDesc">Note</label>
+    <input id="custDesc" [(ngModel)]="newCustomer.description" name="custDesc" />
+    <button type="button" (click)="addCustomer()" data-testid="add-customer">Add customer</button>
+  </div>
+
+  <!-- ── Suppliers (public) ────────────────────────────────── -->
+  <h2 class="section-heading">Key suppliers</h2>
+  <div class="card">
+    @if (sections()?.suppliers?.length) {
+      <ul class="timeline" data-testid="supplier-list">
+        @for (sp of sections()!.suppliers; track sp.id) {
+          <li>
+            <strong>{{ sp.name }}</strong>
+            @if (sp.description) { <p class="muted">{{ sp.description }}</p> }
+            <button type="button" class="link" (click)="removeSupplier(sp.id)">Remove</button>
+          </li>
+        }
+      </ul>
+    } @else { <p class="muted">No suppliers added yet.</p> }
+
+    <label for="supName">Supplier name</label>
+    <input id="supName" [(ngModel)]="newSupplier.name" name="supName" data-testid="supplier-name" />
+    <label for="supDesc">Note</label>
+    <input id="supDesc" [(ngModel)]="newSupplier.description" name="supDesc" />
+    <button type="button" (click)="addSupplier()" data-testid="add-supplier">Add supplier</button>
   </div>
 
   <!-- ── Competition (public) ──────────────────────────────── -->
@@ -361,6 +483,81 @@
     <label for="peerMargin">Peer gross margin %</label>
     <input id="peerMargin" type="number" [(ngModel)]="newPeer.grossMarginPct" name="peerMargin" />
     <button type="button" (click)="addPeer()" data-testid="add-peer">Add peer</button>
+  </div>
+
+  <!-- ── Shareholding (gated) ──────────────────────────────── -->
+  <h2 class="section-heading">Shareholding</h2>
+  <div class="card">
+    @if (sections(); as s) {
+      <label for="shVis">Who can see this</label>
+      <select id="shVis" [value]="s.shareholdingVisibility"
+              (change)="setVisibility('SHAREHOLDING', $event)" data-testid="shareholding-visibility">
+        @for (o of visibilityOptions; track o.value) { <option [value]="o.value">{{ o.label }}</option> }
+      </select>
+    }
+
+    @if (sections()?.shareholders?.length) {
+      <table class="log" data-testid="shareholder-list">
+        <thead><tr><th>Shareholder</th><th>Class</th><th>%</th><th></th></tr></thead>
+        <tbody>
+          @for (sh of sections()!.shareholders; track sh.id) {
+            <tr>
+              <td>{{ sh.name }}</td>
+              <td>{{ sh.shareClass ?? '—' }}</td>
+              <td>{{ sh.percentage != null ? sh.percentage + '%' : '—' }}</td>
+              <td><button type="button" class="link" (click)="removeShareholder(sh.id)">Remove</button></td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    } @else { <p class="muted">No shareholders added yet.</p> }
+
+    <label for="shName">Shareholder</label>
+    <input id="shName" [(ngModel)]="newShareholder.name" name="shName" data-testid="shareholder-name" />
+    <label for="shClass">Share class</label>
+    <input id="shClass" [(ngModel)]="newShareholder.shareClass" name="shClass" placeholder="Equity, Preference, ESOP" />
+    <label for="shPct">Percentage</label>
+    <input id="shPct" type="number" [(ngModel)]="newShareholder.percentage" name="shPct" data-testid="shareholder-pct" />
+    <button type="button" (click)="addShareholder()" data-testid="add-shareholder">Add shareholder</button>
+  </div>
+
+  <!-- ── Projected financials (gated) ──────────────────────── -->
+  <h2 class="section-heading">Projected financials</h2>
+  <div class="card">
+    @if (sections(); as s) {
+      <label for="pfVis">Who can see this</label>
+      <select id="pfVis" [value]="s.projectedFinancialsVisibility"
+              (change)="setVisibility('PROJECTED_FINANCIALS', $event)" data-testid="projected-visibility">
+        @for (o of visibilityOptions; track o.value) { <option [value]="o.value">{{ o.label }}</option> }
+      </select>
+    }
+
+    @if (sections()?.projectedFinancials?.length) {
+      <table class="log" data-testid="projected-list">
+        <thead><tr><th>Period</th><th>Revenue</th><th>EBITDA</th><th>Note</th><th></th></tr></thead>
+        <tbody>
+          @for (pf of sections()!.projectedFinancials; track pf.id) {
+            <tr>
+              <td>{{ pf.periodLabel }}</td>
+              <td>{{ money(pf.revenue) }}</td>
+              <td>{{ money(pf.ebitda) }}</td>
+              <td>{{ pf.note ?? '—' }}</td>
+              <td><button type="button" class="link" (click)="removeProjected(pf.id)">Remove</button></td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    } @else { <p class="muted">No projections added yet.</p> }
+
+    <label for="pfPeriod">Period label</label>
+    <input id="pfPeriod" [(ngModel)]="newProjected.periodLabel" name="pfPeriod" placeholder="FY26" data-testid="projected-period" />
+    <label for="pfRev">Revenue</label>
+    <input id="pfRev" type="number" [(ngModel)]="newProjected.revenue" name="pfRev" data-testid="projected-revenue" />
+    <label for="pfEbitda">EBITDA</label>
+    <input id="pfEbitda" type="number" [(ngModel)]="newProjected.ebitda" name="pfEbitda" />
+    <label for="pfNote">Note</label>
+    <input id="pfNote" [(ngModel)]="newProjected.note" name="pfNote" />
+    <button type="button" (click)="addProjected()" data-testid="add-projected">Add projection</button>
   </div>
 
   <!-- ── Risks (gated) ─────────────────────────────────────── -->

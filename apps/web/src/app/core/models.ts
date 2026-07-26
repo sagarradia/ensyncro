@@ -239,14 +239,32 @@ export interface ProductPage {
   marketSize: string | null;
   targetSegment: string | null;
   marketGeography: string | null;
+  // Classification + funding requirement + operations (public).
+  natureOfBusiness: NatureOfBusiness[];
+  businessStage: BusinessStage | null;
+  companyClassification: CompanyClassification | null;
+  fundingRequirementType: FundingRequirementType | null;
+  fundingInstrument: string | null;
+  fundingUseSummary: string | null;
+  manufacturing: string | null;
+  operations: string | null;
   promoters: Promoter[];
   groupCompanies: GroupCompany[];
   productsServices: ProductServiceItem[];
   competitors: Competitor[];
   swotItems: SwotItem[];
+  keyCustomers: NamedItem[];
+  suppliers: NamedItem[];
   journey: Milestone[];
   /** Lets the UI show a locked state without firing a request that 404s. */
-  access: { financials: boolean; fundingHistory: boolean; risks: boolean; futurePlans: boolean };
+  access: {
+    financials: boolean;
+    fundingHistory: boolean;
+    risks: boolean;
+    futurePlans: boolean;
+    shareholding: boolean;
+    projectedFinancials: boolean;
+  };
 }
 
 export interface Milestone {
@@ -343,14 +361,61 @@ export interface FuturePlan {
 }
 
 /** Everything the founder's editor loads from GET /founder/profile/sections. */
+// ── Broader Investee scope (PRD v2 §7/§8) ─────────────────────
+export type NatureOfBusiness = 'MANUFACTURING' | 'TRADING' | 'SERVICE';
+export type BusinessStage =
+  | 'IDEA' | 'STARTUP' | 'EARLY_REVENUE' | 'GROWTH' | 'EXPANSION' | 'MATURE' | 'TURNAROUND';
+export type CompanyClassification =
+  | 'MSME' | 'LARGE_ENTERPRISE' | 'LISTED' | 'UNLISTED' | 'GOVERNMENT' | 'PSU';
+export type FundingRequirementType =
+  | 'SEED' | 'ANGEL' | 'GROWTH' | 'EXPANSION' | 'BRIDGE' | 'PRE_IPO' | 'STRATEGIC' | 'ACQUISITION';
+
+export interface Shareholder {
+  id: string;
+  name: string;
+  shareClass: string | null;
+  percentage: number | null;
+}
+
+export interface NamedItem {
+  id: string;
+  name: string;
+  description: string | null;
+}
+
+export interface ProjectedFinancial {
+  id: string;
+  periodLabel: string;
+  revenue: number | null;
+  ebitda: number | null;
+  note: string | null;
+}
+
+export interface SectorOption {
+  id: string;
+  name: string;
+}
+
 export interface OwnSections {
+  sector: string | null;
   usp: string | null;
   businessModel: string | null;
   marketSize: string | null;
   targetSegment: string | null;
   marketGeography: string | null;
+  natureOfBusiness: NatureOfBusiness[];
+  businessStage: BusinessStage | null;
+  companyClassification: CompanyClassification | null;
+  fundingRequirementType: FundingRequirementType | null;
+  fundingInstrument: string | null;
+  fundingUseSummary: string | null;
+  fundingSought: number | null;
+  manufacturing: string | null;
+  operations: string | null;
   risksVisibility: DataRoomVisibility;
   futurePlansVisibility: DataRoomVisibility;
+  shareholdingVisibility: DataRoomVisibility;
+  projectedFinancialsVisibility: DataRoomVisibility;
   promoters: Promoter[];
   groupCompanies: GroupCompany[];
   productsServices: ProductServiceItem[];
@@ -359,6 +424,11 @@ export interface OwnSections {
   riskItems: RiskItem[];
   futurePlanItems: FuturePlan[];
   journey: Milestone[];
+  shareholders: Shareholder[];
+  keyCustomers: NamedItem[];
+  suppliers: NamedItem[];
+  projectedFinancials: ProjectedFinancial[];
+  completionScore: number;
 }
 
 export interface FundingRound {
@@ -376,7 +446,9 @@ export interface FundingHistory {
   totalRaised: number;
 }
 
-export type ProfileSection = 'FINANCIALS' | 'FUNDING_HISTORY' | 'RISKS' | 'FUTURE_PLANS';
+export type ProfileSection =
+  | 'FINANCIALS' | 'FUNDING_HISTORY' | 'RISKS' | 'FUTURE_PLANS'
+  | 'SHAREHOLDING' | 'PROJECTED_FINANCIALS';
 
 export interface RiskList {
   items: RiskItem[];
@@ -384,6 +456,14 @@ export interface RiskList {
 
 export interface FuturePlanList {
   items: FuturePlan[];
+}
+
+export interface ShareholderList {
+  items: Shareholder[];
+}
+
+export interface ProjectedFinancialList {
+  items: ProjectedFinancial[];
 }
 
 export interface SectionAccessLogEntry {

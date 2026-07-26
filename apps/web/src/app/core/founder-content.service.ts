@@ -14,14 +14,20 @@ import {
   FuturePlanList,
   GroupCompany,
   Milestone,
+  NamedItem,
   OwnSections,
   ProductPage,
   ProductServiceItem,
   ProfileSection,
+  ProjectedFinancial,
+  ProjectedFinancialList,
   Promoter,
   RiskItem,
   RiskList,
   SectionAccessLogEntry,
+  SectorOption,
+  Shareholder,
+  ShareholderList,
   StorageUsage,
   SwotItem,
 } from './models';
@@ -161,6 +167,29 @@ export class FounderContentService {
   addBenchmarkPeer(b: Partial<BenchmarkPeer>): Observable<BenchmarkPeer> { return this.add('benchmark-peers', b); }
   removeBenchmarkPeer(id: string) { return this.del('benchmark-peers', id); }
 
+  // ── Broader Investee scope (PRD v2 §7/§8) ────────────────────
+  sectors(): Observable<SectorOption[]> {
+    return this.http.get<SectorOption[]>(`${this.base}/founder/profile/sectors`);
+  }
+
+  saveMeta(body: Partial<OwnSections>): Observable<OwnSections> {
+    return this.http.put<OwnSections>(`${this.base}/founder/profile/meta`, body);
+  }
+
+  addShareholder(b: Partial<Shareholder>): Observable<Shareholder> { return this.add('shareholders', b); }
+  removeShareholder(id: string) { return this.del('shareholders', id); }
+
+  addCustomer(b: Partial<NamedItem>): Observable<NamedItem> { return this.add('customers', b); }
+  removeCustomer(id: string) { return this.del('customers', id); }
+
+  addSupplier(b: Partial<NamedItem>): Observable<NamedItem> { return this.add('suppliers', b); }
+  removeSupplier(id: string) { return this.del('suppliers', id); }
+
+  addProjectedFinancial(b: Partial<ProjectedFinancial>): Observable<ProjectedFinancial> {
+    return this.add('projected-financials', b);
+  }
+  removeProjectedFinancial(id: string) { return this.del('projected-financials', id); }
+
   // ── Viewing someone else's ───────────────────────────────────
   product(userId: string): Observable<ProductPage> {
     return this.http.get<ProductPage>(`${this.base}/founders/${userId}/product`);
@@ -180,5 +209,13 @@ export class FounderContentService {
 
   theirFuturePlans(userId: string): Observable<FuturePlanList> {
     return this.http.get<FuturePlanList>(`${this.base}/founders/${userId}/future-plans`);
+  }
+
+  theirShareholding(userId: string): Observable<ShareholderList> {
+    return this.http.get<ShareholderList>(`${this.base}/founders/${userId}/shareholding`);
+  }
+
+  theirProjectedFinancials(userId: string): Observable<ProjectedFinancialList> {
+    return this.http.get<ProjectedFinancialList>(`${this.base}/founders/${userId}/projected-financials`);
   }
 }

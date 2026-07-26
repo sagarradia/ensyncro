@@ -10,7 +10,9 @@ import {
   FundingHistory,
   FuturePlanList,
   ProductPage,
+  ProjectedFinancialList,
   RiskList,
+  ShareholderList,
   SwotCategory,
 } from '../../core/models';
 
@@ -36,6 +38,8 @@ export class ProductComponent {
   readonly funding = signal<FundingHistory | null>(null);
   readonly risks = signal<RiskList | null>(null);
   readonly plans = signal<FuturePlanList | null>(null);
+  readonly shareholding = signal<ShareholderList | null>(null);
+  readonly projected = signal<ProjectedFinancialList | null>(null);
   readonly loading = signal(true);
   readonly error = signal<string | null>(null);
   readonly introNotice = signal<string | null>(null);
@@ -69,6 +73,12 @@ export class ProductComponent {
         }
         if (p.access.futurePlans) {
           this.content.theirFuturePlans(userId).subscribe({ next: (fp) => this.plans.set(fp) });
+        }
+        if (p.access.shareholding) {
+          this.content.theirShareholding(userId).subscribe({ next: (sh) => this.shareholding.set(sh) });
+        }
+        if (p.access.projectedFinancials) {
+          this.content.theirProjectedFinancials(userId).subscribe({ next: (pf) => this.projected.set(pf) });
         }
       },
       error: () => {

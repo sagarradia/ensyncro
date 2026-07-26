@@ -5,20 +5,58 @@ import { DomSanitizer, SafeResourceUrl } from '@angular/platform-browser';
 import { FounderContentService } from '../../core/founder-content.service';
 import { UploadService } from '../../core/upload.service';
 import {
+  BusinessStage,
+  CompanyClassification,
   DataRoomVisibility,
   Financials,
   FounderMedia,
   FundingHistory,
+  FundingRequirementType,
   FUNDING_STAGES,
   MAX_BYTES_BY_KIND,
+  NatureOfBusiness,
   OwnSections,
   ProfileSection,
   RiskSeverity,
   SectionAccessLogEntry,
+  SectorOption,
   StorageUsage,
   SwotCategory,
   VISIBILITY_OPTIONS,
 } from '../../core/models';
+
+const NATURE_OPTIONS: ReadonlyArray<{ value: NatureOfBusiness; label: string }> = [
+  { value: 'MANUFACTURING', label: 'Manufacturing' },
+  { value: 'TRADING', label: 'Trading' },
+  { value: 'SERVICE', label: 'Service' },
+];
+const STAGE_OPTIONS: ReadonlyArray<{ value: BusinessStage; label: string }> = [
+  { value: 'IDEA', label: 'Idea' },
+  { value: 'STARTUP', label: 'Startup' },
+  { value: 'EARLY_REVENUE', label: 'Early revenue' },
+  { value: 'GROWTH', label: 'Growth' },
+  { value: 'EXPANSION', label: 'Expansion' },
+  { value: 'MATURE', label: 'Mature' },
+  { value: 'TURNAROUND', label: 'Turnaround' },
+];
+const CLASSIFICATION_OPTIONS: ReadonlyArray<{ value: CompanyClassification; label: string }> = [
+  { value: 'MSME', label: 'MSME' },
+  { value: 'LARGE_ENTERPRISE', label: 'Large enterprise' },
+  { value: 'LISTED', label: 'Listed' },
+  { value: 'UNLISTED', label: 'Unlisted' },
+  { value: 'GOVERNMENT', label: 'Government' },
+  { value: 'PSU', label: 'PSU' },
+];
+const FUNDING_TYPE_OPTIONS: ReadonlyArray<{ value: FundingRequirementType; label: string }> = [
+  { value: 'SEED', label: 'Seed' },
+  { value: 'ANGEL', label: 'Angel' },
+  { value: 'GROWTH', label: 'Growth' },
+  { value: 'EXPANSION', label: 'Expansion' },
+  { value: 'BRIDGE', label: 'Bridge' },
+  { value: 'PRE_IPO', label: 'Pre-IPO' },
+  { value: 'STRATEGIC', label: 'Strategic' },
+  { value: 'ACQUISITION', label: 'Acquisition' },
+];
 
 const SWOT_CATEGORIES: ReadonlyArray<{ value: SwotCategory; label: string }> = [
   { value: 'STRENGTH', label: 'Strength' },
@@ -52,6 +90,11 @@ export class FounderContentComponent {
   readonly stages = FUNDING_STAGES;
   readonly swotCategories = SWOT_CATEGORIES;
   readonly riskSeverities = RISK_SEVERITIES;
+  readonly natureOptions = NATURE_OPTIONS;
+  readonly stageOptions = STAGE_OPTIONS;
+  readonly classificationOptions = CLASSIFICATION_OPTIONS;
+  readonly fundingTypeOptions = FUNDING_TYPE_OPTIONS;
+  readonly sectorOptions = signal<SectorOption[]>([]);
   readonly videoMaxMb = MAX_BYTES_BY_KIND['PITCH_VIDEO'] / 1024 / 1024;
   readonly logoMaxMb = MAX_BYTES_BY_KIND['LOGO'] / 1024 / 1024;
 
@@ -101,6 +144,24 @@ export class FounderContentComponent {
   newPlan = { title: '', description: '', timeframe: '' };
   newPeer = { peerName: '', arr: null as number | null, growthPct: null as number | null, grossMarginPct: null as number | null, note: '' };
 
+  // Classification / funding requirement / operations (public meta).
+  meta = {
+    natureOfBusiness: [] as NatureOfBusiness[],
+    businessStage: '' as BusinessStage | '',
+    companyClassification: '' as CompanyClassification | '',
+    sector: '',
+    fundingRequirementType: '' as FundingRequirementType | '',
+    fundingInstrument: '',
+    fundingUseSummary: '',
+    fundingSought: null as number | null,
+    manufacturing: '',
+    operations: '',
+  };
+  newShareholder = { name: '', shareClass: '', percentage: null as number | null };
+  newCustomer = { name: '', description: '' };
+  newSupplier = { name: '', description: '' };
+  newProjected = { periodLabel: '', revenue: null as number | null, ebitda: null as number | null, note: '' };
+
   readonly quotaPercent = computed(() => {
     const u = this.usage();
     return u ? Math.min(100, Math.round((u.usedBytes / u.quotaBytes) * 100)) : 0;
@@ -141,9 +202,22 @@ export class FounderContentComponent {
         this.marketSize = s.marketSize ?? '';
         this.targetSegment = s.targetSegment ?? '';
         this.marketGeography = s.marketGeography ?? '';
+        this.meta = {
+          natureOfBusiness: s.natureOfBusiness ?? [],
+          businessStage: s.businessStage ?? '',
+          companyClassification: s.companyClassification ?? '',
+          sector: s.sector ?? '',
+          fundingRequirementType: s.fundingRequirementType ?? '',
+          fundingInstrument: s.fundingInstrument ?? '',
+          fundingUseSummary: s.fundingUseSummary ?? '',
+          fundingSought: s.fundingSought,
+          manufacturing: s.manufacturing ?? '',
+          operations: s.operations ?? '',
+        };
       },
       error: () => undefined,
     });
+    this.content.sectors().subscribe({ next: (o) => this.sectorOptions.set(o), error: () => undefined });
   }
 
   /** Angular refuses an iframe src unless it is explicitly trusted. Safe here:
@@ -302,6 +376,8 @@ export class FounderContentComponent {
     FUNDING_HISTORY: 'Funding history',
     RISKS: 'Risks',
     FUTURE_PLANS: 'Future plans',
+    SHAREHOLDING: 'Shareholding',
+    PROJECTED_FINANCIALS: 'Projected financials',
   };
 
   setVisibility(section: ProfileSection, event: Event): void {
@@ -449,6 +525,94 @@ export class FounderContentComponent {
   }
   removePeer(id: string): void {
     this.content.removeBenchmarkPeer(id).subscribe({ next: () => this.refresh(), error: () => undefined });
+  }
+
+  // ── Classification / funding requirement / operations ──────
+  toggleNature(value: NatureOfBusiness): void {
+    const cur = this.meta.natureOfBusiness;
+    this.meta.natureOfBusiness = cur.includes(value) ? cur.filter((v) => v !== value) : [...cur, value];
+  }
+  isNature(value: NatureOfBusiness): boolean {
+    return this.meta.natureOfBusiness.includes(value);
+  }
+
+  saveMeta(): void {
+    this.error.set(null);
+    this.content
+      .saveMeta({
+        natureOfBusiness: this.meta.natureOfBusiness,
+        businessStage: this.meta.businessStage || undefined,
+        companyClassification: this.meta.companyClassification || undefined,
+        sector: this.meta.sector || undefined,
+        fundingRequirementType: this.meta.fundingRequirementType || undefined,
+        fundingInstrument: this.meta.fundingInstrument || null,
+        fundingUseSummary: this.meta.fundingUseSummary || null,
+        fundingSought: this.meta.fundingSought,
+        manufacturing: this.meta.manufacturing || null,
+        operations: this.meta.operations || null,
+      })
+      .subscribe({
+        next: (s) => { this.sections.set(s); this.notice.set('Saved.'); },
+        error: (e) => this.fail(e, 'Could not save.'),
+      });
+  }
+
+  // ── Shareholding (gated) / customers / suppliers / projected ─
+  addShareholder(): void {
+    if (!this.newShareholder.name) { this.error.set('A shareholder needs a name.'); return; }
+    this.addItem(
+      this.content.addShareholder({
+        name: this.newShareholder.name,
+        shareClass: this.newShareholder.shareClass || undefined,
+        percentage: this.newShareholder.percentage ?? undefined,
+      }),
+      () => (this.newShareholder = { name: '', shareClass: '', percentage: null }),
+      'Shareholder',
+    );
+  }
+  removeShareholder(id: string): void {
+    this.content.removeShareholder(id).subscribe({ next: () => this.refresh(), error: () => undefined });
+  }
+
+  addCustomer(): void {
+    if (!this.newCustomer.name) { this.error.set('A customer needs a name.'); return; }
+    this.addItem(
+      this.content.addCustomer({ name: this.newCustomer.name, description: this.newCustomer.description || undefined }),
+      () => (this.newCustomer = { name: '', description: '' }),
+      'Customer',
+    );
+  }
+  removeCustomer(id: string): void {
+    this.content.removeCustomer(id).subscribe({ next: () => this.refresh(), error: () => undefined });
+  }
+
+  addSupplier(): void {
+    if (!this.newSupplier.name) { this.error.set('A supplier needs a name.'); return; }
+    this.addItem(
+      this.content.addSupplier({ name: this.newSupplier.name, description: this.newSupplier.description || undefined }),
+      () => (this.newSupplier = { name: '', description: '' }),
+      'Supplier',
+    );
+  }
+  removeSupplier(id: string): void {
+    this.content.removeSupplier(id).subscribe({ next: () => this.refresh(), error: () => undefined });
+  }
+
+  addProjected(): void {
+    if (!this.newProjected.periodLabel) { this.error.set('A projection needs a period label.'); return; }
+    this.addItem(
+      this.content.addProjectedFinancial({
+        periodLabel: this.newProjected.periodLabel,
+        revenue: this.newProjected.revenue ?? undefined,
+        ebitda: this.newProjected.ebitda ?? undefined,
+        note: this.newProjected.note || undefined,
+      }),
+      () => (this.newProjected = { periodLabel: '', revenue: null, ebitda: null, note: '' }),
+      'Projection',
+    );
+  }
+  removeProjected(id: string): void {
+    this.content.removeProjectedFinancial(id).subscribe({ next: () => this.refresh(), error: () => undefined });
   }
 
   addMilestone(): void {

@@ -66,6 +66,33 @@
       </div>
     }
 
+    <!-- ── Classification & funding requirement (public) ─────── -->
+    @if (p.businessStage || p.companyClassification || p.natureOfBusiness.length || p.fundingRequirementType || p.fundingUseSummary) {
+      <div class="card" data-testid="classification">
+        <p class="meta">
+          @if (p.businessStage) { <span class="pill">{{ p.businessStage }}</span> }
+          @if (p.companyClassification) { <span class="pill">{{ p.companyClassification }}</span> }
+          @for (n of p.natureOfBusiness; track n) { <span class="pill">{{ n }}</span> }
+        </p>
+        @if (p.fundingRequirementType || p.fundingInstrument || p.fundingUseSummary) {
+          <h3>Funding requirement</h3>
+          <p class="meta">
+            @if (p.fundingRequirementType) { <span>{{ p.fundingRequirementType }}</span> }
+            @if (p.fundingInstrument) { <span> · {{ p.fundingInstrument }}</span> }
+          </p>
+          @if (p.fundingUseSummary) { <p>{{ p.fundingUseSummary }}</p> }
+        }
+      </div>
+    }
+
+    <!-- ── Operations (public) ───────────────────────────────── -->
+    @if (p.manufacturing || p.operations) {
+      <div class="card" data-testid="operations">
+        @if (p.manufacturing) { <h3>Manufacturing</h3> <p>{{ p.manufacturing }}</p> }
+        @if (p.operations) { <h3>Operations</h3> <p>{{ p.operations }}</p> }
+      </div>
+    }
+
     <!-- ── Products & services (public) ──────────────────────── -->
     @if (p.productsServices.length) {
       <h2 class="section-heading">Products &amp; services</h2>
@@ -77,6 +104,30 @@
               @if (ps.category) { <span class="pill">{{ ps.category }}</span> }
               @if (ps.description) { <p class="muted">{{ ps.description }}</p> }
             </li>
+          }
+        </ul>
+      </div>
+    }
+
+    <!-- ── Customers (public) ────────────────────────────────── -->
+    @if (p.keyCustomers.length) {
+      <h2 class="section-heading">Key customers</h2>
+      <div class="card" data-testid="customers">
+        <ul class="timeline">
+          @for (c of p.keyCustomers; track c.id) {
+            <li><strong>{{ c.name }}</strong>@if (c.description) { <p class="muted">{{ c.description }}</p> }</li>
+          }
+        </ul>
+      </div>
+    }
+
+    <!-- ── Suppliers (public) ────────────────────────────────── -->
+    @if (p.suppliers.length) {
+      <h2 class="section-heading">Key suppliers</h2>
+      <div class="card" data-testid="suppliers">
+        <ul class="timeline">
+          @for (sp of p.suppliers; track sp.id) {
+            <li><strong>{{ sp.name }}</strong>@if (sp.description) { <p class="muted">{{ sp.description }}</p> }</li>
           }
         </ul>
       </div>
@@ -287,6 +338,52 @@
             }
           </ul>
         } @else { <p class="muted">No plans listed.</p> }
+      </div>
+      }
+    }
+
+    <!-- ── Gated: shareholding ───────────────────────────────── -->
+    <h2 class="section-heading">Shareholding</h2>
+    @if (!p.access.shareholding) {
+      <p class="card muted" data-testid="shareholding-locked">
+        🔒 The founder has not shared their cap table with you.
+      </p>
+    } @else {
+      @if (shareholding(); as sh) {
+      <div class="card" data-testid="shareholding">
+        @if (sh.items.length) {
+          <table class="log">
+            <thead><tr><th>Shareholder</th><th>Class</th><th>%</th></tr></thead>
+            <tbody>
+              @for (h of sh.items; track h.id) {
+                <tr><td>{{ h.name }}</td><td>{{ h.shareClass ?? '—' }}</td><td>{{ h.percentage != null ? h.percentage + '%' : '—' }}</td></tr>
+              }
+            </tbody>
+          </table>
+        } @else { <p class="muted">No shareholders listed.</p> }
+      </div>
+      }
+    }
+
+    <!-- ── Gated: projected financials ───────────────────────── -->
+    <h2 class="section-heading">Projected financials</h2>
+    @if (!p.access.projectedFinancials) {
+      <p class="card muted" data-testid="projected-locked">
+        🔒 The founder has not shared projections with you.
+      </p>
+    } @else {
+      @if (projected(); as pf) {
+      <div class="card" data-testid="projected">
+        @if (pf.items.length) {
+          <table class="log">
+            <thead><tr><th>Period</th><th>Revenue</th><th>EBITDA</th><th>Note</th></tr></thead>
+            <tbody>
+              @for (row of pf.items; track row.id) {
+                <tr><td>{{ row.periodLabel }}</td><td>{{ money(row.revenue) }}</td><td>{{ money(row.ebitda) }}</td><td>{{ row.note ?? '—' }}</td></tr>
+              }
+            </tbody>
+          </table>
+        } @else { <p class="muted">No projections listed.</p> }
       </div>
       }
     }
