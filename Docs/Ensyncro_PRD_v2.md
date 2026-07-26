@@ -231,6 +231,8 @@ They are deliberately **not** steps in the first-run onboarding wizard: onboardi
 | `/founder/content` | Profile editor ("My profile") | Founder edits the full structured Investee profile as autosaving panels: media, product page, USP/business model/market, promoters, group companies, products & services, competition, SWOT, company journey, classification (§8), funding requirement, operations, key customers, key suppliers; plus gated sections (financials + ratios + benchmarking, funding history, risks, future plans, shareholding, projected financials) each with its own visibility control; a profile-completeness score; and the gated-section access log. | Founder |
 | `/founders/:userId` | Product page | A founder's profile as seen by others: all public sections, plus each gated section shown or shown-locked per the viewer's permission (authorised + audited server-side). Carries the "Request intro" action. | Founder, Investor, Admin |
 | `/intros` | Intros | Intro-request inbox — sent + received, accept/decline; contact details released only on acceptance. | Founder, Investor |
+| `/consultant/accept` | Consultant invite accept | Invited consultant sets a password from their invite link; the account activates and logs straight in. | Public (invite token is the credential) |
+| `/consultant` | Consultant dashboard | MVP scaffold — placeholder "your assigned engagements will appear here" plus a basic profile editor (name, firm, registration number; discipline read-only). | Consultant |
 | `**` (unknown) | — | Redirects to Home. | Public |
 
 ### 17.2 Per-role summary
@@ -239,8 +241,9 @@ They are deliberately **not** steps in the first-run onboarding wizard: onboardi
 - **Investor** — onboarding wizard; discover founders; view any founder's product page (public sections always; financials / funding history / risks / future plans / shareholding / projected financials only where that founder has shared them); intros inbox.
 - **Admin** — **no dedicated admin UI is built.** An admin can reach the shared pages whose guards include `ADMIN`: `/discover/founders`, `/discover/investors`, and any `/founders/:userId` product page (where the API grants an admin the view of every gated section). All other admin capability exists **only as API endpoints, with no screens**:
   - `GET /api/admin/me` · `GET /api/admin/stats` · `GET /api/admin/invites` · `POST /api/admin/invites` (create — SUPER sub-role only) · `POST /api/admin/invites/accept`.
+  - Consultant invites: `POST /api/admin/consultant-invites` (create — SUPER only) · `GET /api/admin/consultant-invites`. Both API-only (no admin UI to drive them yet).
   - Admin sub-roles exist in the data model and are enforced server-side (**SUPER · FINANCE · LEGAL · OPS**), but there is no UI to manage them; the first admin is created by a server-side bootstrap script. Platform config (e.g. the configurable success-fee control from §2) is **not built** — no data model, no endpoint, no screen.
-- **Consultant** — defined as a role in §4 but has **zero pages, zero routes, and zero API**. Entirely unbuilt (targeted for phase v1.2).
+- **Consultant** — **scaffolded (MVP).** The role exists end-to-end: invite-only creation (`/admin/consultant-invites`, Super Admin), a public invite-accept page (`/consultant/accept`), login, and a role-guarded dashboard (`/consultant`) with a placeholder engagements panel and a basic profile editor (name / firm / registration; discipline CA·CS·Advocate·Valuer fixed at invite time). Assignment, deliverables, timesheets and billing — the full Professional Engagement module — remain **unbuilt (phase v1.2)**.
 
 ### 17.3 Reality notes (what is deliberately absent)
 
