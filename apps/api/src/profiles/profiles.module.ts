@@ -14,5 +14,8 @@ import { FounderProfileService } from './founder-profile.service';
   imports: [AuthModule, DataRoomModule],
   controllers: [FounderProfileController, FounderPublicController, InvestorProfileController],
   providers: [FounderProfileService],
+  // Exported so DocumentsModule can generate Teasers/IMs through the same
+  // data-access + gating path the profile pages use.
+  exports: [FounderProfileService],
 })
 export class ProfilesModule {}
