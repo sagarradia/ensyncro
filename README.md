@@ -2,7 +2,7 @@
 
 A funding marketplace connecting founders raising capital with investors across the full spectrum — angel, seed, VC, syndicate, and crowdfunding.
 
-> This repository is the **project skeleton** only. No product features are implemented yet — just the monorepo structure, environment configuration, and tooling. See [`Docs/Ensyncro_PRD_v1.md`](Docs/Ensyncro_PRD_v1.md) for the full product requirements.
+> See [`Docs/Ensyncro_PRD_v2.md`](Docs/Ensyncro_PRD_v2.md) for the current product requirements (VMB-aligned; supersedes v1).
 
 ## Stack
 
