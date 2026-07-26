@@ -30,6 +30,12 @@ import {
   CreateRiskItemDto,
   CreateSwotItemDto,
 } from './dto/deep-profile.dto';
+import {
+  CreateNamedItemDto,
+  CreateProjectedFinancialDto,
+  CreateShareholderDto,
+  UpdateInvesteeMetaDto,
+} from './dto/investee-scope.dto';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { RolesGuard } from '../auth/guards/roles.guard';
 import { Roles } from '../auth/decorators/roles.decorator';
@@ -239,6 +245,68 @@ export class FounderProfileController {
   removeBenchmarkPeer(@CurrentUser() user: AccessTokenPayload, @Param('id', ParseUUIDPipe) id: string) {
     return this.founders.removeBenchmarkPeer(user, id);
   }
+
+  // ── Broader Investee scope (PRD v2 §7/§8) ────────────────────
+
+  /** Classification / funding requirement / operations (public meta). */
+  @Put('meta')
+  updateMeta(@CurrentUser() user: AccessTokenPayload, @Body() dto: UpdateInvesteeMetaDto) {
+    return this.founders.updateMeta(user, dto);
+  }
+
+  /** Sector master list for the classification dropdown. */
+  @Get('sectors')
+  sectors() {
+    return this.founders.sectors();
+  }
+
+  // Shareholding (gated)
+  @Get('shareholding')
+  shareholding(@CurrentUser() user: AccessTokenPayload) {
+    return this.founders.shareholding(user.sub, user);
+  }
+  @Post('shareholders')
+  addShareholder(@CurrentUser() user: AccessTokenPayload, @Body() dto: CreateShareholderDto) {
+    return this.founders.addShareholder(user, dto);
+  }
+  @Delete('shareholders/:id')
+  removeShareholder(@CurrentUser() user: AccessTokenPayload, @Param('id', ParseUUIDPipe) id: string) {
+    return this.founders.removeShareholder(user, id);
+  }
+
+  // Customers (public)
+  @Post('customers')
+  addCustomer(@CurrentUser() user: AccessTokenPayload, @Body() dto: CreateNamedItemDto) {
+    return this.founders.addCustomer(user, dto);
+  }
+  @Delete('customers/:id')
+  removeCustomer(@CurrentUser() user: AccessTokenPayload, @Param('id', ParseUUIDPipe) id: string) {
+    return this.founders.removeCustomer(user, id);
+  }
+
+  // Suppliers (public)
+  @Post('suppliers')
+  addSupplier(@CurrentUser() user: AccessTokenPayload, @Body() dto: CreateNamedItemDto) {
+    return this.founders.addSupplier(user, dto);
+  }
+  @Delete('suppliers/:id')
+  removeSupplier(@CurrentUser() user: AccessTokenPayload, @Param('id', ParseUUIDPipe) id: string) {
+    return this.founders.removeSupplier(user, id);
+  }
+
+  // Projected financials (gated)
+  @Get('projected-financials')
+  projectedFinancials(@CurrentUser() user: AccessTokenPayload) {
+    return this.founders.projectedFinancialsFor(user.sub, user);
+  }
+  @Post('projected-financials')
+  addProjectedFinancial(@CurrentUser() user: AccessTokenPayload, @Body() dto: CreateProjectedFinancialDto) {
+    return this.founders.addProjectedFinancial(user, dto);
+  }
+  @Delete('projected-financials/:id')
+  removeProjectedFinancial(@CurrentUser() user: AccessTokenPayload, @Param('id', ParseUUIDPipe) id: string) {
+    return this.founders.removeProjectedFinancial(user, id);
+  }
 }
 
 /**
@@ -289,5 +357,23 @@ export class FounderPublicController {
     @CurrentUser() viewer: AccessTokenPayload,
   ) {
     return this.founders.futurePlans(userId, viewer);
+  }
+
+  /** Gated: cap-table / shareholding, authorised per viewer and audited. */
+  @Get(':userId/shareholding')
+  shareholding(
+    @Param('userId', ParseUUIDPipe) userId: string,
+    @CurrentUser() viewer: AccessTokenPayload,
+  ) {
+    return this.founders.shareholding(userId, viewer);
+  }
+
+  /** Gated: projected financials, authorised per viewer and audited. */
+  @Get(':userId/projected-financials')
+  projectedFinancials(
+    @Param('userId', ParseUUIDPipe) userId: string,
+    @CurrentUser() viewer: AccessTokenPayload,
+  ) {
+    return this.founders.projectedFinancialsFor(userId, viewer);
   }
 }

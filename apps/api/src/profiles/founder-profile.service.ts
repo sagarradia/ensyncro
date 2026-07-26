@@ -21,6 +21,12 @@ import {
   CreateRiskItemDto,
   CreateSwotItemDto,
 } from './dto/deep-profile.dto';
+import {
+  CreateNamedItemDto,
+  CreateProjectedFinancialDto,
+  CreateShareholderDto,
+  UpdateInvesteeMetaDto,
+} from './dto/investee-scope.dto';
 
 /**
  * Long enough that a logo or an uploaded video does not expire while the page
@@ -235,10 +241,21 @@ export class FounderProfileService {
         marketSize: true,
         targetSegment: true,
         marketGeography: true,
+        // Classification + funding requirement + operations (public).
+        natureOfBusiness: true,
+        businessStage: true,
+        companyClassification: true,
+        fundingRequirementType: true,
+        fundingInstrument: true,
+        fundingUseSummary: true,
+        manufacturing: true,
+        operations: true,
         financialsVisibility: true,
         fundingHistoryVisibility: true,
         risksVisibility: true,
         futurePlansVisibility: true,
+        shareholdingVisibility: true,
+        projectedFinancialsVisibility: true,
         pitchVideoProvider: true,
         pitchVideoId: true,
         logoFile: { select: { id: true, fileName: true, contentType: true } },
@@ -248,6 +265,8 @@ export class FounderProfileService {
         productsServices: { orderBy: { createdAt: 'asc' } },
         competitors: { orderBy: { createdAt: 'asc' } },
         swotItems: { orderBy: { createdAt: 'asc' } },
+        keyCustomers: { orderBy: { createdAt: 'asc' } },
+        suppliers: { orderBy: { createdAt: 'asc' } },
         // Company Journey — reuses the milestones timeline, public here.
         milestones: { orderBy: { occurredOn: 'asc' } },
       },
@@ -270,6 +289,8 @@ export class FounderProfileService {
       fundingHistoryVisibility,
       risksVisibility,
       futurePlansVisibility,
+      shareholdingVisibility,
+      projectedFinancialsVisibility,
       milestones,
       ...rest
     } = p;
@@ -286,6 +307,8 @@ export class FounderProfileService {
         fundingHistory: this.mayView(fundingHistoryVisibility, p.userId, viewer),
         risks: this.mayView(risksVisibility, p.userId, viewer),
         futurePlans: this.mayView(futurePlansVisibility, p.userId, viewer),
+        shareholding: this.mayView(shareholdingVisibility, p.userId, viewer),
+        projectedFinancials: this.mayView(projectedFinancialsVisibility, p.userId, viewer),
       },
     };
   }
@@ -308,12 +331,19 @@ export class FounderProfileService {
   /** Maps each gated section to the profile column that governs it. */
   private static readonly VISIBILITY_FIELD: Record<
     ProfileSection,
-    'financialsVisibility' | 'fundingHistoryVisibility' | 'risksVisibility' | 'futurePlansVisibility'
+    | 'financialsVisibility'
+    | 'fundingHistoryVisibility'
+    | 'risksVisibility'
+    | 'futurePlansVisibility'
+    | 'shareholdingVisibility'
+    | 'projectedFinancialsVisibility'
   > = {
     [ProfileSection.FINANCIALS]: 'financialsVisibility',
     [ProfileSection.FUNDING_HISTORY]: 'fundingHistoryVisibility',
     [ProfileSection.RISKS]: 'risksVisibility',
     [ProfileSection.FUTURE_PLANS]: 'futurePlansVisibility',
+    [ProfileSection.SHAREHOLDING]: 'shareholdingVisibility',
+    [ProfileSection.PROJECTED_FINANCIALS]: 'projectedFinancialsVisibility',
   };
 
   private async gate(founderUserId: string, viewer: AccessTokenPayload, section: ProfileSection) {
@@ -326,6 +356,8 @@ export class FounderProfileService {
         fundingHistoryVisibility: true,
         risksVisibility: true,
         futurePlansVisibility: true,
+        shareholdingVisibility: true,
+        projectedFinancialsVisibility: true,
       },
     });
     // Same answer for "no such founder" and "not shared with you", so the
@@ -517,13 +549,34 @@ export class FounderProfileService {
     const p = await this.prisma.founderProfile.findUnique({
       where: { userId: user.sub },
       select: {
+        companyName: true,
+        sector: true,
+        description: true,
         usp: true,
         businessModel: true,
         marketSize: true,
         targetSegment: true,
         marketGeography: true,
+        // Classification + funding requirement + operations (public meta).
+        natureOfBusiness: true,
+        businessStage: true,
+        companyClassification: true,
+        fundingRequirementType: true,
+        fundingInstrument: true,
+        fundingUseSummary: true,
+        fundingSought: true,
+        manufacturing: true,
+        operations: true,
+        // Gating for the two new sensitive sections.
         risksVisibility: true,
         futurePlansVisibility: true,
+        shareholdingVisibility: true,
+        projectedFinancialsVisibility: true,
+        // Fields the completion score inspects.
+        mrr: true,
+        logoFileId: true,
+        pitchVideoId: true,
+        pitchVideoFileId: true,
         promoters: { orderBy: { createdAt: 'asc' } },
         groupCompanies: { orderBy: { createdAt: 'asc' } },
         productsServices: { orderBy: { createdAt: 'asc' } },
@@ -532,12 +585,36 @@ export class FounderProfileService {
         riskItems: { orderBy: { createdAt: 'asc' } },
         futurePlanItems: { orderBy: { createdAt: 'asc' } },
         milestones: { orderBy: { occurredOn: 'asc' } },
+        shareholders: { orderBy: { percentage: 'desc' } },
+        keyCustomers: { orderBy: { createdAt: 'asc' } },
+        suppliers: { orderBy: { createdAt: 'asc' } },
+        projectedFinancials: { orderBy: { periodLabel: 'asc' } },
+        _count: {
+          select: {
+            promoters: true,
+            groupCompanies: true,
+            productsServices: true,
+            competitors: true,
+            swotItems: true,
+            milestones: true,
+            riskItems: true,
+            futurePlanItems: true,
+            benchmarkPeers: true,
+            shareholders: true,
+            keyCustomers: true,
+            suppliers: true,
+            projectedFinancials: true,
+          },
+        },
       },
     });
     if (!p) throw new NotFoundException('Complete your company profile first');
-    // Expose the milestones list under the name the UI uses for it.
-    const { milestones, ...rest } = p;
-    return { ...rest, journey: milestones };
+
+    const completionScore = this.computeCompletionScore(p);
+    // Expose the milestones list under the name the UI uses for it, and drop
+    // the fields that were only selected to feed the completion score.
+    const { milestones, _count, companyName, description, mrr, logoFileId, pitchVideoId, pitchVideoFileId, ...rest } = p;
+    return { ...rest, journey: milestones, completionScore };
   }
 
   // ── Deep profile: gated section reads (audited) ────────────────
@@ -652,6 +729,153 @@ export class FounderProfileService {
     return this.removeChild(user, (founderId) =>
       this.prisma.benchmarkPeer.deleteMany({ where: { id, founderId } }),
     );
+  }
+
+  // ── Broader Investee scope (PRD v2 §7/§8) ──────────────────────
+
+  /** Classification / funding requirement / operations — public scalar meta. */
+  async updateMeta(user: AccessTokenPayload, dto: UpdateInvesteeMetaDto) {
+    await this.ownProfile(user);
+    const data: Record<string, unknown> = {};
+    if (dto.natureOfBusiness !== undefined) data['natureOfBusiness'] = dto.natureOfBusiness;
+    if (dto.businessStage !== undefined) data['businessStage'] = dto.businessStage;
+    if (dto.companyClassification !== undefined) data['companyClassification'] = dto.companyClassification;
+    if (dto.sector) data['sector'] = dto.sector;
+    if (dto.fundingRequirementType !== undefined) data['fundingRequirementType'] = dto.fundingRequirementType;
+    if (dto.fundingSought !== undefined) data['fundingSought'] = dto.fundingSought;
+    if (dto.fundingInstrument !== undefined) data['fundingInstrument'] = dto.fundingInstrument || null;
+    if (dto.fundingUseSummary !== undefined) data['fundingUseSummary'] = dto.fundingUseSummary || null;
+    if (dto.manufacturing !== undefined) data['manufacturing'] = dto.manufacturing || null;
+    if (dto.operations !== undefined) data['operations'] = dto.operations || null;
+    await this.prisma.founderProfile.update({ where: { userId: user.sub }, data });
+    return this.ownSections(user);
+  }
+
+  /** Admin-managed sector master list (§8) — read for the editor dropdown. */
+  sectors() {
+    return this.prisma.sectorMaster.findMany({
+      where: { active: true },
+      orderBy: { sortOrder: 'asc' },
+      select: { id: true, name: true },
+    });
+  }
+
+  async addShareholder(user: AccessTokenPayload, dto: CreateShareholderDto) {
+    const profile = await this.ownProfile(user);
+    return this.prisma.shareholder.create({ data: { founderId: profile.id, ...dto } });
+  }
+  removeShareholder(user: AccessTokenPayload, id: string) {
+    return this.removeChild(user, (founderId) =>
+      this.prisma.shareholder.deleteMany({ where: { id, founderId } }),
+    );
+  }
+
+  async addCustomer(user: AccessTokenPayload, dto: CreateNamedItemDto) {
+    const profile = await this.ownProfile(user);
+    return this.prisma.keyCustomer.create({ data: { founderId: profile.id, ...dto } });
+  }
+  removeCustomer(user: AccessTokenPayload, id: string) {
+    return this.removeChild(user, (founderId) =>
+      this.prisma.keyCustomer.deleteMany({ where: { id, founderId } }),
+    );
+  }
+
+  async addSupplier(user: AccessTokenPayload, dto: CreateNamedItemDto) {
+    const profile = await this.ownProfile(user);
+    return this.prisma.supplier.create({ data: { founderId: profile.id, ...dto } });
+  }
+  removeSupplier(user: AccessTokenPayload, id: string) {
+    return this.removeChild(user, (founderId) =>
+      this.prisma.supplier.deleteMany({ where: { id, founderId } }),
+    );
+  }
+
+  async addProjectedFinancial(user: AccessTokenPayload, dto: CreateProjectedFinancialDto) {
+    const profile = await this.ownProfile(user);
+    return this.prisma.projectedFinancial.create({ data: { founderId: profile.id, ...dto } });
+  }
+  removeProjectedFinancial(user: AccessTokenPayload, id: string) {
+    return this.removeChild(user, (founderId) =>
+      this.prisma.projectedFinancial.deleteMany({ where: { id, founderId } }),
+    );
+  }
+
+  // Gated reads (audited), mirroring risks/financials.
+  async shareholding(founderUserId: string, viewer: AccessTokenPayload) {
+    const { id } = await this.gate(founderUserId, viewer, ProfileSection.SHAREHOLDING);
+    const items = await this.prisma.shareholder.findMany({
+      where: { founderId: id },
+      orderBy: { percentage: 'desc' },
+    });
+    return { items };
+  }
+
+  async projectedFinancialsFor(founderUserId: string, viewer: AccessTokenPayload) {
+    const { id } = await this.gate(founderUserId, viewer, ProfileSection.PROJECTED_FINANCIALS);
+    const items = await this.prisma.projectedFinancial.findMany({
+      where: { founderId: id },
+      orderBy: { periodLabel: 'asc' },
+    });
+    return { items };
+  }
+
+  /**
+   * A simple weighted completeness score across the whole profile — a nudge for
+   * the founder, not gated and not shown to viewers. Each filled section counts
+   * once towards the total.
+   */
+  private computeCompletionScore(p: {
+    companyName: string | null;
+    sector: string | null;
+    description: string | null;
+    businessStage: unknown;
+    companyClassification: unknown;
+    natureOfBusiness: unknown[];
+    usp: string | null;
+    businessModel: string | null;
+    marketSize: string | null;
+    fundingRequirementType: unknown;
+    manufacturing: string | null;
+    operations: string | null;
+    mrr: number | null;
+    logoFileId: string | null;
+    pitchVideoId: string | null;
+    pitchVideoFileId: string | null;
+    _count: Record<string, number>;
+  }): number {
+    const c = p._count;
+    const checks: boolean[] = [
+      !!p.companyName,
+      !!p.sector,
+      !!p.description,
+      !!p.businessStage,
+      !!p.companyClassification,
+      p.natureOfBusiness.length > 0,
+      !!p.usp,
+      !!p.businessModel,
+      !!p.marketSize,
+      !!p.fundingRequirementType,
+      !!p.manufacturing,
+      !!p.operations,
+      p.mrr != null,
+      !!p.logoFileId,
+      !!(p.pitchVideoId || p.pitchVideoFileId),
+      c.promoters > 0,
+      c.groupCompanies > 0,
+      c.productsServices > 0,
+      c.competitors > 0,
+      c.swotItems > 0,
+      c.milestones > 0,
+      c.riskItems > 0,
+      c.futurePlanItems > 0,
+      c.benchmarkPeers > 0,
+      c.shareholders > 0,
+      c.keyCustomers > 0,
+      c.suppliers > 0,
+      c.projectedFinancials > 0,
+    ];
+    const filled = checks.filter(Boolean).length;
+    return Math.round((filled / checks.length) * 100);
   }
 
   /** Task #13 equivalent for profile sections: who opened what. */
