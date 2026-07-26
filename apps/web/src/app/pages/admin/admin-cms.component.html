@@ -1,0 +1,79 @@
+<section class="discover">
+  <h1>Site content</h1>
+  <p class="muted">
+    Edit the homepage marketing copy, pricing tiers and the platform success fee. Changes
+    are live on the homepage as soon as you save.
+  </p>
+
+  @if (error()) {
+    <p class="alert" role="alert" data-testid="cms-error">{{ error() }}</p>
+  }
+  @if (notice()) {
+    <p class="alert info" data-testid="cms-notice">{{ notice() }}</p>
+  }
+
+  @if (loading()) {
+    <p class="muted">Loading…</p>
+  } @else if (hasContent()) {
+    @for (group of content()!.groups; track group.name) {
+      <div class="card">
+        <h2>{{ groupTitles[group.name] || group.name }}</h2>
+        @for (f of group.fields; track f.key) {
+          <div class="field">
+            <label [for]="f.key">{{ f.label }}</label>
+            @if (f.type === 'textarea' || f.type === 'list') {
+              <textarea
+                [id]="f.key"
+                rows="3"
+                [ngModel]="values()[f.key]"
+                (ngModelChange)="setValue(f.key, $event)"
+                [attr.data-cms]="f.key"
+              ></textarea>
+            } @else {
+              <input
+                [id]="f.key"
+                [type]="f.type === 'number' ? 'number' : 'text'"
+                [ngModel]="values()[f.key]"
+                (ngModelChange)="setValue(f.key, $event)"
+                [attr.data-cms]="f.key"
+              />
+            }
+            @if (f.help) { <small class="muted">{{ f.help }}</small> }
+          </div>
+        }
+      </div>
+    }
+
+    <button type="button" class="btn" (click)="save()" [disabled]="saving()" data-testid="cms-save">
+      {{ saving() ? 'Saving…' : 'Save changes' }}
+    </button>
+
+    <!-- ── Excel bulk upload ─────────────────────────────────── -->
+    <div class="card" style="margin-top:1.5rem;">
+      <h2>Bulk update from Excel</h2>
+      <p class="muted">
+        Download the template, edit the <strong>value</strong> column (column B) for any rows you
+        want to change, and upload it back. Only known content keys are applied; anything else is
+        ignored.
+      </p>
+      <p>
+        <button type="button" class="btn secondary" (click)="downloadTemplate()" data-testid="cms-template">
+          Download template (.xlsx)
+        </button>
+      </p>
+      <div class="field">
+        <label for="cmsFile">Upload filled template</label>
+        <input
+          id="cmsFile"
+          type="file"
+          accept=".xlsx,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+          (change)="onFileSelected($event)"
+          data-testid="cms-file"
+        />
+      </div>
+      <button type="button" class="btn" (click)="upload()" [disabled]="uploading()" data-testid="cms-upload">
+        {{ uploading() ? 'Uploading…' : 'Upload & apply' }}
+      </button>
+    </div>
+  }
+</section>

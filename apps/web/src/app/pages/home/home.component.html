@@ -4,13 +4,30 @@
     alt="Ensyncro"
     class="h-24 w-auto mb-6"
   />
-  <h1>Where founders and investors sync up.</h1>
-  <p class="lede">
-    Ensyncro is a funding marketplace connecting founders raising capital with investors
-    across the full spectrum — angel, seed, VC, syndicate, and crowdfunding.
-  </p>
-  <p class="note">This is the frontend scaffold. Feature screens are not built yet.</p>
+  <h1 data-testid="home-headline">{{ headline() }}</h1>
+  <p class="lede" data-testid="home-subtext">{{ subtext() }}</p>
 </section>
+
+@if (tiers().length) {
+  <section class="pricing" data-testid="pricing">
+    @for (tier of tiers(); track tier.name) {
+      <article class="tier-card">
+        <h3>{{ tier.name }}</h3>
+        <p class="price">{{ tier.price }}</p>
+        <ul>
+          @for (feat of tier.features; track feat) {
+            <li>{{ feat }}</li>
+          }
+        </ul>
+      </article>
+    }
+  </section>
+  @if (successFeePct() !== null) {
+    <p class="fee-note" data-testid="success-fee">
+      Plus a {{ successFeePct() }}% success fee on a completed raise.
+    </p>
+  }
+}
 
 <section class="roles">
   @for (role of roles; track role.title) {

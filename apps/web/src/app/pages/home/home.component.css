@@ -16,6 +16,50 @@
   font-size: 0.9rem;
 }
 
+.pricing {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 1rem;
+  margin-top: 2.5rem;
+}
+
+.tier-card {
+  background: var(--color-card);
+  border: 1px solid var(--color-border);
+  border-radius: 12px;
+  padding: 1.25rem;
+}
+
+.tier-card h3 {
+  margin: 0 0 0.25rem;
+  font-size: 1.05rem;
+  color: var(--color-accent);
+}
+
+.tier-card .price {
+  margin: 0 0 0.75rem;
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: var(--color-text-primary);
+}
+
+.tier-card ul {
+  margin: 0;
+  padding-left: 1.1rem;
+  color: var(--color-text-secondary);
+  font-size: 0.95rem;
+}
+
+.tier-card li {
+  margin-bottom: 0.35rem;
+}
+
+.fee-note {
+  margin-top: 1rem;
+  color: var(--color-text-secondary);
+  font-size: 0.95rem;
+}
+
 .roles {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));

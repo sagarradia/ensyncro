@@ -14,6 +14,7 @@ import { ConsultantDashboardComponent } from './pages/consultant/consultant-dash
 import { ConsultantAcceptComponent } from './pages/consultant/consultant-accept.component';
 import { DealsListComponent } from './pages/deals/deals-list.component';
 import { DealDetailComponent } from './pages/deals/deal-detail.component';
+import { AdminCmsComponent } from './pages/admin/admin-cms.component';
 import { roleGuard } from './core/auth.guard';
 
 /**
@@ -73,6 +74,12 @@ export const routes: Routes = [
     path: 'deals/:id',
     component: DealDetailComponent,
     canActivate: [roleGuard('FOUNDER', 'INVESTOR', 'ADMIN')],
+  },
+  // Admin CMS (PRD §6) — site marketing content, pricing and settings.
+  {
+    path: 'admin/cms',
+    component: AdminCmsComponent,
+    canActivate: [roleGuard('ADMIN')],
   },
   // Consultant (PRD v2 §4) — invite-accept is public; the dashboard is gated.
   { path: 'consultant/accept', component: ConsultantAcceptComponent },

@@ -22,6 +22,9 @@
       @if (isConsultant()) {
         <a class="text-sm text-surface-0 no-underline hover:underline" routerLink="/consultant">Dashboard</a>
       }
+      @if (isAdmin()) {
+        <a class="text-sm text-surface-0 no-underline hover:underline" routerLink="/admin/cms">Site content</a>
+      }
       <span class="text-sm text-surface-300 hidden lg:inline">{{ auth.user()?.email }}</span>
       <p-button label="Log out" severity="secondary" [text]="true" size="small" (onClick)="logout()" />
     } @else {
@@ -70,6 +73,9 @@
       }
       @if (isConsultant()) {
         <a class="block py-3 text-surface-0 no-underline border-b border-surface-800" routerLink="/consultant" (click)="closeMobileMenu()">Dashboard</a>
+      }
+      @if (isAdmin()) {
+        <a class="block py-3 text-surface-0 no-underline border-b border-surface-800" routerLink="/admin/cms" (click)="closeMobileMenu()">Site content</a>
       }
       <span class="block py-3 text-sm text-surface-300 border-b border-surface-800">{{ auth.user()?.email }}</span>
       <div class="py-3">
