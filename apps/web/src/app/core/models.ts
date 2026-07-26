@@ -1,4 +1,23 @@
-export type Role = 'FOUNDER' | 'INVESTOR' | 'ADMIN';
+export type Role = 'FOUNDER' | 'INVESTOR' | 'ADMIN' | 'CONSULTANT';
+
+export type ConsultantType = 'CA' | 'CS' | 'ADVOCATE' | 'VALUER';
+
+export const CONSULTANT_TYPE_LABELS: Record<ConsultantType, string> = {
+  CA: 'Chartered Accountant',
+  CS: 'Company Secretary',
+  ADVOCATE: 'Advocate / Solicitor',
+  VALUER: 'Valuer',
+};
+
+export interface ConsultantProfile {
+  userId: string;
+  email: string;
+  consultantType: ConsultantType;
+  name: string | null;
+  firm: string | null;
+  registrationNumber: string | null;
+  completed: boolean;
+}
 export type OtpChannel = 'EMAIL' | 'MOBILE';
 
 export interface AuthUser {

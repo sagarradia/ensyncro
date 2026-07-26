@@ -1,0 +1,43 @@
+<section class="discover">
+  <h1>Consultant dashboard</h1>
+
+  @if (loading()) {
+    <p class="muted">Loading…</p>
+  } @else if (profile(); as p) {
+    <p class="muted" data-testid="consultant-type">
+      Signed in as {{ typeLabels[p.consultantType] }}{{ p.firm ? ' · ' + p.firm : '' }}.
+    </p>
+
+    @if (error()) { <p class="alert" role="alert">{{ error() }}</p> }
+    @if (notice()) { <p class="alert info" data-testid="consultant-notice">{{ notice() }}</p> }
+
+    <!-- Placeholder for the v1.2 Professional Engagement module. -->
+    <div class="card" data-testid="engagements-placeholder">
+      <h2>Your engagements</h2>
+      <p class="muted">
+        Your assigned engagements will appear here. Deal assignments, deliverables,
+        timesheets and billing are coming in a later release.
+      </p>
+    </div>
+
+    <h2 class="section-heading">Your profile</h2>
+    <div class="card">
+      <label>Discipline</label>
+      <input [value]="typeLabels[p.consultantType]" disabled />
+
+      <label for="cName">Name</label>
+      <input id="cName" [(ngModel)]="form.name" name="cName" data-testid="consultant-name" />
+
+      <label for="cFirm">Firm</label>
+      <input id="cFirm" [(ngModel)]="form.firm" name="cFirm" data-testid="consultant-firm" />
+
+      <label for="cReg">Registration number</label>
+      <input id="cReg" [(ngModel)]="form.registrationNumber" name="cReg"
+             placeholder="e.g. ICAI / ICSI / Bar registration" data-testid="consultant-reg" />
+
+      <button type="button" (click)="save()" data-testid="save-consultant">Save profile</button>
+    </div>
+  } @else if (error()) {
+    <p class="alert" role="alert">{{ error() }}</p>
+  }
+</section>

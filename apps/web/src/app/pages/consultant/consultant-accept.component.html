@@ -1,0 +1,21 @@
+<section class="card form-card">
+  <h1>Activate your consultant account</h1>
+  <p class="muted">You've been invited to Ensyncro as a consultant. Set a password to continue.</p>
+
+  @if (!token) {
+    <p class="alert" role="alert">This invite link is missing its token. Please use the link from your invite email.</p>
+  } @else {
+    @if (error()) { <p class="alert" role="alert" data-testid="accept-error">{{ error() }}</p> }
+
+    <form (ngSubmit)="submit()" novalidate>
+      <label for="pwd">Choose a password</label>
+      <input id="pwd" type="password" [(ngModel)]="password" name="pwd"
+             autocomplete="new-password" data-testid="accept-password" />
+      <small class="muted">At least 8 characters, including a letter and a number.</small>
+
+      <button type="submit" [disabled]="submitting()" data-testid="accept-submit">
+        {{ submitting() ? 'Activating…' : 'Activate account' }}
+      </button>
+    </form>
+  }
+</section>

@@ -25,6 +25,7 @@ export class AppComponent {
     return null;
   });
   readonly isFounder = computed(() => this.auth.role() === 'FOUNDER');
+  readonly isConsultant = computed(() => this.auth.role() === 'CONSULTANT');
   /** Intros are a founder<->investor handshake; admins have no inbox. */
   readonly canIntro = computed(() => {
     const role = this.auth.role();

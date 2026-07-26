@@ -65,6 +65,16 @@ export class AuthService {
     this._user.set(null);
   }
 
+  /**
+   * Accept a consultant invite: set a password, activate the account, and start
+   * the session in one step (the server auto-issues a token pair).
+   */
+  acceptConsultantInvite(token: string, password: string, mobile?: string): Observable<LoginResponse> {
+    return this.http
+      .post<LoginResponse>(`${this.base}/consultant/invites/accept`, { token, password, mobile })
+      .pipe(tap((res) => this.startSession(res)));
+  }
+
   /** Where a user should land after authenticating. */
   homeRouteFor(role: Role | null): string {
     switch (role) {
@@ -72,6 +82,8 @@ export class AuthService {
         return '/founder/onboarding';
       case 'INVESTOR':
         return '/investor/onboarding';
+      case 'CONSULTANT':
+        return '/consultant';
       case 'ADMIN':
         return '/';
       default:

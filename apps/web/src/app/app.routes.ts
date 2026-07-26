@@ -10,6 +10,8 @@ import { DataRoomComponent } from './pages/data-room/data-room.component';
 import { FounderContentComponent } from './pages/founder-content/founder-content.component';
 import { ProductComponent } from './pages/product/product.component';
 import { IntrosComponent } from './pages/intros/intros.component';
+import { ConsultantDashboardComponent } from './pages/consultant/consultant-dashboard.component';
+import { ConsultantAcceptComponent } from './pages/consultant/consultant-accept.component';
 import { roleGuard } from './core/auth.guard';
 
 /**
@@ -58,6 +60,13 @@ export const routes: Routes = [
     path: 'intros',
     component: IntrosComponent,
     canActivate: [roleGuard('FOUNDER', 'INVESTOR')],
+  },
+  // Consultant (PRD v2 §4) — invite-accept is public; the dashboard is gated.
+  { path: 'consultant/accept', component: ConsultantAcceptComponent },
+  {
+    path: 'consultant',
+    component: ConsultantDashboardComponent,
+    canActivate: [roleGuard('CONSULTANT')],
   },
   { path: '**', redirectTo: '' },
 ];
