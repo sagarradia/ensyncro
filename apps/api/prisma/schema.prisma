@@ -188,6 +188,23 @@ model FounderProfile {
   targetSegment   String?
   marketGeography String?
 
+  // ── Classification (§8 multi-dimensional taxonomy — public) ───
+  natureOfBusiness      NatureOfBusiness[]
+  businessStage         BusinessStage?
+  companyClassification CompanyClassification?
+
+  // ── Funding requirement (the ask — public) ──────────────────
+  fundingRequirementType FundingRequirementType?
+  /// e.g. Equity, Convertible note, Debt.
+  fundingInstrument      String?
+  /// Short use-of-funds summary for the ask (the detailed one lives in the
+  /// gated Financials section).
+  fundingUseSummary      String?
+
+  // ── Operations (public) ─────────────────────────────────────
+  manufacturing String?
+  operations    String?
+
   // ── Gated commercial detail ──────────────────────────────────
   /// Whole currency units per month / per year.
   mrr             Int?
@@ -203,10 +220,12 @@ model FounderProfile {
   /// ARR one year ago, used to compute YoY growth and burn multiple.
   priorYearArr    Int?
   /// Reuses the data room's visibility model so gating behaves identically.
-  financialsVisibility     DataRoomVisibility @default(PRIVATE)
-  fundingHistoryVisibility DataRoomVisibility @default(PRIVATE)
-  risksVisibility          DataRoomVisibility @default(PRIVATE)
-  futurePlansVisibility    DataRoomVisibility @default(PRIVATE)
+  financialsVisibility         DataRoomVisibility @default(PRIVATE)
+  fundingHistoryVisibility     DataRoomVisibility @default(PRIVATE)
+  risksVisibility              DataRoomVisibility @default(PRIVATE)
+  futurePlansVisibility        DataRoomVisibility @default(PRIVATE)
+  shareholdingVisibility       DataRoomVisibility @default(PRIVATE)
+  projectedFinancialsVisibility DataRoomVisibility @default(PRIVATE)
 
   milestones      FounderMilestone[]
   fundingRounds   FundingRound[]
@@ -218,6 +237,10 @@ model FounderProfile {
   riskItems       RiskItem[]
   futurePlanItems FuturePlan[]
   benchmarkPeers  BenchmarkPeer[]
+  shareholders    Shareholder[]
+  keyCustomers    KeyCustomer[]
+  suppliers       Supplier[]
+  projectedFinancials ProjectedFinancial[]
 
   @@index([sector])
   @@index([stage])
@@ -409,6 +432,121 @@ enum ProfileSection {
   FUNDING_HISTORY
   RISKS
   FUTURE_PLANS
+  SHAREHOLDING
+  PROJECTED_FINANCIALS
+}
+
+// ── §8 classification enums ─────────────────────────────────────
+enum NatureOfBusiness {
+  MANUFACTURING
+  TRADING
+  SERVICE
+}
+
+enum BusinessStage {
+  IDEA
+  STARTUP
+  EARLY_REVENUE
+  GROWTH
+  EXPANSION
+  MATURE
+  TURNAROUND
+}
+
+enum CompanyClassification {
+  MSME
+  LARGE_ENTERPRISE
+  LISTED
+  UNLISTED
+  GOVERNMENT
+  PSU
+}
+
+enum FundingRequirementType {
+  SEED
+  ANGEL
+  GROWTH
+  EXPANSION
+  BRIDGE
+  PRE_IPO
+  STRATEGIC
+  ACQUISITION
+}
+
+// ── Broader Investee structured-info tables (§7/§8) ─────────────
+
+/// Cap-table basics (gated — commercially sensitive).
+model Shareholder {
+  id         String         @id @default(uuid())
+  founderId  String
+  founder    FounderProfile @relation(fields: [founderId], references: [id], onDelete: Cascade)
+  name       String
+  /// Share class, e.g. Equity, Preference, ESOP.
+  shareClass String?
+  /// Holding percentage, 0–100.
+  percentage Float?
+  createdAt  DateTime       @default(now())
+  updatedAt  DateTime       @updatedAt
+
+  @@index([founderId])
+  @@map("shareholders")
+}
+
+/// A key customer (public — aids discovery).
+model KeyCustomer {
+  id          String         @id @default(uuid())
+  founderId   String
+  founder     FounderProfile @relation(fields: [founderId], references: [id], onDelete: Cascade)
+  name        String
+  description String?
+  createdAt   DateTime       @default(now())
+  updatedAt   DateTime       @updatedAt
+
+  @@index([founderId])
+  @@map("key_customers")
+}
+
+/// A key supplier (public).
+model Supplier {
+  id          String         @id @default(uuid())
+  founderId   String
+  founder     FounderProfile @relation(fields: [founderId], references: [id], onDelete: Cascade)
+  name        String
+  description String?
+  createdAt   DateTime       @default(now())
+  updatedAt   DateTime       @updatedAt
+
+  @@index([founderId])
+  @@map("suppliers")
+}
+
+/// Forward-looking financials, per period (gated — commercially sensitive).
+model ProjectedFinancial {
+  id          String         @id @default(uuid())
+  founderId   String
+  founder     FounderProfile @relation(fields: [founderId], references: [id], onDelete: Cascade)
+  /// e.g. "FY26", "Year 2".
+  periodLabel String
+  /// Whole currency units.
+  revenue     Int?
+  ebitda      Int?
+  note        String?
+  createdAt   DateTime       @default(now())
+  updatedAt   DateTime       @updatedAt
+
+  @@index([founderId])
+  @@map("projected_financials")
+}
+
+/// Admin-managed sector master list (§8). Founders select from this rather
+/// than a hardcoded enum; full admin CRUD lives in Platform Administration.
+model SectorMaster {
+  id       String  @id @default(uuid())
+  name     String  @unique
+  active   Boolean @default(true)
+  sortOrder Int    @default(0)
+
+  @@map("sector_masters")
 }
 
 model ProfileSectionAccessLog {
