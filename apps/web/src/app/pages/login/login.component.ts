@@ -1,6 +1,11 @@
 import { Component, inject, signal } from '@angular/core';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { Router, RouterLink } from '@angular/router';
+import { CardModule } from 'primeng/card';
+import { ButtonModule } from 'primeng/button';
+import { InputTextModule } from 'primeng/inputtext';
+import { MessageModule } from 'primeng/message';
+import { DividerModule } from 'primeng/divider';
 import { AuthService } from '../../core/auth.service';
 import { AppConfigService } from '../../core/app-config.service';
 import { DEMO_SHORTCUTS, DemoRole } from '../../core/models';
@@ -8,7 +13,15 @@ import { DEMO_SHORTCUTS, DemoRole } from '../../core/models';
 @Component({
   selector: 'app-login',
   standalone: true,
-  imports: [ReactiveFormsModule, RouterLink],
+  imports: [
+    ReactiveFormsModule,
+    RouterLink,
+    CardModule,
+    ButtonModule,
+    InputTextModule,
+    MessageModule,
+    DividerModule,
+  ],
   templateUrl: './login.component.html',
 })
 export class LoginComponent {

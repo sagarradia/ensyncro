@@ -2,6 +2,11 @@ import { Component, inject, signal } from '@angular/core';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { Router, RouterLink } from '@angular/router';
 import { forkJoin } from 'rxjs';
+import { CardModule } from 'primeng/card';
+import { ButtonModule } from 'primeng/button';
+import { InputTextModule } from 'primeng/inputtext';
+import { SelectModule } from 'primeng/select';
+import { MessageModule } from 'primeng/message';
 import { AuthService } from '../../core/auth.service';
 
 /** Signup is two steps: create the account, then verify email + mobile OTPs. */
@@ -10,7 +15,15 @@ type Step = 'details' | 'verify';
 @Component({
   selector: 'app-signup',
   standalone: true,
-  imports: [ReactiveFormsModule, RouterLink],
+  imports: [
+    ReactiveFormsModule,
+    RouterLink,
+    CardModule,
+    ButtonModule,
+    InputTextModule,
+    SelectModule,
+    MessageModule,
+  ],
   templateUrl: './signup.component.html',
 })
 export class SignupComponent {
@@ -22,6 +35,11 @@ export class SignupComponent {
   readonly submitting = signal(false);
   readonly error = signal<string | null>(null);
   readonly mockCodes = signal(false);
+
+  readonly roleOptions = [
+    { label: 'Founder raising capital', value: 'FOUNDER' },
+    { label: 'Investor', value: 'INVESTOR' },
+  ];
 
   private userId = '';
 
