@@ -27,9 +27,9 @@
       <h2>Stage</h2>
       <p class="muted">Move the deal forward or back — both parties see the change.</p>
       <label for="stageSel">Current stage</label>
-      <select id="stageSel" [value]="d.stage" (change)="setStage($event)" data-testid="stage-select">
+      <select id="stageSel" (change)="setStage($event)" data-testid="stage-select">
         @for (s of stages; track s.value) {
-          <option [value]="s.value">{{ s.label }}</option>
+          <option [value]="s.value" [selected]="s.value === d.stage">{{ s.label }}</option>
         }
       </select>
     </div>
