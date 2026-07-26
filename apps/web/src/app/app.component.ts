@@ -26,6 +26,11 @@ export class AppComponent {
   });
   readonly isFounder = computed(() => this.auth.role() === 'FOUNDER');
   readonly isConsultant = computed(() => this.auth.role() === 'CONSULTANT');
+  /** Deals are held by founders/investors; admins oversee all of them. */
+  readonly canSeeDeals = computed(() => {
+    const role = this.auth.role();
+    return role === 'FOUNDER' || role === 'INVESTOR' || role === 'ADMIN';
+  });
   /** Intros are a founder<->investor handshake; admins have no inbox. */
   readonly canIntro = computed(() => {
     const role = this.auth.role();

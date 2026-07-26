@@ -1,0 +1,80 @@
+<section class="discover">
+  <p><a routerLink="/deals" class="muted">← All deals</a></p>
+
+  @if (loading()) {
+    <p class="muted">Loading…</p>
+  } @else if (error() && !deal()) {
+    <p class="alert" role="alert">{{ error() }}</p>
+  } @else if (deal(); as d) {
+    <header class="product-head">
+      <div>
+        <h1>{{ d.founder.name }} <span class="muted">↔</span> {{ d.investor.name }}</h1>
+        <p class="meta">
+          <span class="pill" data-testid="deal-stage">{{ d.stageLabel }}</span>
+          <strong data-testid="deal-status"
+            [style.color]="d.status === 'WON' ? 'var(--color-accent)' : (d.status === 'LOST' ? '#a3341f' : 'inherit')">
+            {{ d.status }}
+          </strong>
+          · started {{ d.createdAt | date: 'mediumDate' }}
+        </p>
+      </div>
+    </header>
+
+    @if (error()) { <p class="alert" role="alert">{{ error() }}</p> }
+
+    <!-- ── Stage control ─────────────────────────────────────── -->
+    <div class="card">
+      <h2>Stage</h2>
+      <p class="muted">Move the deal forward or back — both parties see the change.</p>
+      <label for="stageSel">Current stage</label>
+      <select id="stageSel" [value]="d.stage" (change)="setStage($event)" data-testid="stage-select">
+        @for (s of stages; track s.value) {
+          <option [value]="s.value">{{ s.label }}</option>
+        }
+      </select>
+    </div>
+
+    <!-- ── Tasks (checklist) ─────────────────────────────────── -->
+    <div class="card">
+      <h2>Checklist</h2>
+      @if (d.tasks.length) {
+        <ul class="timeline" data-testid="task-list">
+          @for (t of d.tasks; track t.id) {
+            <li>
+              <label class="inline">
+                <input type="checkbox" [checked]="t.done" (change)="toggleTask(t.id, !t.done)"
+                       [attr.data-task]="t.title" />
+                <span [style.text-decoration]="t.done ? 'line-through' : 'none'">{{ t.title }}</span>
+              </label>
+            </li>
+          }
+        </ul>
+      } @else { <p class="muted">No tasks yet.</p> }
+
+      <label for="taskInput">Add a task</label>
+      <input id="taskInput" [(ngModel)]="taskTitle" name="taskInput" data-testid="task-input" />
+      <button type="button" (click)="addTask()" data-testid="add-task">Add task</button>
+    </div>
+
+    <!-- ── Timeline + comments ───────────────────────────────── -->
+    <div class="card">
+      <h2>Activity</h2>
+      <label for="commentInput">Add a comment</label>
+      <textarea id="commentInput" rows="2" [(ngModel)]="commentText" name="commentInput"
+                data-testid="comment-input" placeholder="Write a note to the other party"></textarea>
+      <button type="button" (click)="addComment()" data-testid="add-comment">Post comment</button>
+
+      <ul class="timeline" data-testid="timeline" style="margin-top:1rem;">
+        @for (e of d.timeline; track e.id) {
+          <li>
+            <span class="pill">{{ kindLabel(e.kind) }}</span>
+            <span>{{ e.body }}</span>
+            <p class="meta">
+              {{ e.actor?.email ?? 'system' }} · {{ e.createdAt | date: 'short' }}
+            </p>
+          </li>
+        }
+      </ul>
+    </div>
+  }
+</section>

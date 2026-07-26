@@ -528,3 +528,63 @@ export interface IntroInbox {
   sent: IntroRequest[];
   received: IntroRequest[];
 }
+
+// ── Deal Management (PRD v2 §5) ────────────────────────────────
+export type DealStage =
+  | 'INTEREST' | 'MEETING_SCHEDULED' | 'NDA' | 'DATA_ROOM_ACCESS'
+  | 'DUE_DILIGENCE' | 'OFFER' | 'NEGOTIATION' | 'CLOSED_WON' | 'CLOSED_LOST';
+
+export type DealStatus = 'OPEN' | 'WON' | 'LOST';
+
+export type DealEventKind =
+  | 'CREATED' | 'STAGE_CHANGED' | 'COMMENT' | 'TASK_ADDED' | 'TASK_COMPLETED';
+
+/** Ordered stages (terminal states last), for the stage picker/stepper. */
+export const DEAL_STAGES: ReadonlyArray<{ value: DealStage; label: string }> = [
+  { value: 'INTEREST', label: 'Interest' },
+  { value: 'MEETING_SCHEDULED', label: 'Meeting Scheduled' },
+  { value: 'NDA', label: 'NDA' },
+  { value: 'DATA_ROOM_ACCESS', label: 'Data Room Access' },
+  { value: 'DUE_DILIGENCE', label: 'Due Diligence' },
+  { value: 'OFFER', label: 'Offer' },
+  { value: 'NEGOTIATION', label: 'Negotiation' },
+  { value: 'CLOSED_WON', label: 'Closed Won' },
+  { value: 'CLOSED_LOST', label: 'Closed Lost' },
+];
+
+export interface DealParty {
+  userId: string;
+  email: string;
+  name: string;
+}
+
+export interface DealSummary {
+  id: string;
+  stage: DealStage;
+  stageLabel: string;
+  status: DealStatus;
+  createdAt: string;
+  updatedAt: string;
+  founder: DealParty;
+  investor: DealParty;
+}
+
+export interface DealEvent {
+  id: string;
+  kind: DealEventKind;
+  body: string;
+  createdAt: string;
+  actor: { id: string; email: string; role: Role } | null;
+}
+
+export interface DealTask {
+  id: string;
+  title: string;
+  done: boolean;
+  completedAt: string | null;
+}
+
+export interface DealDetail extends DealSummary {
+  timeline: DealEvent[];
+  tasks: DealTask[];
+}

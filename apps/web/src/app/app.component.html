@@ -6,6 +6,9 @@
   <!-- Desktop nav (md and up) -->
   <nav class="hidden md:flex items-center gap-4">
     @if (auth.isAuthenticated()) {
+      @if (canSeeDeals()) {
+        <a class="text-sm text-surface-0 no-underline hover:underline" routerLink="/deals">Deals</a>
+      }
       @if (canIntro()) {
         <a class="text-sm text-surface-0 no-underline hover:underline" routerLink="/intros">Intros</a>
       }
@@ -52,6 +55,9 @@
 @if (mobileMenuOpen()) {
   <nav id="mobile-menu" class="md:hidden flex flex-col px-4 py-2 bg-surface-900 text-surface-0 border-t border-surface-700">
     @if (auth.isAuthenticated()) {
+      @if (canSeeDeals()) {
+        <a class="block py-3 text-surface-0 no-underline border-b border-surface-800" routerLink="/deals" (click)="closeMobileMenu()">Deals</a>
+      }
       @if (canIntro()) {
         <a class="block py-3 text-surface-0 no-underline border-b border-surface-800" routerLink="/intros" (click)="closeMobileMenu()">Intros</a>
       }

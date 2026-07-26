@@ -1,0 +1,37 @@
+<section class="discover">
+  <h1>Deals</h1>
+  <p class="muted">
+    A deal is created when an intro is accepted, then tracked through stages.
+    {{ isAdmin() ? 'You are viewing all deals on the platform.' : 'Your active deals appear here.' }}
+  </p>
+
+  @if (error()) { <p class="alert" role="alert">{{ error() }}</p> }
+
+  @if (loading()) {
+    <p class="muted">Loading…</p>
+  } @else if (items().length === 0) {
+    <p class="card muted" data-testid="no-deals">
+      No deals yet. Deals start from an accepted intro request.
+    </p>
+  } @else {
+    <div class="cards">
+      @for (d of items(); track d.id) {
+        <a class="card result-card" [routerLink]="['/deals', d.id]" [attr.data-deal]="d.id"
+           style="text-decoration:none; color:inherit;">
+          <header>
+            <h2>{{ counterparty(d) }}</h2>
+            <span class="pill">{{ d.stageLabel }}</span>
+          </header>
+          <p class="meta">
+            Status:
+            <strong [style.color]="d.status === 'WON' ? 'var(--color-accent)' : (d.status === 'LOST' ? '#a3341f' : 'inherit')">
+              {{ d.status }}
+            </strong>
+            · updated {{ d.updatedAt | date: 'medium' }}
+          </p>
+          <span class="view-product">Open deal →</span>
+        </a>
+      }
+    </div>
+  }
+</section>

@@ -12,6 +12,8 @@ import { ProductComponent } from './pages/product/product.component';
 import { IntrosComponent } from './pages/intros/intros.component';
 import { ConsultantDashboardComponent } from './pages/consultant/consultant-dashboard.component';
 import { ConsultantAcceptComponent } from './pages/consultant/consultant-accept.component';
+import { DealsListComponent } from './pages/deals/deals-list.component';
+import { DealDetailComponent } from './pages/deals/deal-detail.component';
 import { roleGuard } from './core/auth.guard';
 
 /**
@@ -60,6 +62,17 @@ export const routes: Routes = [
     path: 'intros',
     component: IntrosComponent,
     canActivate: [roleGuard('FOUNDER', 'INVESTOR')],
+  },
+  // Deals (PRD v2 §5) — parties see their own; admins see all.
+  {
+    path: 'deals',
+    component: DealsListComponent,
+    canActivate: [roleGuard('FOUNDER', 'INVESTOR', 'ADMIN')],
+  },
+  {
+    path: 'deals/:id',
+    component: DealDetailComponent,
+    canActivate: [roleGuard('FOUNDER', 'INVESTOR', 'ADMIN')],
   },
   // Consultant (PRD v2 §4) — invite-accept is public; the dashboard is gated.
   { path: 'consultant/accept', component: ConsultantAcceptComponent },
