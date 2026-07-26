@@ -21,6 +21,15 @@ enum Role {
   FOUNDER
   INVESTOR
   ADMIN
+  CONSULTANT
+}
+
+/// Consultant discipline (PRD v2 §4). Held on ConsultantProfile.
+enum ConsultantType {
+  CA
+  CS
+  ADVOCATE
+  VALUER
 }
 
 /// Admin sub-roles (PRD §3). Held on AdminProfile; admins are invite-only.
@@ -57,9 +66,10 @@ model User {
   otpCodes      OtpCode[]
   refreshTokens RefreshToken[]
 
-  founderProfile  FounderProfile?
-  investorProfile InvestorProfile?
-  adminProfile    AdminProfile?
+  founderProfile    FounderProfile?
+  investorProfile   InvestorProfile?
+  adminProfile      AdminProfile?
+  consultantProfile ConsultantProfile?
 
   dataRoomFiles DataRoomFile[]
   dataRoomViews DataRoomAccessLog[]
@@ -72,8 +82,9 @@ model User {
   introRequestsSent IntroRequest[]   @relation("IntroFrom")
   introRequestsRecv IntroRequest[]   @relation("IntroTo")
 
-  cmsUpdates       CmsContent[]
-  adminInvitesSent AdminInvite[]     @relation("InviteCreatedBy")
+  cmsUpdates            CmsContent[]
+  adminInvitesSent      AdminInvite[]      @relation("InviteCreatedBy")
+  consultantInvitesSent ConsultantInvite[] @relation("ConsultantInviteCreatedBy")
 
   @@map("users")
 }
@@ -593,6 +604,40 @@ model AdminProfile {
   updatedAt DateTime  @updatedAt
 
   @@map("admin_profiles")
+}
+
+/// Consultant profile (PRD v2 §4). MVP scaffold — assignment, deliverables,
+/// timesheets and billing are the later v1.2 Professional Engagement module.
+model ConsultantProfile {
+  id                 String         @id @default(uuid())
+  userId             String         @unique
+  user               User           @relation(fields: [userId], references: [id], onDelete: Cascade)
+  consultantType     ConsultantType
+  name               String?
+  firm               String?
+  /// Professional registration / membership number (e.g. ICAI, ICSI, Bar).
+  registrationNumber String?
+  completed          Boolean        @default(false)
+  createdAt          DateTime       @default(now())
+  updatedAt          DateTime       @updatedAt
+
+  @@map("consultant_profiles")
+}
+
+/// Invite-only consultant creation, mirroring AdminInvite. Token stored hashed.
+model ConsultantInvite {
+  id             String         @id @default(uuid())
+  email          String
+  consultantType ConsultantType
+  tokenHash      String         @unique
+  expiresAt      DateTime
+  consumedAt     DateTime?
+  createdById    String?
+  createdBy      User?          @relation("ConsultantInviteCreatedBy", fields: [createdById], references: [id], onDelete: SetNull)
+  createdAt      DateTime       @default(now())
+
+  @@index([email])
+  @@map("consultant_invites")
 }
 
 /// Invite-only admin creation (task #9). Token is stored hashed.
