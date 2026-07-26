@@ -1,33 +1,40 @@
-<header class="site-header">
-  <a class="brand" routerLink="/">Ensyncro</a>
+<header class="flex items-center justify-between gap-4 px-6 py-4 bg-surface-900 text-surface-0">
+  <a class="text-xl font-bold tracking-wide text-surface-0 no-underline" routerLink="/">Ensyncro</a>
 
-  <nav class="site-nav">
+  <nav class="flex items-center gap-4">
     @if (auth.isAuthenticated()) {
       @if (canIntro()) {
-        <a routerLink="/intros">Intros</a>
+        <a class="text-sm text-surface-0 no-underline hover:underline" routerLink="/intros">Intros</a>
       }
       @if (discoverLink(); as link) {
-        <a [routerLink]="link">Discover</a>
+        <a class="text-sm text-surface-0 no-underline hover:underline" [routerLink]="link">Discover</a>
       }
       @if (isFounder()) {
-        <a routerLink="/data-room">Data room</a>
-        <a routerLink="/founder/content">My profile</a>
+        <a class="text-sm text-surface-0 no-underline hover:underline" routerLink="/data-room">Data room</a>
+        <a class="text-sm text-surface-0 no-underline hover:underline" routerLink="/founder/content">My profile</a>
       }
-      <span class="who">{{ auth.user()?.email }}</span>
-      <button type="button" class="link-button" (click)="logout()">Log out</button>
+      <span class="text-sm text-surface-300">{{ auth.user()?.email }}</span>
+      <p-button label="Log out" severity="secondary" [text]="true" size="small" (onClick)="logout()" />
     } @else {
-      <a routerLink="/login">Log in</a>
-      <a class="cta" routerLink="/signup">Sign up</a>
+      <a class="text-sm text-surface-0 no-underline hover:underline" routerLink="/login">Log in</a>
+      <a pButton routerLink="/signup" label="Sign up" size="small" class="no-underline"></a>
     }
-    <span class="env-badge" [class.env-prod]="env === 'production'">{{ env }}</span>
+    <span
+      class="text-xs uppercase tracking-wider px-2.5 py-1 rounded-full"
+      [class.bg-primary]="env !== 'production'"
+      [class.text-primary-contrast]="env !== 'production'"
+      [class.border]="env === 'production'"
+      [class.border-surface-500]="env === 'production'"
+      [class.text-surface-300]="env === 'production'"
+    >{{ env }}</span>
   </nav>
 </header>
 
-<main class="site-main">
+<main class="flex-1 w-full max-w-5xl mx-auto px-6 py-10">
   <router-outlet />
 </main>
 
-<footer class="site-footer">
+<footer class="flex flex-wrap items-center justify-between gap-3 px-6 py-5 border-t border-surface-200 text-muted-color text-sm">
   <span>© {{ year }} Ensyncro</span>
-  <span class="muted">Funding marketplace</span>
+  <span>Funding marketplace</span>
 </footer>

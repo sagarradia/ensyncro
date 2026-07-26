@@ -1,13 +1,34 @@
-/* Ensyncro global styles — Charcoal green palette (locked, see PRD §10). */
-:root {
-  --color-text-primary: #2c2c2a;
-  --color-accent: #1f6d3b;
-  --color-bg: #f6f5f1;
-  --color-card: #ffffff;
-  --color-border: #e1dfd6;
-  --color-text-secondary: #7a7870;
+/* Ensyncro global styles.
+ *
+ * Cascade layer order (lowest → highest priority):
+ *   tailwind-base   — Tailwind base (preflight is disabled; see tailwind.config.js)
+ *   legacy          — the original hand-written CSS, still used by pages not yet
+ *                     migrated to PrimeNG. Below `primeng` so it cannot override
+ *                     PrimeNG components on migrated screens.
+ *   primeng         — PrimeNG component styles (injected at runtime; order set
+ *                     to match in app.config.ts)
+ *   tailwind-utilities — Tailwind utilities, highest so layout utilities win.
+ *
+ * The charcoal-green palette lives in src/app/theme/ensyncro-preset.ts and is
+ * exposed here through PrimeNG's `--p-*` CSS variables. No hex values below.
+ */
+@layer tailwind-base, legacy, primeng, tailwind-utilities;
+
+/* PrimeNG icon font. A layer statement may precede @import; the import must come
+ * before the layer *blocks* below, so it stays here. Bare specifier resolves the
+ * hoisted package in this npm-workspaces monorepo. */
+@import 'primeicons/primeicons.css';
+
+@layer tailwind-base {
+  @tailwind base;
 }
 
+@layer tailwind-utilities {
+  @tailwind components;
+  @tailwind utilities;
+}
+
+/* ── Unlayered base (wins over every layer, applies app-wide) ────────── */
 * {
   box-sizing: border-box;
 }
@@ -16,370 +37,414 @@ html,
 body {
   margin: 0;
   padding: 0;
-  background: var(--color-bg);
-  color: var(--color-text-primary);
-  font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  background: var(--p-surface-50);
+  color: var(--p-text-color);
+  font-family: system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
 }
 
-/* ── Shared card + form styles (used by auth screens and wizards) ── */
-.card {
-  background: var(--color-card);
-  border: 1px solid var(--color-border);
-  border-radius: 12px;
-  padding: 1.75rem;
-}
+/* ════════════════════════════════════════════════════════════════════
+ * Legacy styles — retained for pages not part of the PrimeNG migration
+ * (home, founder content editor, product page, intros). Kept in a layer
+ * below `primeng` so they never affect migrated screens.
+ * ════════════════════════════════════════════════════════════════════ */
+@layer legacy {
+  :root {
+    --color-text-primary: #2c2c2a;
+    --color-accent: #1f6d3b;
+    --color-bg: #f6f5f1;
+    --color-card: #ffffff;
+    --color-border: #e1dfd6;
+    --color-text-secondary: #7a7870;
+  }
 
-.form-card {
-  max-width: 30rem;
-  margin: 0 auto;
-}
+  .card {
+    background: var(--color-card);
+    border: 1px solid var(--color-border);
+    border-radius: 12px;
+    padding: 1.75rem;
+  }
 
-.muted {
-  color: var(--color-text-secondary);
-  font-size: 0.9rem;
-}
+  .form-card {
+    max-width: 30rem;
+    margin: 0 auto;
+  }
 
-/* Cards are used as ad-hoc forms across the app, so the same field styling
-   applies inside a .card as inside a <form>. */
-form label,
-.card label {
-  display: block;
-  margin: 1rem 0 0.35rem;
-  font-size: 0.85rem;
-  font-weight: 600;
-}
+  .muted {
+    color: var(--color-text-secondary);
+    font-size: 0.9rem;
+  }
 
-form input,
-form select,
-form textarea,
-.card input,
-.card select,
-.card textarea {
-  width: 100%;
-  padding: 0.6rem 0.7rem;
-  border: 1px solid var(--color-border);
-  border-radius: 8px;
-  font: inherit;
-  background: #fff;
-  color: var(--color-text-primary);
-}
+  form label,
+  .card label {
+    display: block;
+    margin: 1rem 0 0.35rem;
+    font-size: 0.85rem;
+    font-weight: 600;
+  }
 
-form input:focus,
-form select:focus,
-form textarea:focus,
-.card input:focus,
-.card select:focus,
-.card textarea:focus {
-  outline: 2px solid var(--color-accent);
-  outline-offset: 1px;
-}
+  form input,
+  form select,
+  form textarea,
+  .card input,
+  .card select,
+  .card textarea {
+    width: 100%;
+    padding: 0.6rem 0.7rem;
+    border: 1px solid var(--color-border);
+    border-radius: 8px;
+    font: inherit;
+    background: #fff;
+    color: var(--color-text-primary);
+  }
 
-form button[type='submit'],
-.btn {
-  margin-top: 1.5rem;
-  padding: 0.65rem 1.1rem;
-  background: var(--color-accent);
-  color: #fff;
-  border: none;
-  border-radius: 8px;
-  font: inherit;
-  font-weight: 600;
-  cursor: pointer;
-}
+  form input:focus,
+  form select:focus,
+  form textarea:focus,
+  .card input:focus,
+  .card select:focus,
+  .card textarea:focus {
+    outline: 2px solid var(--color-accent);
+    outline-offset: 1px;
+  }
 
-form button[disabled],
-.btn[disabled] {
-  opacity: 0.6;
-  cursor: not-allowed;
-}
+  form button[type='submit'],
+  .btn {
+    margin-top: 1.5rem;
+    padding: 0.65rem 1.1rem;
+    background: var(--color-accent);
+    color: #fff;
+    border: none;
+    border-radius: 8px;
+    font: inherit;
+    font-weight: 600;
+    cursor: pointer;
+  }
 
-.btn.secondary {
-  background: transparent;
-  color: var(--color-text-primary);
-  border: 1px solid var(--color-border);
-}
+  form button[disabled],
+  .btn[disabled] {
+    opacity: 0.6;
+    cursor: not-allowed;
+  }
 
-.field-error {
-  display: block;
-  margin-top: 0.3rem;
-  color: #a3341f;
-  font-size: 0.8rem;
-}
+  .btn.secondary {
+    background: transparent;
+    color: var(--color-text-primary);
+    border: 1px solid var(--color-border);
+  }
 
-.alert {
-  margin: 1rem 0 0;
-  padding: 0.7rem 0.85rem;
-  border-radius: 8px;
-  background: #fdecea;
-  border: 1px solid #f3c4bd;
-  color: #8a2b17;
-  font-size: 0.9rem;
-}
+  .field-error {
+    display: block;
+    margin-top: 0.3rem;
+    color: #a3341f;
+    font-size: 0.8rem;
+  }
 
-.alert.info {
-  background: #eef5f0;
-  border-color: #cfe3d6;
-  color: #1f6d3b;
-}
+  .alert {
+    margin: 1rem 0 0;
+    padding: 0.7rem 0.85rem;
+    border-radius: 8px;
+    background: #fdecea;
+    border: 1px solid #f3c4bd;
+    color: #8a2b17;
+    font-size: 0.9rem;
+  }
 
-/* Step indicator for multi-step flows */
-.steps {
-  display: flex;
-  gap: 1rem;
-  list-style: none;
-  padding: 0;
-  margin: 0 0 1rem;
-  font-size: 0.8rem;
-  color: var(--color-text-secondary);
-}
+  .alert.info {
+    background: #eef5f0;
+    border-color: #cfe3d6;
+    color: #1f6d3b;
+  }
 
-.steps li.active {
-  color: var(--color-accent);
-  font-weight: 700;
-}
+  .steps {
+    display: flex;
+    gap: 1rem;
+    list-style: none;
+    padding: 0;
+    margin: 0 0 1rem;
+    font-size: 0.8rem;
+    color: var(--color-text-secondary);
+  }
 
-/* ── Divider with centred label (login "Pitch shortcuts") ── */
-.divider {
-  display: flex;
-  align-items: center;
-  gap: 0.75rem;
-  margin: 1.75rem 0 1rem;
-  color: var(--color-text-secondary);
-  font-size: 0.75rem;
-  text-transform: uppercase;
-  letter-spacing: 0.08em;
-}
+  .steps li.active {
+    color: var(--color-accent);
+    font-weight: 700;
+  }
 
-.divider::before,
-.divider::after {
-  content: '';
-  flex: 1;
-  height: 1px;
-  background: var(--color-border);
-}
+  .divider {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    margin: 1.75rem 0 1rem;
+    color: var(--color-text-secondary);
+    font-size: 0.75rem;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+  }
 
-.shortcuts-intro {
-  margin-top: 0;
-}
+  .divider::before,
+  .divider::after {
+    content: '';
+    flex: 1;
+    height: 1px;
+    background: var(--color-border);
+  }
 
-.shortcuts {
-  display: grid;
-  gap: 0.6rem;
-}
+  .shortcuts-intro {
+    margin-top: 0;
+  }
 
-.shortcut {
-  display: flex;
-  flex-direction: column;
-  align-items: flex-start;
-  gap: 0.15rem;
-  width: 100%;
-  padding: 0.7rem 0.9rem;
-  background: var(--color-bg);
-  border: 1px solid var(--color-border);
-  border-radius: 8px;
-  font: inherit;
-  text-align: left;
-  cursor: pointer;
-}
+  .shortcuts {
+    display: grid;
+    gap: 0.6rem;
+  }
 
-.shortcut:hover:not([disabled]) {
-  border-color: var(--color-accent);
-}
+  .shortcut {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.15rem;
+    width: 100%;
+    padding: 0.7rem 0.9rem;
+    background: var(--color-bg);
+    border: 1px solid var(--color-border);
+    border-radius: 8px;
+    font: inherit;
+    text-align: left;
+    cursor: pointer;
+  }
 
-.shortcut[disabled] {
-  opacity: 0.6;
-  cursor: not-allowed;
-}
+  .shortcut:hover:not([disabled]) {
+    border-color: var(--color-accent);
+  }
 
-.shortcut-title {
-  font-weight: 600;
-  font-size: 0.95rem;
-}
+  .shortcut[disabled] {
+    opacity: 0.6;
+    cursor: not-allowed;
+  }
 
-.shortcut-detail {
-  color: var(--color-text-secondary);
-  font-size: 0.85rem;
-}
+  .shortcut-title {
+    font-weight: 600;
+    font-size: 0.95rem;
+  }
 
-.wizard-actions {
-  display: flex;
-  gap: 0.75rem;
-  margin-top: 1.5rem;
-}
+  .shortcut-detail {
+    color: var(--color-text-secondary);
+    font-size: 0.85rem;
+  }
 
-.wizard-actions .btn {
-  margin-top: 0;
-}
+  .wizard-actions {
+    display: flex;
+    gap: 0.75rem;
+    margin-top: 1.5rem;
+  }
 
-/* Multi-select checkbox grid (investor types) */
-.checkbox-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(210px, 1fr));
-  gap: 0.4rem 1rem;
-  margin-top: 0.5rem;
-}
+  .wizard-actions .btn {
+    margin-top: 0;
+  }
 
-.checkbox-grid label {
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-  margin: 0;
-  font-weight: 400;
-  font-size: 0.9rem;
-}
+  .checkbox-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(210px, 1fr));
+    gap: 0.4rem 1rem;
+    margin-top: 0.5rem;
+  }
 
-.checkbox-grid input[type='checkbox'] {
-  width: auto;
-  margin: 0;
-}
+  .checkbox-grid label {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    margin: 0;
+    font-weight: 400;
+    font-size: 0.9rem;
+  }
 
-/* ── Discover / data room ── */
-.discover { max-width: 60rem; margin: 0 auto; }
-.filters { margin-bottom: 1.25rem; }
-.filter-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
-  gap: 0 1rem;
-}
-.filter-grid label { margin-top: 0.5rem; }
-.result-count { margin: 0.5rem 0 1rem; }
-.section-heading { margin-top: 2rem; font-size: 1.1rem; }
-.cards {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-  gap: 1rem;
-}
-.result-card header {
-  display: flex;
-  align-items: baseline;
-  justify-content: space-between;
-  gap: 0.5rem;
-}
-.result-card h2 { margin: 0; font-size: 1.05rem; }
-.result-card .meta { color: var(--color-text-secondary); font-size: 0.85rem; margin: 0.25rem 0; }
-.result-card .desc { font-size: 0.9rem; }
-.result-card .seeking { font-size: 0.9rem; margin: 0.5rem 0; }
-.pill {
-  display: inline-block;
-  padding: 0.15rem 0.5rem;
-  border-radius: 999px;
-  background: var(--color-bg);
-  border: 1px solid var(--color-border);
-  font-size: 0.72rem;
-  white-space: nowrap;
-}
-.tags { display: flex; flex-wrap: wrap; gap: 0.3rem; margin: 0.4rem 0; }
-.audit-table { width: 100%; border-collapse: collapse; font-size: 0.85rem; }
-.audit-table th, .audit-table td {
-  text-align: left;
-  padding: 0.45rem 0.5rem;
-  border-bottom: 1px solid var(--color-border);
-}
-.audit-table th { color: var(--color-text-secondary); font-weight: 600; }
+  .checkbox-grid input[type='checkbox'] {
+    width: auto;
+    margin: 0;
+  }
 
-/* ── Media, product page, quota ─────────────────────────────── */
-.video {
-  width: 100%;
-  max-width: 720px;
-  aspect-ratio: 16 / 9;
-  border: 0;
-  border-radius: 8px;
-  background: #000;
-}
+  .discover {
+    max-width: 60rem;
+    margin: 0 auto;
+  }
+  .filters {
+    margin-bottom: 1.25rem;
+  }
+  .filter-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+    gap: 0 1rem;
+  }
+  .filter-grid label {
+    margin-top: 0.5rem;
+  }
+  .result-count {
+    margin: 0.5rem 0 1rem;
+  }
+  .section-heading {
+    margin-top: 2rem;
+    font-size: 1.1rem;
+  }
+  .cards {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 1rem;
+  }
+  .result-card header {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 0.5rem;
+  }
+  .result-card h2 {
+    margin: 0;
+    font-size: 1.05rem;
+  }
+  .result-card .meta {
+    color: var(--color-text-secondary);
+    font-size: 0.85rem;
+    margin: 0.25rem 0;
+  }
+  .result-card .desc {
+    font-size: 0.9rem;
+  }
+  .result-card .seeking {
+    font-size: 0.9rem;
+    margin: 0.5rem 0;
+  }
+  .pill {
+    display: inline-block;
+    padding: 0.15rem 0.5rem;
+    border-radius: 999px;
+    background: var(--color-bg);
+    border: 1px solid var(--color-border);
+    font-size: 0.72rem;
+    white-space: nowrap;
+  }
+  .tags {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.3rem;
+    margin: 0.4rem 0;
+  }
+  .audit-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.85rem;
+  }
+  .audit-table th,
+  .audit-table td {
+    text-align: left;
+    padding: 0.45rem 0.5rem;
+    border-bottom: 1px solid var(--color-border);
+  }
+  .audit-table th {
+    color: var(--color-text-secondary);
+    font-weight: 600;
+  }
 
-.quota-bar {
-  height: 8px;
-  background: var(--sand, #e1dfd6);
-  border-radius: 999px;
-  overflow: hidden;
-  margin: 0.5rem 0;
-}
-.quota-bar span {
-  display: block;
-  height: 100%;
-  background: var(--green, #1f6d3b);
-  transition: width 0.2s ease;
-}
+  .video {
+    width: 100%;
+    max-width: 720px;
+    aspect-ratio: 16 / 9;
+    border: 0;
+    border-radius: 8px;
+    background: #000;
+  }
 
-.product-head {
-  display: flex;
-  gap: 1.25rem;
-  align-items: flex-start;
-  flex-wrap: wrap;
-}
-.product-head .logo {
-  width: 72px;
-  height: 72px;
-  object-fit: contain;
-  border-radius: 8px;
-  background: #fff;
-  border: 1px solid var(--sand, #e1dfd6);
-}
-.tagline {
-  font-size: 1.15rem;
-  color: var(--charcoal, #2c2c2a);
-  margin: 0.25rem 0;
-}
+  .quota-bar {
+    height: 8px;
+    background: var(--sand, #e1dfd6);
+    border-radius: 999px;
+    overflow: hidden;
+    margin: 0.5rem 0;
+  }
+  .quota-bar span {
+    display: block;
+    height: 100%;
+    background: var(--green, #1f6d3b);
+    transition: width 0.2s ease;
+  }
 
-.stats {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
-  gap: 1rem;
-}
-.stats dt {
-  font-size: 0.8rem;
-  color: var(--stone, #7a7870);
-  text-transform: uppercase;
-  letter-spacing: 0.04em;
-}
-.stats dd {
-  margin: 0.15rem 0 0;
-  font-size: 1.35rem;
-  font-weight: 600;
-}
+  .product-head {
+    display: flex;
+    gap: 1.25rem;
+    align-items: flex-start;
+    flex-wrap: wrap;
+  }
+  .product-head .logo {
+    width: 72px;
+    height: 72px;
+    object-fit: contain;
+    border-radius: 8px;
+    background: #fff;
+    border: 1px solid var(--sand, #e1dfd6);
+  }
+  .tagline {
+    font-size: 1.15rem;
+    color: var(--charcoal, #2c2c2a);
+    margin: 0.25rem 0;
+  }
 
-.timeline {
-  list-style: none;
-  padding: 0;
-  margin: 0.5rem 0 0;
-}
-.timeline li {
-  border-left: 2px solid var(--sand, #e1dfd6);
-  padding: 0 0 1rem 1rem;
-  margin-left: 0.25rem;
-}
+  .stats {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+    gap: 1rem;
+  }
+  .stats dt {
+    font-size: 0.8rem;
+    color: var(--stone, #7a7870);
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+  }
+  .stats dd {
+    margin: 0.15rem 0 0;
+    font-size: 1.35rem;
+    font-weight: 600;
+  }
 
-.contact {
-  background: var(--bone, #f6f5f1);
-  padding: 0.6rem 0.8rem;
-  border-radius: 6px;
-}
+  .timeline {
+    list-style: none;
+    padding: 0;
+    margin: 0.5rem 0 0;
+  }
+  .timeline li {
+    border-left: 2px solid var(--sand, #e1dfd6);
+    padding: 0 0 1rem 1rem;
+    margin-left: 0.25rem;
+  }
 
-/* Checkboxes are the exception — they should not stretch. */
-.card label.inline input[type='checkbox'] {
-  width: auto;
-}
+  .contact {
+    background: var(--bone, #f6f5f1);
+    padding: 0.6rem 0.8rem;
+    border-radius: 6px;
+  }
 
-label.inline {
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-  font-weight: 400;
-}
+  .card label.inline input[type='checkbox'] {
+    width: auto;
+  }
 
-button.link {
-  background: none;
-  border: 0;
-  padding: 0;
-  color: var(--green, #1f6d3b);
-  text-decoration: underline;
-  cursor: pointer;
-  font-size: 0.9rem;
-}
+  label.inline {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-weight: 400;
+  }
 
-.view-product {
-  display: inline-block;
-  margin-top: 0.6rem;
-  font-weight: 600;
-  color: var(--green, #1f6d3b);
+  button.link {
+    background: none;
+    border: 0;
+    padding: 0;
+    color: var(--green, #1f6d3b);
+    text-decoration: underline;
+    cursor: pointer;
+    font-size: 0.9rem;
+  }
+
+  .view-product {
+    display: inline-block;
+    margin-top: 0.6rem;
+    font-weight: 600;
+    color: var(--green, #1f6d3b);
+  }
 }

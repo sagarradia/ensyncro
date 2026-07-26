@@ -1,12 +1,13 @@
 import { Component, computed, inject } from '@angular/core';
 import { Router, RouterLink, RouterOutlet } from '@angular/router';
+import { ButtonModule } from 'primeng/button';
 import { environment } from '../environments/environment';
 import { AuthService } from './core/auth.service';
 
 @Component({
   selector: 'app-root',
   standalone: true,
-  imports: [RouterOutlet, RouterLink],
+  imports: [RouterOutlet, RouterLink, ButtonModule],
   templateUrl: './app.component.html',
   styleUrl: './app.component.css',
 })
