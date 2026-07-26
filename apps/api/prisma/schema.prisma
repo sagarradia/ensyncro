@@ -178,6 +178,16 @@ model FounderProfile {
   logoFileId         String?       @unique
   logoFile           DataRoomFile? @relation("FounderLogo", fields: [logoFileId], references: [id], onDelete: SetNull)
 
+  // ── Public structured detail (VMB profile — aids discovery) ───
+  /// Unique selling proposition.
+  usp             String?
+  /// How the company makes money.
+  businessModel   String?
+  /// Market: size (free text, e.g. "$4B TAM"), target segment, geography.
+  marketSize      String?
+  targetSegment   String?
+  marketGeography String?
+
   // ── Gated commercial detail ──────────────────────────────────
   /// Whole currency units per month / per year.
   mrr             Int?
@@ -185,16 +195,173 @@ model FounderProfile {
   monthlyBurn     Int?
   runwayMonths    Int?
   useOfFunds      String?
+  // Extra financial inputs that make the computed ratios meaningful.
+  annualRevenue   Int?
+  /// Percentage, 0–100.
+  grossMarginPct  Int?
+  cashBalance     Int?
+  /// ARR one year ago, used to compute YoY growth and burn multiple.
+  priorYearArr    Int?
   /// Reuses the data room's visibility model so gating behaves identically.
   financialsVisibility     DataRoomVisibility @default(PRIVATE)
   fundingHistoryVisibility DataRoomVisibility @default(PRIVATE)
+  risksVisibility          DataRoomVisibility @default(PRIVATE)
+  futurePlansVisibility    DataRoomVisibility @default(PRIVATE)
 
-  milestones    FounderMilestone[]
-  fundingRounds FundingRound[]
+  milestones      FounderMilestone[]
+  fundingRounds   FundingRound[]
+  promoters       Promoter[]
+  groupCompanies  GroupCompany[]
+  productsServices ProductService[]
+  competitors     Competitor[]
+  swotItems       SwotItem[]
+  riskItems       RiskItem[]
+  futurePlanItems FuturePlan[]
+  benchmarkPeers  BenchmarkPeer[]
 
   @@index([sector])
   @@index([stage])
   @@map("founder_profiles")
+}
+
+/// Founding team member / promoter (VMB §7).
+model Promoter {
+  id              String         @id @default(uuid())
+  founderId       String
+  founder         FounderProfile @relation(fields: [founderId], references: [id], onDelete: Cascade)
+  name            String
+  background      String?
+  /// Shareholding percentage, 0–100.
+  shareholdingPct Float?
+  priorExperience String?
+  createdAt       DateTime       @default(now())
+  updatedAt       DateTime       @updatedAt
+
+  @@index([founderId])
+  @@map("promoters")
+}
+
+/// Related legal entity in the group (VMB §7).
+model GroupCompany {
+  id           String         @id @default(uuid())
+  founderId    String
+  founder      FounderProfile @relation(fields: [founderId], references: [id], onDelete: Cascade)
+  name         String
+  /// e.g. Parent, Subsidiary, Associate, Sister concern.
+  relationship String?
+  /// Ownership percentage, 0–100.
+  ownershipPct Float?
+  createdAt    DateTime       @default(now())
+  updatedAt    DateTime       @updatedAt
+
+  @@index([founderId])
+  @@map("group_companies")
+}
+
+/// A single product or service line (structured, not free text).
+model ProductService {
+  id          String         @id @default(uuid())
+  founderId   String
+  founder     FounderProfile @relation(fields: [founderId], references: [id], onDelete: Cascade)
+  name        String
+  description String?
+  category    String?
+  createdAt   DateTime       @default(now())
+  updatedAt   DateTime       @updatedAt
+
+  @@index([founderId])
+  @@map("products_services")
+}
+
+/// A named competitor and how this company differs from it.
+model Competitor {
+  id              String         @id @default(uuid())
+  founderId       String
+  founder         FounderProfile @relation(fields: [founderId], references: [id], onDelete: Cascade)
+  name            String
+  differentiation String?
+  createdAt       DateTime       @default(now())
+  updatedAt       DateTime       @updatedAt
+
+  @@index([founderId])
+  @@map("competitors")
+}
+
+enum SwotCategory {
+  STRENGTH
+  WEAKNESS
+  OPPORTUNITY
+  THREAT
+}
+
+/// One SWOT entry, categorised.
+model SwotItem {
+  id        String         @id @default(uuid())
+  founderId String
+  founder   FounderProfile @relation(fields: [founderId], references: [id], onDelete: Cascade)
+  category  SwotCategory
+  text      String
+  createdAt DateTime       @default(now())
+  updatedAt DateTime       @updatedAt
+
+  @@index([founderId, category])
+  @@map("swot_items")
+}
+
+enum RiskSeverity {
+  LOW
+  MEDIUM
+  HIGH
+}
+
+/// A structured business risk (gated — commercially sensitive).
+model RiskItem {
+  id          String         @id @default(uuid())
+  founderId   String
+  founder     FounderProfile @relation(fields: [founderId], references: [id], onDelete: Cascade)
+  title       String
+  description String?
+  severity    RiskSeverity?
+  createdAt   DateTime       @default(now())
+  updatedAt   DateTime       @updatedAt
+
+  @@index([founderId])
+  @@map("risk_items")
+}
+
+/// A roadmap / expansion plan item (gated — commercially sensitive).
+model FuturePlan {
+  id          String         @id @default(uuid())
+  founderId   String
+  founder     FounderProfile @relation(fields: [founderId], references: [id], onDelete: Cascade)
+  title       String
+  description String?
+  /// e.g. "0–6 months", "FY26".
+  timeframe   String?
+  createdAt   DateTime       @default(now())
+  updatedAt   DateTime       @updatedAt
+
+  @@index([founderId])
+  @@map("future_plans")
+}
+
+/// A peer used for benchmarking (part of the gated Financials section).
+model BenchmarkPeer {
+  id             String         @id @default(uuid())
+  founderId      String
+  founder        FounderProfile @relation(fields: [founderId], references: [id], onDelete: Cascade)
+  peerName       String
+  /// Whole currency units.
+  arr            Int?
+  /// Percentages, 0–100(+).
+  growthPct      Int?
+  grossMarginPct Int?
+  note           String?
+  createdAt      DateTime       @default(now())
+  updatedAt      DateTime       @updatedAt
+
+  @@index([founderId])
+  @@map("benchmark_peers")
 }
 
 /// Traction timeline shown alongside financials, and gated with them.
@@ -240,6 +407,8 @@ model FundingRound {
 enum ProfileSection {
   FINANCIALS
   FUNDING_HISTORY
+  RISKS
+  FUTURE_PLANS
 }
 
 model ProfileSectionAccessLog {
