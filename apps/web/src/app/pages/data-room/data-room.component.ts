@@ -1,5 +1,11 @@
 import { Component, inject, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
+import { CardModule } from 'primeng/card';
+import { ButtonModule } from 'primeng/button';
+import { SelectModule } from 'primeng/select';
+import { TagModule } from 'primeng/tag';
+import { TableModule } from 'primeng/table';
+import { MessageModule } from 'primeng/message';
 import { DataRoomService } from '../../core/data-room.service';
 import {
   AccessLogEntry,
@@ -13,13 +19,22 @@ import {
 @Component({
   selector: 'app-data-room',
   standalone: true,
-  imports: [FormsModule],
+  imports: [
+    FormsModule,
+    CardModule,
+    ButtonModule,
+    SelectModule,
+    TagModule,
+    TableModule,
+    MessageModule,
+  ],
   templateUrl: './data-room.component.html',
 })
 export class DataRoomComponent {
   private readonly dataRoom = inject(DataRoomService);
 
-  readonly visibilityOptions = VISIBILITY_OPTIONS;
+  // Mutable copy for p-select's options input (rejects the readonly source).
+  readonly visibilityOptions = [...VISIBILITY_OPTIONS];
   readonly maxBytes = MAX_FILE_BYTES;
 
   readonly files = signal<DataRoomFile[]>([]);
@@ -91,8 +106,7 @@ export class DataRoomComponent {
     });
   }
 
-  changeVisibility(file: DataRoomFile, event: Event): void {
-    const visibility = (event.target as HTMLSelectElement).value as DataRoomVisibility;
+  changeVisibility(file: DataRoomFile, visibility: DataRoomVisibility): void {
     this.error.set(null);
     this.dataRoom.setVisibility(file.id, visibility).subscribe({
       next: (updated) => {

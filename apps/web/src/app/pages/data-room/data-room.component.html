@@ -1,87 +1,115 @@
-<section class="discover">
-  <h1>Data room</h1>
-  <p class="muted">
+<section>
+  <h1 class="text-2xl font-bold text-surface-900 m-0">Data room</h1>
+  <p class="text-muted-color mt-1 mb-5">
     Upload your deck, cap table and financials. Files are never public — every view goes
     through a permission check and a short-lived link, and is recorded below.
   </p>
 
   @if (error()) {
-    <p class="alert" role="alert" data-testid="dr-error">{{ error() }}</p>
+    <p-message severity="error" styleClass="w-full mb-4" role="alert" data-testid="dr-error">{{ error() }}</p-message>
   }
   @if (notice()) {
-    <p class="alert info" data-testid="dr-notice">{{ notice() }}</p>
+    <p-message severity="info" styleClass="w-full mb-4" data-testid="dr-notice">{{ notice() }}</p-message>
   }
 
-  <div class="card">
-    <h2>Upload a file</h2>
-    <label for="visibility">Visibility for new upload</label>
-    <select id="visibility" [(ngModel)]="selectedVisibility" name="visibility" [ngModelOptions]="{ standalone: true }">
-      @for (o of visibilityOptions; track o.value) {
-        <option [value]="o.value">{{ o.label }}</option>
-      }
-    </select>
+  <p-card styleClass="mb-6">
+    <h2 class="text-lg font-semibold m-0 mb-4">Upload a file</h2>
+    <div class="flex flex-col gap-4 sm:flex-row sm:items-end">
+      <div class="flex flex-col gap-1.5">
+        <label for="visibility" class="text-sm font-medium">Visibility for new upload</label>
+        <p-select
+          inputId="visibility"
+          [(ngModel)]="selectedVisibility"
+          [options]="visibilityOptions"
+          optionLabel="label"
+          optionValue="value"
+          styleClass="w-full sm:w-72"
+        />
+      </div>
+      <div class="flex flex-col gap-1.5">
+        <input
+          #fileInput
+          type="file"
+          class="hidden"
+          (change)="onFileSelected($event)"
+          [disabled]="uploading()"
+        />
+        <p-button
+          [label]="uploading() ? 'Uploading…' : 'Choose file & upload'"
+          icon="pi pi-upload"
+          [loading]="uploading()"
+          [disabled]="uploading()"
+          (onClick)="fileInput.click()"
+        />
+      </div>
+    </div>
+    <small class="text-muted-color block mt-2">Maximum {{ mb(maxBytes) }}MB per file.</small>
+  </p-card>
 
-    <label for="fileInput">File</label>
-    <input id="fileInput" type="file" (change)="onFileSelected($event)" [disabled]="uploading()" />
-    <small class="muted">Maximum {{ mb(maxBytes) }}MB per file.</small>
-    @if (uploading()) {
-      <p class="muted">Uploading…</p>
-    }
-  </div>
-
-  <h2 class="section-heading">Your files</h2>
+  <h2 class="text-lg font-semibold mt-8 mb-3">Your files</h2>
   @if (loading()) {
-    <p class="muted">Loading…</p>
+    <p class="text-muted-color">Loading…</p>
   } @else if (files().length === 0) {
-    <p class="card muted">No files yet. Upload your first document above.</p>
+    <p-card styleClass="text-muted-color">No files yet. Upload your first document above.</p-card>
   } @else {
-    <div class="cards">
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
       @for (f of files(); track f.id) {
-        <article class="card result-card" [attr.data-file]="f.fileName">
-          <header>
-            <h2>{{ f.fileName }}</h2>
-            <span class="pill">{{ f.visibility }}</span>
-          </header>
-          <p class="meta">{{ kb(f.sizeBytes) }} · {{ f._count?.accessLogs ?? 0 }} view(s)</p>
-
-          <label [attr.for]="'vis-' + f.id">Visibility</label>
-          <select [attr.id]="'vis-' + f.id" [attr.data-vis-for]="f.fileName"
-                  [value]="f.visibility" (change)="changeVisibility(f, $event)">
-            @for (o of visibilityOptions; track o.value) {
-              <option [value]="o.value">{{ o.label }}</option>
-            }
-          </select>
-
-          <div class="wizard-actions">
-            <button type="button" class="btn" [attr.data-view-for]="f.fileName" (click)="view(f)">
-              View securely
-            </button>
+        <p-card [attr.data-file]="f.fileName">
+          <div class="flex items-baseline justify-between gap-2">
+            <h3 class="text-base font-semibold m-0 break-all">{{ f.fileName }}</h3>
+            <p-tag [value]="f.visibility" severity="secondary" [rounded]="true" />
           </div>
-        </article>
+          <p class="text-muted-color text-sm my-2">{{ kb(f.sizeBytes) }} · {{ f._count?.accessLogs ?? 0 }} view(s)</p>
+
+          <div class="flex flex-col gap-1.5">
+            <label [for]="'vis-' + f.id" class="text-sm font-medium">Visibility</label>
+            <p-select
+              [inputId]="'vis-' + f.id"
+              [attr.data-vis-for]="f.fileName"
+              [ngModel]="f.visibility"
+              [options]="visibilityOptions"
+              optionLabel="label"
+              optionValue="value"
+              (onChange)="changeVisibility(f, $event.value)"
+              styleClass="w-full"
+            />
+          </div>
+
+          <div class="mt-4">
+            <p-button
+              label="View securely"
+              icon="pi pi-lock"
+              [outlined]="true"
+              [attr.data-view-for]="f.fileName"
+              (onClick)="view(f)"
+            />
+          </div>
+        </p-card>
       }
     </div>
   }
 
-  <h2 class="section-heading">Who has accessed your data room</h2>
+  <h2 class="text-lg font-semibold mt-8 mb-3">Who has accessed your data room</h2>
   @if (log().length === 0) {
-    <p class="card muted">No views recorded yet.</p>
+    <p-card styleClass="text-muted-color">No views recorded yet.</p-card>
   } @else {
-    <div class="card">
-      <table class="audit-table" data-testid="audit-table">
-        <thead>
-          <tr><th>File</th><th>Viewer</th><th>Role</th><th>When</th></tr>
-        </thead>
-        <tbody>
-          @for (e of log(); track e.id) {
-            <tr>
-              <td>{{ e.file.fileName }}</td>
-              <td>{{ e.viewer.email }}</td>
-              <td>{{ e.viewer.role }}</td>
-              <td>{{ e.viewedAt }}</td>
-            </tr>
-          }
-        </tbody>
-      </table>
-    </div>
+    <p-table [value]="log()" [rows]="10" styleClass="p-datatable-sm" data-testid="audit-table">
+      <ng-template pTemplate="header">
+        <tr>
+          <th>File</th>
+          <th>Viewer</th>
+          <th>Role</th>
+          <th>When</th>
+        </tr>
+      </ng-template>
+      <ng-template pTemplate="body" let-e>
+        <tr>
+          <td>{{ e.file.fileName }}</td>
+          <td>{{ e.viewer.email }}</td>
+          <td>{{ e.viewer.role }}</td>
+          <td>{{ e.viewedAt }}</td>
+        </tr>
+      </ng-template>
+    </p-table>
   }
 </section>
