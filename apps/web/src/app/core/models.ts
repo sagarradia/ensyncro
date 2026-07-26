@@ -233,8 +233,20 @@ export interface ProductPage {
   categories: string[];
   logoUrl: string | null;
   video: PitchVideo | null;
+  // Public structured detail (VMB profile).
+  usp: string | null;
+  businessModel: string | null;
+  marketSize: string | null;
+  targetSegment: string | null;
+  marketGeography: string | null;
+  promoters: Promoter[];
+  groupCompanies: GroupCompany[];
+  productsServices: ProductServiceItem[];
+  competitors: Competitor[];
+  swotItems: SwotItem[];
+  journey: Milestone[];
   /** Lets the UI show a locked state without firing a request that 404s. */
-  access: { financials: boolean; fundingHistory: boolean };
+  access: { financials: boolean; fundingHistory: boolean; risks: boolean; futurePlans: boolean };
 }
 
 export interface Milestone {
@@ -245,14 +257,108 @@ export interface Milestone {
   achieved: boolean;
 }
 
+export interface FinancialRatios {
+  arrGrowthPct?: number;
+  runwayMonthsFromCash?: number;
+  revenuePerEmployee?: number;
+  burnMultiple?: number;
+  arrToMrrMultiple?: number;
+}
+
+export interface BenchmarkPeer {
+  id: string;
+  peerName: string;
+  arr: number | null;
+  growthPct: number | null;
+  grossMarginPct: number | null;
+  note: string | null;
+}
+
 export interface Financials {
   mrr: number | null;
   arr: number | null;
   monthlyBurn: number | null;
   runwayMonths: number | null;
   useOfFunds: string | null;
+  annualRevenue: number | null;
+  grossMarginPct: number | null;
+  cashBalance: number | null;
+  priorYearArr: number | null;
   financialsVisibility: DataRoomVisibility;
-  milestones: Milestone[];
+  ratios: FinancialRatios;
+  benchmarkPeers: BenchmarkPeer[];
+}
+
+// ── Deep profile (VMB structured sections) ────────────────────
+export interface Promoter {
+  id: string;
+  name: string;
+  background: string | null;
+  shareholdingPct: number | null;
+  priorExperience: string | null;
+}
+
+export interface GroupCompany {
+  id: string;
+  name: string;
+  relationship: string | null;
+  ownershipPct: number | null;
+}
+
+export interface ProductServiceItem {
+  id: string;
+  name: string;
+  description: string | null;
+  category: string | null;
+}
+
+export interface Competitor {
+  id: string;
+  name: string;
+  differentiation: string | null;
+}
+
+export type SwotCategory = 'STRENGTH' | 'WEAKNESS' | 'OPPORTUNITY' | 'THREAT';
+
+export interface SwotItem {
+  id: string;
+  category: SwotCategory;
+  text: string;
+}
+
+export type RiskSeverity = 'LOW' | 'MEDIUM' | 'HIGH';
+
+export interface RiskItem {
+  id: string;
+  title: string;
+  description: string | null;
+  severity: RiskSeverity | null;
+}
+
+export interface FuturePlan {
+  id: string;
+  title: string;
+  description: string | null;
+  timeframe: string | null;
+}
+
+/** Everything the founder's editor loads from GET /founder/profile/sections. */
+export interface OwnSections {
+  usp: string | null;
+  businessModel: string | null;
+  marketSize: string | null;
+  targetSegment: string | null;
+  marketGeography: string | null;
+  risksVisibility: DataRoomVisibility;
+  futurePlansVisibility: DataRoomVisibility;
+  promoters: Promoter[];
+  groupCompanies: GroupCompany[];
+  productsServices: ProductServiceItem[];
+  competitors: Competitor[];
+  swotItems: SwotItem[];
+  riskItems: RiskItem[];
+  futurePlanItems: FuturePlan[];
+  journey: Milestone[];
 }
 
 export interface FundingRound {
@@ -270,7 +376,15 @@ export interface FundingHistory {
   totalRaised: number;
 }
 
-export type ProfileSection = 'FINANCIALS' | 'FUNDING_HISTORY';
+export type ProfileSection = 'FINANCIALS' | 'FUNDING_HISTORY' | 'RISKS' | 'FUTURE_PLANS';
+
+export interface RiskList {
+  items: RiskItem[];
+}
+
+export interface FuturePlanList {
+  items: FuturePlan[];
+}
 
 export interface SectionAccessLogEntry {
   id: string;

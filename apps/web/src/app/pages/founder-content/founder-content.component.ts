@@ -11,11 +11,27 @@ import {
   FundingHistory,
   FUNDING_STAGES,
   MAX_BYTES_BY_KIND,
+  OwnSections,
   ProfileSection,
+  RiskSeverity,
   SectionAccessLogEntry,
   StorageUsage,
+  SwotCategory,
   VISIBILITY_OPTIONS,
 } from '../../core/models';
+
+const SWOT_CATEGORIES: ReadonlyArray<{ value: SwotCategory; label: string }> = [
+  { value: 'STRENGTH', label: 'Strength' },
+  { value: 'WEAKNESS', label: 'Weakness' },
+  { value: 'OPPORTUNITY', label: 'Opportunity' },
+  { value: 'THREAT', label: 'Threat' },
+];
+
+const RISK_SEVERITIES: ReadonlyArray<{ value: RiskSeverity; label: string }> = [
+  { value: 'LOW', label: 'Low' },
+  { value: 'MEDIUM', label: 'Medium' },
+  { value: 'HIGH', label: 'High' },
+];
 
 /**
  * Everything a founder publishes beyond the onboarding basics: pitch video,
@@ -34,6 +50,8 @@ export class FounderContentComponent {
 
   readonly visibilityOptions = VISIBILITY_OPTIONS;
   readonly stages = FUNDING_STAGES;
+  readonly swotCategories = SWOT_CATEGORIES;
+  readonly riskSeverities = RISK_SEVERITIES;
   readonly videoMaxMb = MAX_BYTES_BY_KIND['PITCH_VIDEO'] / 1024 / 1024;
   readonly logoMaxMb = MAX_BYTES_BY_KIND['LOGO'] / 1024 / 1024;
 
@@ -42,6 +60,8 @@ export class FounderContentComponent {
   readonly funding = signal<FundingHistory | null>(null);
   readonly usage = signal<StorageUsage | null>(null);
   readonly sectionLog = signal<SectionAccessLogEntry[]>([]);
+  /** All the structured VMB sections for editing. */
+  readonly sections = signal<OwnSections | null>(null);
 
   readonly error = signal<string | null>(null);
   readonly notice = signal<string | null>(null);
@@ -55,9 +75,31 @@ export class FounderContentComponent {
   tagline = '';
   productDescription = '';
   categoriesText = '';
-  fin = { mrr: null as number | null, arr: null as number | null, monthlyBurn: null as number | null, runwayMonths: null as number | null, useOfFunds: '' };
+  fin = {
+    mrr: null as number | null, arr: null as number | null, monthlyBurn: null as number | null,
+    runwayMonths: null as number | null, useOfFunds: '',
+    annualRevenue: null as number | null, grossMarginPct: null as number | null,
+    cashBalance: null as number | null, priorYearArr: null as number | null,
+  };
   milestone = { title: '', description: '', occurredOn: '', achieved: false };
   round = { stage: 'SEED', amountRaised: null as number | null, preMoney: null as number | null, postMoney: null as number | null, closedOn: '', leadInvestor: '' };
+
+  // Public structured detail (saved via the product update).
+  usp = '';
+  businessModel = '';
+  marketSize = '';
+  targetSegment = '';
+  marketGeography = '';
+
+  // "New item" forms for the structured list sections.
+  newPromoter = { name: '', background: '', shareholdingPct: null as number | null, priorExperience: '' };
+  newGroupCompany = { name: '', relationship: '', ownershipPct: null as number | null };
+  newProdSvc = { name: '', description: '', category: '' };
+  newCompetitor = { name: '', differentiation: '' };
+  newSwot = { category: 'STRENGTH' as SwotCategory, text: '' };
+  newRisk = { title: '', description: '', severity: '' as RiskSeverity | '' };
+  newPlan = { title: '', description: '', timeframe: '' };
+  newPeer = { peerName: '', arr: null as number | null, growthPct: null as number | null, grossMarginPct: null as number | null, note: '' };
 
   readonly quotaPercent = computed(() => {
     const u = this.usage();
@@ -82,6 +124,8 @@ export class FounderContentComponent {
         this.fin = {
           mrr: f.mrr, arr: f.arr, monthlyBurn: f.monthlyBurn,
           runwayMonths: f.runwayMonths, useOfFunds: f.useOfFunds ?? '',
+          annualRevenue: f.annualRevenue, grossMarginPct: f.grossMarginPct,
+          cashBalance: f.cashBalance, priorYearArr: f.priorYearArr,
         };
       },
       error: () => undefined,
@@ -89,6 +133,17 @@ export class FounderContentComponent {
     this.content.fundingRounds().subscribe({ next: (r) => this.funding.set(r), error: () => undefined });
     this.content.usage().subscribe({ next: (u) => this.usage.set(u), error: () => undefined });
     this.content.sectionAccessLog().subscribe({ next: (l) => this.sectionLog.set(l), error: () => undefined });
+    this.content.sections().subscribe({
+      next: (s) => {
+        this.sections.set(s);
+        this.usp = s.usp ?? '';
+        this.businessModel = s.businessModel ?? '';
+        this.marketSize = s.marketSize ?? '';
+        this.targetSegment = s.targetSegment ?? '';
+        this.marketGeography = s.marketGeography ?? '';
+      },
+      error: () => undefined,
+    });
   }
 
   /** Angular refuses an iframe src unless it is explicitly trusted. Safe here:
@@ -209,6 +264,23 @@ export class FounderContentComponent {
       });
   }
 
+  /** USP / business model / market — public structured detail. */
+  saveNarrative(): void {
+    this.error.set(null);
+    this.content
+      .saveProduct({
+        usp: this.usp || null,
+        businessModel: this.businessModel || null,
+        marketSize: this.marketSize || null,
+        targetSegment: this.targetSegment || null,
+        marketGeography: this.marketGeography || null,
+      })
+      .subscribe({
+        next: () => this.notice.set('Saved.'),
+        error: (e) => this.fail(e, 'Could not save.'),
+      });
+  }
+
   // ── Financials + milestones ────────────────────────────────
   saveFinancials(): void {
     this.error.set(null);
@@ -216,6 +288,8 @@ export class FounderContentComponent {
       .saveFinancials({
         mrr: this.fin.mrr, arr: this.fin.arr, monthlyBurn: this.fin.monthlyBurn,
         runwayMonths: this.fin.runwayMonths, useOfFunds: this.fin.useOfFunds || null,
+        annualRevenue: this.fin.annualRevenue, grossMarginPct: this.fin.grossMarginPct,
+        cashBalance: this.fin.cashBalance, priorYearArr: this.fin.priorYearArr,
       })
       .subscribe({
         next: (f) => { this.financials.set(f); this.notice.set('Financials saved.'); },
@@ -223,12 +297,158 @@ export class FounderContentComponent {
       });
   }
 
+  readonly sectionLabels: Record<ProfileSection, string> = {
+    FINANCIALS: 'Financials',
+    FUNDING_HISTORY: 'Funding history',
+    RISKS: 'Risks',
+    FUTURE_PLANS: 'Future plans',
+  };
+
   setVisibility(section: ProfileSection, event: Event): void {
     const visibility = (event.target as HTMLSelectElement).value as DataRoomVisibility;
     this.content.setSectionVisibility(section, visibility).subscribe({
-      next: () => { this.notice.set(`${section === 'FINANCIALS' ? 'Financials' : 'Funding history'} visibility updated.`); this.refresh(); },
+      next: () => { this.notice.set(`${this.sectionLabels[section]} visibility updated.`); this.refresh(); },
       error: (e) => this.fail(e, 'Could not change visibility.'),
     });
+  }
+
+  // ── Structured list sections (add / remove) ────────────────
+  /** Runs an add observable, resets the form, and reloads on success. */
+  private addItem(obs: import('rxjs').Observable<unknown>, reset: () => void, label: string): void {
+    this.error.set(null);
+    obs.subscribe({
+      next: () => { reset(); this.notice.set(`${label} added.`); this.refresh(); },
+      error: (e) => this.fail(e, `Could not add the ${label.toLowerCase()}.`),
+    });
+  }
+
+  addPromoter(): void {
+    if (!this.newPromoter.name) { this.error.set('A promoter needs a name.'); return; }
+    this.addItem(
+      this.content.addPromoter({
+        name: this.newPromoter.name,
+        background: this.newPromoter.background || undefined,
+        shareholdingPct: this.newPromoter.shareholdingPct ?? undefined,
+        priorExperience: this.newPromoter.priorExperience || undefined,
+      }),
+      () => (this.newPromoter = { name: '', background: '', shareholdingPct: null, priorExperience: '' }),
+      'Promoter',
+    );
+  }
+  removePromoter(id: string): void {
+    this.content.removePromoter(id).subscribe({ next: () => this.refresh(), error: () => undefined });
+  }
+
+  addGroupCompany(): void {
+    if (!this.newGroupCompany.name) { this.error.set('A group company needs a name.'); return; }
+    this.addItem(
+      this.content.addGroupCompany({
+        name: this.newGroupCompany.name,
+        relationship: this.newGroupCompany.relationship || undefined,
+        ownershipPct: this.newGroupCompany.ownershipPct ?? undefined,
+      }),
+      () => (this.newGroupCompany = { name: '', relationship: '', ownershipPct: null }),
+      'Group company',
+    );
+  }
+  removeGroupCompany(id: string): void {
+    this.content.removeGroupCompany(id).subscribe({ next: () => this.refresh(), error: () => undefined });
+  }
+
+  addProdSvc(): void {
+    if (!this.newProdSvc.name) { this.error.set('A product/service needs a name.'); return; }
+    this.addItem(
+      this.content.addProductService({
+        name: this.newProdSvc.name,
+        description: this.newProdSvc.description || undefined,
+        category: this.newProdSvc.category || undefined,
+      }),
+      () => (this.newProdSvc = { name: '', description: '', category: '' }),
+      'Product / service',
+    );
+  }
+  removeProdSvc(id: string): void {
+    this.content.removeProductService(id).subscribe({ next: () => this.refresh(), error: () => undefined });
+  }
+
+  addCompetitor(): void {
+    if (!this.newCompetitor.name) { this.error.set('A competitor needs a name.'); return; }
+    this.addItem(
+      this.content.addCompetitor({
+        name: this.newCompetitor.name,
+        differentiation: this.newCompetitor.differentiation || undefined,
+      }),
+      () => (this.newCompetitor = { name: '', differentiation: '' }),
+      'Competitor',
+    );
+  }
+  removeCompetitor(id: string): void {
+    this.content.removeCompetitor(id).subscribe({ next: () => this.refresh(), error: () => undefined });
+  }
+
+  addSwot(): void {
+    if (!this.newSwot.text) { this.error.set('A SWOT entry needs some text.'); return; }
+    this.addItem(
+      this.content.addSwot({ category: this.newSwot.category, text: this.newSwot.text }),
+      () => (this.newSwot = { category: 'STRENGTH', text: '' }),
+      'SWOT entry',
+    );
+  }
+  removeSwot(id: string): void {
+    this.content.removeSwot(id).subscribe({ next: () => this.refresh(), error: () => undefined });
+  }
+  swotOf(category: SwotCategory) {
+    return (this.sections()?.swotItems ?? []).filter((s) => s.category === category);
+  }
+
+  addRisk(): void {
+    if (!this.newRisk.title) { this.error.set('A risk needs a title.'); return; }
+    this.addItem(
+      this.content.addRisk({
+        title: this.newRisk.title,
+        description: this.newRisk.description || undefined,
+        severity: this.newRisk.severity || undefined,
+      }),
+      () => (this.newRisk = { title: '', description: '', severity: '' }),
+      'Risk',
+    );
+  }
+  removeRisk(id: string): void {
+    this.content.removeRisk(id).subscribe({ next: () => this.refresh(), error: () => undefined });
+  }
+
+  addPlan(): void {
+    if (!this.newPlan.title) { this.error.set('A plan needs a title.'); return; }
+    this.addItem(
+      this.content.addFuturePlan({
+        title: this.newPlan.title,
+        description: this.newPlan.description || undefined,
+        timeframe: this.newPlan.timeframe || undefined,
+      }),
+      () => (this.newPlan = { title: '', description: '', timeframe: '' }),
+      'Future plan',
+    );
+  }
+  removePlan(id: string): void {
+    this.content.removeFuturePlan(id).subscribe({ next: () => this.refresh(), error: () => undefined });
+  }
+
+  addPeer(): void {
+    if (!this.newPeer.peerName) { this.error.set('A peer needs a name.'); return; }
+    this.addItem(
+      this.content.addBenchmarkPeer({
+        peerName: this.newPeer.peerName,
+        arr: this.newPeer.arr ?? undefined,
+        growthPct: this.newPeer.growthPct ?? undefined,
+        grossMarginPct: this.newPeer.grossMarginPct ?? undefined,
+        note: this.newPeer.note || undefined,
+      }),
+      () => (this.newPeer = { peerName: '', arr: null, growthPct: null, grossMarginPct: null, note: '' }),
+      'Benchmark peer',
+    );
+  }
+  removePeer(id: string): void {
+    this.content.removeBenchmarkPeer(id).subscribe({ next: () => this.refresh(), error: () => undefined });
   }
 
   addMilestone(): void {

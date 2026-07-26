@@ -5,7 +5,14 @@ import { ActivatedRoute, RouterLink } from '@angular/router';
 import { DomSanitizer, SafeResourceUrl } from '@angular/platform-browser';
 import { FounderContentService } from '../../core/founder-content.service';
 import { IntroService } from '../../core/intro.service';
-import { Financials, FundingHistory, ProductPage } from '../../core/models';
+import {
+  Financials,
+  FundingHistory,
+  FuturePlanList,
+  ProductPage,
+  RiskList,
+  SwotCategory,
+} from '../../core/models';
 
 /**
  * A founder's public product page. Financials and funding history are fetched
@@ -27,10 +34,19 @@ export class ProductComponent {
   readonly product = signal<ProductPage | null>(null);
   readonly financials = signal<Financials | null>(null);
   readonly funding = signal<FundingHistory | null>(null);
+  readonly risks = signal<RiskList | null>(null);
+  readonly plans = signal<FuturePlanList | null>(null);
   readonly loading = signal(true);
   readonly error = signal<string | null>(null);
   readonly introNotice = signal<string | null>(null);
   readonly introSent = signal(false);
+
+  readonly swotCategories: ReadonlyArray<{ value: SwotCategory; label: string }> = [
+    { value: 'STRENGTH', label: 'Strengths' },
+    { value: 'WEAKNESS', label: 'Weaknesses' },
+    { value: 'OPPORTUNITY', label: 'Opportunities' },
+    { value: 'THREAT', label: 'Threats' },
+  ];
 
   introNote = '';
 
@@ -48,12 +64,22 @@ export class ProductComponent {
         if (p.access.fundingHistory) {
           this.content.theirFundingHistory(userId).subscribe({ next: (h) => this.funding.set(h) });
         }
+        if (p.access.risks) {
+          this.content.theirRisks(userId).subscribe({ next: (r) => this.risks.set(r) });
+        }
+        if (p.access.futurePlans) {
+          this.content.theirFuturePlans(userId).subscribe({ next: (fp) => this.plans.set(fp) });
+        }
       },
       error: () => {
         this.error.set('That profile is not available.');
         this.loading.set(false);
       },
     });
+  }
+
+  swotOf(category: SwotCategory) {
+    return (this.product()?.swotItems ?? []).filter((s) => s.category === category);
   }
 
   /** Safe: the API rebuilds this URL from a provider and a video id. */

@@ -50,8 +50,122 @@
       }
     </div>
 
+    <!-- ── USP / Business model / Market (public) ────────────── -->
+    @if (p.usp || p.businessModel || p.marketSize || p.targetSegment || p.marketGeography) {
+      <div class="card" data-testid="narrative">
+        @if (p.usp) { <h3>Unique selling proposition</h3> <p>{{ p.usp }}</p> }
+        @if (p.businessModel) { <h3>Business model</h3> <p>{{ p.businessModel }}</p> }
+        @if (p.marketSize || p.targetSegment || p.marketGeography) {
+          <h3>Market</h3>
+          <p class="meta">
+            @if (p.marketSize) { <span>{{ p.marketSize }}</span> }
+            @if (p.targetSegment) { <span> · {{ p.targetSegment }}</span> }
+            @if (p.marketGeography) { <span> · {{ p.marketGeography }}</span> }
+          </p>
+        }
+      </div>
+    }
+
+    <!-- ── Products & services (public) ──────────────────────── -->
+    @if (p.productsServices.length) {
+      <h2 class="section-heading">Products &amp; services</h2>
+      <div class="card" data-testid="products">
+        <ul class="timeline">
+          @for (ps of p.productsServices; track ps.id) {
+            <li>
+              <strong>{{ ps.name }}</strong>
+              @if (ps.category) { <span class="pill">{{ ps.category }}</span> }
+              @if (ps.description) { <p class="muted">{{ ps.description }}</p> }
+            </li>
+          }
+        </ul>
+      </div>
+    }
+
+    <!-- ── Promoters (public) ────────────────────────────────── -->
+    @if (p.promoters.length) {
+      <h2 class="section-heading">Promoters</h2>
+      <div class="card" data-testid="promoters">
+        <ul class="timeline">
+          @for (pr of p.promoters; track pr.id) {
+            <li>
+              <strong>{{ pr.name }}</strong>
+              @if (pr.shareholdingPct != null) { <span class="pill">{{ pr.shareholdingPct }}%</span> }
+              @if (pr.background) { <p class="muted">{{ pr.background }}</p> }
+              @if (pr.priorExperience) { <p class="muted">Experience: {{ pr.priorExperience }}</p> }
+            </li>
+          }
+        </ul>
+      </div>
+    }
+
+    <!-- ── Group companies (public) ──────────────────────────── -->
+    @if (p.groupCompanies.length) {
+      <h2 class="section-heading">Group companies</h2>
+      <div class="card" data-testid="group-companies">
+        <ul class="timeline">
+          @for (g of p.groupCompanies; track g.id) {
+            <li>
+              <strong>{{ g.name }}</strong>
+              @if (g.relationship) { <span class="pill">{{ g.relationship }}</span> }
+              @if (g.ownershipPct != null) { <span class="meta"> · {{ g.ownershipPct }}% owned</span> }
+            </li>
+          }
+        </ul>
+      </div>
+    }
+
+    <!-- ── Competition (public) ──────────────────────────────── -->
+    @if (p.competitors.length) {
+      <h2 class="section-heading">Competition</h2>
+      <div class="card" data-testid="competition">
+        <ul class="timeline">
+          @for (c of p.competitors; track c.id) {
+            <li>
+              <strong>{{ c.name }}</strong>
+              @if (c.differentiation) { <p class="muted">Our edge: {{ c.differentiation }}</p> }
+            </li>
+          }
+        </ul>
+      </div>
+    }
+
+    <!-- ── SWOT (public) ─────────────────────────────────────── -->
+    @if (p.swotItems.length) {
+      <h2 class="section-heading">SWOT</h2>
+      <div class="card" data-testid="swot">
+        <dl class="stats">
+          @for (cat of swotCategories; track cat.value) {
+            @if (swotOf(cat.value).length) {
+              <div>
+                <dt>{{ cat.label }}</dt>
+                @for (s of swotOf(cat.value); track s.id) { <dd class="muted">{{ s.text }}</dd> }
+              </div>
+            }
+          }
+        </dl>
+      </div>
+    }
+
+    <!-- ── Company journey (public) ──────────────────────────── -->
+    @if (p.journey.length) {
+      <h2 class="section-heading">Company journey</h2>
+      <div class="card" data-testid="journey">
+        <ul class="timeline">
+          @for (m of p.journey; track m.id) {
+            <li>
+              <strong>{{ m.title }}</strong>
+              <span class="pill">{{ m.achieved ? 'Achieved' : 'Planned' }}</span>
+              <span class="meta">{{ m.occurredOn | date: 'MMM y' }}</span>
+              @if (m.description) { <p class="muted">{{ m.description }}</p> }
+            </li>
+          }
+        </ul>
+      </div>
+    }
+
     <!-- ── Gated: financials ─────────────────────────────────── -->
-    <h2 class="section-heading">Financials &amp; milestones</h2>
+    <h2 class="section-heading">Financials</h2>
     @if (!p.access.financials) {
       <p class="card muted" data-testid="financials-locked">
         🔒 The founder has not shared financials with you.
@@ -64,23 +178,35 @@
           <div><dt>ARR</dt><dd>{{ money(f.arr) }}</dd></div>
           <div><dt>Monthly burn</dt><dd>{{ money(f.monthlyBurn) }}</dd></div>
           <div><dt>Runway</dt><dd>{{ f.runwayMonths ?? '—' }} months</dd></div>
+          @if (f.grossMarginPct != null) { <div><dt>Gross margin</dt><dd>{{ f.grossMarginPct }}%</dd></div> }
+          @if (f.annualRevenue != null) { <div><dt>Annual revenue</dt><dd>{{ money(f.annualRevenue) }}</dd></div> }
         </dl>
         @if (f.useOfFunds) {
           <h3>Use of funds</h3>
           <p>{{ f.useOfFunds }}</p>
         }
-        @if (f.milestones.length) {
-          <h3>Milestones</h3>
-          <ul class="timeline">
-            @for (m of f.milestones; track m.id) {
-              <li>
-                <strong>{{ m.title }}</strong>
-                <span class="pill">{{ m.achieved ? 'Achieved' : 'Planned' }}</span>
-                <span class="meta">{{ m.occurredOn | date: 'MMM y' }}</span>
-                @if (m.description) { <p class="muted">{{ m.description }}</p> }
-              </li>
-            }
-          </ul>
+        <h3>Ratios</h3>
+        <dl class="stats" data-testid="ratios">
+          @if (f.ratios.arrGrowthPct != null) { <div><dt>ARR growth (YoY)</dt><dd>{{ f.ratios.arrGrowthPct }}%</dd></div> }
+          @if (f.ratios.burnMultiple != null) { <div><dt>Burn multiple</dt><dd>{{ f.ratios.burnMultiple }}×</dd></div> }
+          @if (f.ratios.runwayMonthsFromCash != null) { <div><dt>Runway (cash÷burn)</dt><dd>{{ f.ratios.runwayMonthsFromCash }} mo</dd></div> }
+          @if (f.ratios.revenuePerEmployee != null) { <div><dt>Revenue / employee</dt><dd>{{ money(f.ratios.revenuePerEmployee) }}</dd></div> }
+        </dl>
+        @if (f.benchmarkPeers.length) {
+          <h3>Benchmarking</h3>
+          <table class="log">
+            <thead><tr><th>Peer</th><th>ARR</th><th>Growth</th><th>Gross margin</th></tr></thead>
+            <tbody>
+              @for (peer of f.benchmarkPeers; track peer.id) {
+                <tr>
+                  <td>{{ peer.peerName }}</td>
+                  <td>{{ money(peer.arr) }}</td>
+                  <td>{{ peer.growthPct != null ? peer.growthPct + '%' : '—' }}</td>
+                  <td>{{ peer.grossMarginPct != null ? peer.grossMarginPct + '%' : '—' }}</td>
+                </tr>
+              }
+            </tbody>
+          </table>
         }
       </div>
       }
@@ -113,6 +239,54 @@
             }
           </tbody>
         </table>
+      </div>
+      }
+    }
+
+    <!-- ── Gated: risks ──────────────────────────────────────── -->
+    <h2 class="section-heading">Risks</h2>
+    @if (!p.access.risks) {
+      <p class="card muted" data-testid="risks-locked">
+        🔒 The founder has not shared risks with you.
+      </p>
+    } @else {
+      @if (risks(); as rk) {
+      <div class="card" data-testid="risks">
+        @if (rk.items.length) {
+          <ul class="timeline">
+            @for (r of rk.items; track r.id) {
+              <li>
+                <strong>{{ r.title }}</strong>
+                @if (r.severity) { <span class="pill">{{ r.severity }}</span> }
+                @if (r.description) { <p class="muted">{{ r.description }}</p> }
+              </li>
+            }
+          </ul>
+        } @else { <p class="muted">No risks listed.</p> }
+      </div>
+      }
+    }
+
+    <!-- ── Gated: future plans ───────────────────────────────── -->
+    <h2 class="section-heading">Future plans</h2>
+    @if (!p.access.futurePlans) {
+      <p class="card muted" data-testid="plans-locked">
+        🔒 The founder has not shared their plans with you.
+      </p>
+    } @else {
+      @if (plans(); as pl) {
+      <div class="card" data-testid="future-plans">
+        @if (pl.items.length) {
+          <ul class="timeline">
+            @for (fp of pl.items; track fp.id) {
+              <li>
+                <strong>{{ fp.title }}</strong>
+                @if (fp.timeframe) { <span class="pill">{{ fp.timeframe }}</span> }
+                @if (fp.description) { <p class="muted">{{ fp.description }}</p> }
+              </li>
+            }
+          </ul>
+        } @else { <p class="muted">No plans listed.</p> }
       </div>
       }
     }

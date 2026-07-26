@@ -94,43 +94,164 @@
     <button type="button" (click)="saveProduct()" data-testid="save-product">Save product page</button>
   </div>
 
-  <!-- ── Financials ────────────────────────────────────────── -->
-  <h2 class="section-heading">Financials &amp; milestones</h2>
+  <!-- ── USP / Business model / Market (public) ─────────────── -->
+  <h2 class="section-heading">USP, business model &amp; market</h2>
   <div class="card">
-    @if (financials(); as f) {
-      <label for="finVis">Who can see this</label>
-      <select id="finVis" [value]="f.financialsVisibility"
-              (change)="setVisibility('FINANCIALS', $event)" data-testid="financials-visibility">
-        @for (o of visibilityOptions; track o.value) {
-          <option [value]="o.value">{{ o.label }}</option>
-        }
-      </select>
-    }
+    <label for="usp">Unique selling proposition</label>
+    <textarea id="usp" rows="2" [(ngModel)]="usp" name="usp" data-testid="usp"
+              placeholder="What makes you different"></textarea>
 
-    <label for="mrr">MRR</label>
-    <input id="mrr" type="number" [(ngModel)]="fin.mrr" name="mrr" data-testid="mrr" />
+    <label for="businessModel">Business model</label>
+    <textarea id="businessModel" rows="2" [(ngModel)]="businessModel" name="businessModel"
+              data-testid="business-model" placeholder="How you make money"></textarea>
 
-    <label for="arr">ARR</label>
-    <input id="arr" type="number" [(ngModel)]="fin.arr" name="arr" data-testid="arr" />
+    <label for="marketSize">Market size</label>
+    <input id="marketSize" [(ngModel)]="marketSize" name="marketSize" data-testid="market-size"
+           placeholder="e.g. $4B TAM" />
 
-    <label for="burn">Monthly burn</label>
-    <input id="burn" type="number" [(ngModel)]="fin.monthlyBurn" name="burn" data-testid="burn" />
+    <label for="targetSegment">Target segment</label>
+    <input id="targetSegment" [(ngModel)]="targetSegment" name="targetSegment" data-testid="target-segment" />
 
-    <label for="runway">Runway (months)</label>
-    <input id="runway" type="number" [(ngModel)]="fin.runwayMonths" name="runway" data-testid="runway" />
+    <label for="marketGeography">Geography</label>
+    <input id="marketGeography" [(ngModel)]="marketGeography" name="marketGeography" data-testid="market-geography" />
 
-    <label for="useOfFunds">Use of funds</label>
-    <textarea id="useOfFunds" rows="3" [(ngModel)]="fin.useOfFunds" name="useOfFunds"
-              data-testid="use-of-funds"></textarea>
-
-    <button type="button" (click)="saveFinancials()" data-testid="save-financials">Save financials</button>
+    <button type="button" (click)="saveNarrative()" data-testid="save-narrative">Save</button>
   </div>
 
+  <!-- ── Promoters (public) ────────────────────────────────── -->
+  <h2 class="section-heading">Promoters</h2>
   <div class="card">
-    <h3>Milestones</h3>
-    @if (financials()?.milestones?.length) {
-      <ul class="timeline">
-        @for (m of financials()!.milestones; track m.id) {
+    @if (sections()?.promoters?.length) {
+      <ul class="timeline" data-testid="promoter-list">
+        @for (p of sections()!.promoters; track p.id) {
+          <li>
+            <strong>{{ p.name }}</strong>
+            @if (p.shareholdingPct != null) { <span class="pill">{{ p.shareholdingPct }}%</span> }
+            @if (p.background) { <p class="muted">{{ p.background }}</p> }
+            @if (p.priorExperience) { <p class="muted">Experience: {{ p.priorExperience }}</p> }
+            <button type="button" class="link" (click)="removePromoter(p.id)">Remove</button>
+          </li>
+        }
+      </ul>
+    } @else { <p class="muted">No promoters added yet.</p> }
+
+    <label for="promName">Name</label>
+    <input id="promName" [(ngModel)]="newPromoter.name" name="promName" data-testid="promoter-name" />
+    <label for="promBg">Background</label>
+    <input id="promBg" [(ngModel)]="newPromoter.background" name="promBg" />
+    <label for="promPct">Shareholding %</label>
+    <input id="promPct" type="number" [(ngModel)]="newPromoter.shareholdingPct" name="promPct" data-testid="promoter-pct" />
+    <label for="promExp">Prior experience</label>
+    <input id="promExp" [(ngModel)]="newPromoter.priorExperience" name="promExp" />
+    <button type="button" (click)="addPromoter()" data-testid="add-promoter">Add promoter</button>
+  </div>
+
+  <!-- ── Group companies (public) ──────────────────────────── -->
+  <h2 class="section-heading">Group companies</h2>
+  <div class="card">
+    @if (sections()?.groupCompanies?.length) {
+      <ul class="timeline" data-testid="group-list">
+        @for (g of sections()!.groupCompanies; track g.id) {
+          <li>
+            <strong>{{ g.name }}</strong>
+            @if (g.relationship) { <span class="pill">{{ g.relationship }}</span> }
+            @if (g.ownershipPct != null) { <span class="meta"> · {{ g.ownershipPct }}% owned</span> }
+            <button type="button" class="link" (click)="removeGroupCompany(g.id)">Remove</button>
+          </li>
+        }
+      </ul>
+    } @else { <p class="muted">No group companies added yet.</p> }
+
+    <label for="gcName">Name</label>
+    <input id="gcName" [(ngModel)]="newGroupCompany.name" name="gcName" data-testid="group-name" />
+    <label for="gcRel">Relationship</label>
+    <input id="gcRel" [(ngModel)]="newGroupCompany.relationship" name="gcRel" placeholder="Parent, Subsidiary…" />
+    <label for="gcPct">Ownership %</label>
+    <input id="gcPct" type="number" [(ngModel)]="newGroupCompany.ownershipPct" name="gcPct" />
+    <button type="button" (click)="addGroupCompany()" data-testid="add-group">Add group company</button>
+  </div>
+
+  <!-- ── Products & services (public) ──────────────────────── -->
+  <h2 class="section-heading">Products &amp; services</h2>
+  <div class="card">
+    @if (sections()?.productsServices?.length) {
+      <ul class="timeline" data-testid="prodsvc-list">
+        @for (ps of sections()!.productsServices; track ps.id) {
+          <li>
+            <strong>{{ ps.name }}</strong>
+            @if (ps.category) { <span class="pill">{{ ps.category }}</span> }
+            @if (ps.description) { <p class="muted">{{ ps.description }}</p> }
+            <button type="button" class="link" (click)="removeProdSvc(ps.id)">Remove</button>
+          </li>
+        }
+      </ul>
+    } @else { <p class="muted">No products or services added yet.</p> }
+
+    <label for="psName">Name</label>
+    <input id="psName" [(ngModel)]="newProdSvc.name" name="psName" data-testid="prodsvc-name" />
+    <label for="psCat">Category</label>
+    <input id="psCat" [(ngModel)]="newProdSvc.category" name="psCat" />
+    <label for="psDesc">Description</label>
+    <textarea id="psDesc" rows="2" [(ngModel)]="newProdSvc.description" name="psDesc"></textarea>
+    <button type="button" (click)="addProdSvc()" data-testid="add-prodsvc">Add product / service</button>
+  </div>
+
+  <!-- ── Competition (public) ──────────────────────────────── -->
+  <h2 class="section-heading">Competition</h2>
+  <div class="card">
+    @if (sections()?.competitors?.length) {
+      <ul class="timeline" data-testid="competitor-list">
+        @for (c of sections()!.competitors; track c.id) {
+          <li>
+            <strong>{{ c.name }}</strong>
+            @if (c.differentiation) { <p class="muted">Our edge: {{ c.differentiation }}</p> }
+            <button type="button" class="link" (click)="removeCompetitor(c.id)">Remove</button>
+          </li>
+        }
+      </ul>
+    } @else { <p class="muted">No competitors added yet.</p> }
+
+    <label for="compName">Competitor name</label>
+    <input id="compName" [(ngModel)]="newCompetitor.name" name="compName" data-testid="competitor-name" />
+    <label for="compDiff">How you differ</label>
+    <textarea id="compDiff" rows="2" [(ngModel)]="newCompetitor.differentiation" name="compDiff"></textarea>
+    <button type="button" (click)="addCompetitor()" data-testid="add-competitor">Add competitor</button>
+  </div>
+
+  <!-- ── SWOT (public) ─────────────────────────────────────── -->
+  <h2 class="section-heading">SWOT</h2>
+  <div class="card">
+    <div class="stats" data-testid="swot-grid">
+      @for (cat of swotCategories; track cat.value) {
+        <div>
+          <dt>{{ cat.label }}</dt>
+          @for (s of swotOf(cat.value); track s.id) {
+            <p class="muted">
+              {{ s.text }}
+              <button type="button" class="link" (click)="removeSwot(s.id)">×</button>
+            </p>
+          }
+        </div>
+      }
+    </div>
+
+    <label for="swotCat">Category</label>
+    <select id="swotCat" [(ngModel)]="newSwot.category" name="swotCat" data-testid="swot-category">
+      @for (cat of swotCategories; track cat.value) {
+        <option [value]="cat.value">{{ cat.label }}</option>
+      }
+    </select>
+    <label for="swotText">Point</label>
+    <input id="swotText" [(ngModel)]="newSwot.text" name="swotText" data-testid="swot-text" />
+    <button type="button" (click)="addSwot()" data-testid="add-swot">Add SWOT point</button>
+  </div>
+
+  <!-- ── Company journey (public) ──────────────────────────── -->
+  <h2 class="section-heading">Company journey</h2>
+  <div class="card">
+    @if (sections()?.journey?.length) {
+      <ul class="timeline" data-testid="journey-list">
+        @for (m of sections()!.journey; track m.id) {
           <li>
             <strong>{{ m.title }}</strong>
             <span class="pill">{{ m.achieved ? 'Achieved' : 'Planned' }}</span>
@@ -154,6 +275,167 @@
       <input type="checkbox" [(ngModel)]="milestone.achieved" name="msDone" /> Already achieved
     </label>
     <button type="button" (click)="addMilestone()" data-testid="add-milestone">Add milestone</button>
+  </div>
+
+  <!-- ── Financials (gated) ────────────────────────────────── -->
+  <h2 class="section-heading">Financials</h2>
+  <div class="card">
+    @if (financials(); as f) {
+      <label for="finVis">Who can see this</label>
+      <select id="finVis" [value]="f.financialsVisibility"
+              (change)="setVisibility('FINANCIALS', $event)" data-testid="financials-visibility">
+        @for (o of visibilityOptions; track o.value) {
+          <option [value]="o.value">{{ o.label }}</option>
+        }
+      </select>
+    }
+
+    <label for="mrr">MRR</label>
+    <input id="mrr" type="number" [(ngModel)]="fin.mrr" name="mrr" data-testid="mrr" />
+
+    <label for="arr">ARR</label>
+    <input id="arr" type="number" [(ngModel)]="fin.arr" name="arr" data-testid="arr" />
+
+    <label for="priorArr">ARR one year ago</label>
+    <input id="priorArr" type="number" [(ngModel)]="fin.priorYearArr" name="priorArr" data-testid="prior-arr" />
+
+    <label for="annualRevenue">Annual revenue</label>
+    <input id="annualRevenue" type="number" [(ngModel)]="fin.annualRevenue" name="annualRevenue" data-testid="annual-revenue" />
+
+    <label for="grossMargin">Gross margin %</label>
+    <input id="grossMargin" type="number" [(ngModel)]="fin.grossMarginPct" name="grossMargin" data-testid="gross-margin" />
+
+    <label for="burn">Monthly burn</label>
+    <input id="burn" type="number" [(ngModel)]="fin.monthlyBurn" name="burn" data-testid="burn" />
+
+    <label for="cashBalance">Cash balance</label>
+    <input id="cashBalance" type="number" [(ngModel)]="fin.cashBalance" name="cashBalance" data-testid="cash-balance" />
+
+    <label for="runway">Runway (months)</label>
+    <input id="runway" type="number" [(ngModel)]="fin.runwayMonths" name="runway" data-testid="runway" />
+
+    <label for="useOfFunds">Use of funds</label>
+    <textarea id="useOfFunds" rows="3" [(ngModel)]="fin.useOfFunds" name="useOfFunds"
+              data-testid="use-of-funds"></textarea>
+
+    <button type="button" (click)="saveFinancials()" data-testid="save-financials">Save financials</button>
+
+    @if (financials(); as f) {
+      <h3>Computed ratios</h3>
+      <dl class="stats" data-testid="ratios">
+        @if (f.ratios.arrGrowthPct != null) { <div><dt>ARR growth (YoY)</dt><dd>{{ f.ratios.arrGrowthPct }}%</dd></div> }
+        @if (f.ratios.burnMultiple != null) { <div><dt>Burn multiple</dt><dd>{{ f.ratios.burnMultiple }}×</dd></div> }
+        @if (f.ratios.runwayMonthsFromCash != null) { <div><dt>Runway (cash ÷ burn)</dt><dd>{{ f.ratios.runwayMonthsFromCash }} mo</dd></div> }
+        @if (f.ratios.revenuePerEmployee != null) { <div><dt>Revenue / employee</dt><dd>{{ money(f.ratios.revenuePerEmployee) }}</dd></div> }
+        @if (f.ratios.arrToMrrMultiple != null) { <div><dt>ARR ÷ MRR</dt><dd>{{ f.ratios.arrToMrrMultiple }}×</dd></div> }
+      </dl>
+    }
+  </div>
+
+  <!-- ── Benchmarking (part of Financials) ─────────────────── -->
+  <div class="card">
+    <h3>Benchmarking — peers</h3>
+    @if (financials()?.benchmarkPeers?.length) {
+      <table class="log" data-testid="peer-list">
+        <thead><tr><th>Peer</th><th>ARR</th><th>Growth</th><th>Gross margin</th><th></th></tr></thead>
+        <tbody>
+          @for (peer of financials()!.benchmarkPeers; track peer.id) {
+            <tr>
+              <td>{{ peer.peerName }}</td>
+              <td>{{ money(peer.arr) }}</td>
+              <td>{{ peer.growthPct != null ? peer.growthPct + '%' : '—' }}</td>
+              <td>{{ peer.grossMarginPct != null ? peer.grossMarginPct + '%' : '—' }}</td>
+              <td><button type="button" class="link" (click)="removePeer(peer.id)">Remove</button></td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    } @else { <p class="muted">No peers added yet.</p> }
+
+    <label for="peerName">Peer name</label>
+    <input id="peerName" [(ngModel)]="newPeer.peerName" name="peerName" data-testid="peer-name" />
+    <label for="peerArr">Peer ARR</label>
+    <input id="peerArr" type="number" [(ngModel)]="newPeer.arr" name="peerArr" />
+    <label for="peerGrowth">Peer growth %</label>
+    <input id="peerGrowth" type="number" [(ngModel)]="newPeer.growthPct" name="peerGrowth" />
+    <label for="peerMargin">Peer gross margin %</label>
+    <input id="peerMargin" type="number" [(ngModel)]="newPeer.grossMarginPct" name="peerMargin" />
+    <button type="button" (click)="addPeer()" data-testid="add-peer">Add peer</button>
+  </div>
+
+  <!-- ── Risks (gated) ─────────────────────────────────────── -->
+  <h2 class="section-heading">Risks</h2>
+  <div class="card">
+    @if (sections(); as s) {
+      <label for="riskVis">Who can see this</label>
+      <select id="riskVis" [value]="s.risksVisibility"
+              (change)="setVisibility('RISKS', $event)" data-testid="risks-visibility">
+        @for (o of visibilityOptions; track o.value) {
+          <option [value]="o.value">{{ o.label }}</option>
+        }
+      </select>
+    }
+
+    @if (sections()?.riskItems?.length) {
+      <ul class="timeline" data-testid="risk-list">
+        @for (r of sections()!.riskItems; track r.id) {
+          <li>
+            <strong>{{ r.title }}</strong>
+            @if (r.severity) { <span class="pill">{{ r.severity }}</span> }
+            @if (r.description) { <p class="muted">{{ r.description }}</p> }
+            <button type="button" class="link" (click)="removeRisk(r.id)">Remove</button>
+          </li>
+        }
+      </ul>
+    } @else { <p class="muted">No risks added yet.</p> }
+
+    <label for="riskTitle">Risk</label>
+    <input id="riskTitle" [(ngModel)]="newRisk.title" name="riskTitle" data-testid="risk-title" />
+    <label for="riskSev">Severity</label>
+    <select id="riskSev" [(ngModel)]="newRisk.severity" name="riskSev" data-testid="risk-severity">
+      <option value="">—</option>
+      @for (sev of riskSeverities; track sev.value) {
+        <option [value]="sev.value">{{ sev.label }}</option>
+      }
+    </select>
+    <label for="riskDesc">Detail</label>
+    <textarea id="riskDesc" rows="2" [(ngModel)]="newRisk.description" name="riskDesc"></textarea>
+    <button type="button" (click)="addRisk()" data-testid="add-risk">Add risk</button>
+  </div>
+
+  <!-- ── Future plans (gated) ──────────────────────────────── -->
+  <h2 class="section-heading">Future plans</h2>
+  <div class="card">
+    @if (sections(); as s) {
+      <label for="planVis">Who can see this</label>
+      <select id="planVis" [value]="s.futurePlansVisibility"
+              (change)="setVisibility('FUTURE_PLANS', $event)" data-testid="plans-visibility">
+        @for (o of visibilityOptions; track o.value) {
+          <option [value]="o.value">{{ o.label }}</option>
+        }
+      </select>
+    }
+
+    @if (sections()?.futurePlanItems?.length) {
+      <ul class="timeline" data-testid="plan-list">
+        @for (fp of sections()!.futurePlanItems; track fp.id) {
+          <li>
+            <strong>{{ fp.title }}</strong>
+            @if (fp.timeframe) { <span class="pill">{{ fp.timeframe }}</span> }
+            @if (fp.description) { <p class="muted">{{ fp.description }}</p> }
+            <button type="button" class="link" (click)="removePlan(fp.id)">Remove</button>
+          </li>
+        }
+      </ul>
+    } @else { <p class="muted">No plans added yet.</p> }
+
+    <label for="planTitle">Plan</label>
+    <input id="planTitle" [(ngModel)]="newPlan.title" name="planTitle" data-testid="plan-title" />
+    <label for="planTime">Timeframe</label>
+    <input id="planTime" [(ngModel)]="newPlan.timeframe" name="planTime" placeholder="e.g. FY26" />
+    <label for="planDesc">Detail</label>
+    <textarea id="planDesc" rows="2" [(ngModel)]="newPlan.description" name="planDesc"></textarea>
+    <button type="button" (click)="addPlan()" data-testid="add-plan">Add plan</button>
   </div>
 
   <!-- ── Funding history ───────────────────────────────────── -->
@@ -214,14 +496,14 @@
   <!-- ── Who looked ────────────────────────────────────────── -->
   <h2 class="section-heading">Who viewed your gated sections</h2>
   @if (sectionLog().length === 0) {
-    <p class="card muted">No one has opened your financials or funding history yet.</p>
+    <p class="card muted">No one has opened your gated sections yet.</p>
   } @else {
     <table class="log" data-testid="section-log">
       <thead><tr><th>Section</th><th>Viewer</th><th>Role</th><th>When</th></tr></thead>
       <tbody>
         @for (e of sectionLog(); track e.id) {
           <tr>
-            <td>{{ e.section === 'FINANCIALS' ? 'Financials' : 'Funding history' }}</td>
+            <td>{{ sectionLabels[e.section] }}</td>
             <td>{{ e.viewer.email }}</td>
             <td>{{ e.viewer.role }}</td>
             <td>{{ e.viewedAt | date: 'medium' }}</td>
