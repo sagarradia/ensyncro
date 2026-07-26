@@ -1,5 +1,11 @@
 import { Component, inject, signal } from '@angular/core';
-import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
+import { FormBuilder, FormsModule, ReactiveFormsModule, Validators } from '@angular/forms';
+import { CardModule } from 'primeng/card';
+import { ButtonModule } from 'primeng/button';
+import { InputTextModule } from 'primeng/inputtext';
+import { TextareaModule } from 'primeng/textarea';
+import { CheckboxModule } from 'primeng/checkbox';
+import { MessageModule } from 'primeng/message';
 import { INVESTOR_TYPES, InvestorType } from '../../core/models';
 import { ProfileService } from '../../core/profile.service';
 
@@ -7,7 +13,16 @@ import { ProfileService } from '../../core/profile.service';
 @Component({
   selector: 'app-investor-onboarding',
   standalone: true,
-  imports: [ReactiveFormsModule],
+  imports: [
+    ReactiveFormsModule,
+    FormsModule,
+    CardModule,
+    ButtonModule,
+    InputTextModule,
+    TextareaModule,
+    CheckboxModule,
+    MessageModule,
+  ],
   templateUrl: './investor-onboarding.component.html',
 })
 export class InvestorOnboardingComponent {

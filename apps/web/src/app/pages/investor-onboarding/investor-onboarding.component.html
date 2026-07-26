@@ -1,49 +1,55 @@
-<section class="card form-card">
+<p-card styleClass="max-w-lg mx-auto">
   @if (loading()) {
-    <p class="muted">Loading your profile…</p>
+    <p class="text-muted-color">Loading your profile…</p>
   } @else if (done()) {
-    <h1>Investor profile saved</h1>
-    <p class="muted">
+    <h1 class="text-2xl font-bold text-surface-900 m-0 mb-2">Investor profile saved</h1>
+    <p class="text-muted-color mb-5">
       {{ form.controls.name.value }} is set up. You can now discover founders matching your focus.
     </p>
-    <button type="button" class="btn secondary" (click)="done.set(false); step.set(1)">
-      Edit profile
-    </button>
+    <p-button label="Edit profile" severity="secondary" [outlined]="true" (onClick)="done.set(false); step.set(1)" />
   } @else {
-    <ol class="steps" aria-label="Onboarding progress">
-      <li [class.active]="step() === 1">1. Identity</li>
-      <li [class.active]="step() === 2">2. Focus</li>
-      <li [class.active]="step() === 3">3. About</li>
+    <ol class="flex gap-4 list-none p-0 m-0 mb-5 text-sm text-muted-color" aria-label="Onboarding progress">
+      <li [class.text-primary]="step() === 1" [class.font-bold]="step() === 1">1. Identity</li>
+      <li [class.text-primary]="step() === 2" [class.font-bold]="step() === 2">2. Focus</li>
+      <li [class.text-primary]="step() === 3" [class.font-bold]="step() === 3">3. About</li>
     </ol>
 
-    <h1>Set up your investor profile</h1>
-    <p class="muted">Step {{ step() }} of {{ totalSteps }}. Progress is saved as you go.</p>
+    <h1 class="text-2xl font-bold text-surface-900 m-0 mb-1">Set up your investor profile</h1>
+    <p class="text-muted-color mb-4">Step {{ step() }} of {{ totalSteps }}. Progress is saved as you go.</p>
 
     @if (error()) {
-      <p class="alert" role="alert">{{ error() }}</p>
+      <p-message severity="error" styleClass="w-full mb-4" role="alert">{{ error() }}</p-message>
     }
 
-    <form [formGroup]="form" (ngSubmit)="$event.preventDefault()" novalidate>
+    <form [formGroup]="form" (ngSubmit)="$event.preventDefault()" novalidate class="flex flex-col gap-4">
       @if (step() === 1) {
-        <label for="name">Fund or investor name</label>
-        <input id="name" formControlName="name" placeholder="Northwind Ventures, or your name" />
-        @if (form.controls.name.touched && form.controls.name.invalid) {
-          <small class="field-error">At least 2 characters.</small>
-        }
+        <div class="flex flex-col gap-1.5">
+          <label for="name" class="text-sm font-medium">Fund or investor name</label>
+          <input pInputText id="name" formControlName="name" placeholder="Northwind Ventures, or your name" class="w-full" />
+          @if (form.controls.name.touched && form.controls.name.invalid) {
+            <small class="text-red-600">At least 2 characters.</small>
+          }
+        </div>
 
-        <label for="location">Location</label>
-        <input id="location" formControlName="location" placeholder="Mumbai, India" />
+        <div class="flex flex-col gap-1.5">
+          <label for="location" class="text-sm font-medium">Location</label>
+          <input pInputText id="location" formControlName="location" placeholder="Mumbai, India" class="w-full" />
+        </div>
       } @else if (step() === 2) {
-        <fieldset>
-          <legend>Investor type <span class="muted">(select all that apply)</span></legend>
-          <div class="checkbox-grid">
+        <fieldset class="border-0 p-0 m-0">
+          <legend class="text-sm font-medium mb-2 p-0">
+            Investor type <span class="text-muted-color font-normal">(select all that apply)</span>
+          </legend>
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-x-4 gap-y-2">
             @for (t of investorTypeOptions; track t.value) {
-              <label>
-                <input
-                  type="checkbox"
+              <label class="flex items-center gap-2 text-sm cursor-pointer">
+                <p-checkbox
+                  [binary]="true"
+                  [inputId]="t.value"
                   [attr.data-type]="t.value"
-                  [checked]="isSelected(t.value)"
-                  (change)="toggleType(t.value)"
+                  [ngModel]="isSelected(t.value)"
+                  [ngModelOptions]="{ standalone: true }"
+                  (onChange)="toggleType(t.value)"
                 />
                 {{ t.label }}
               </label>
@@ -51,37 +57,53 @@
           </div>
         </fieldset>
 
-        <label for="sectors">Sectors of interest</label>
-        <input id="sectors" formControlName="sectors" placeholder="Fintech, Climate, Health" />
-        <small class="muted">Comma-separated.</small>
+        <div class="flex flex-col gap-1.5">
+          <label for="sectors" class="text-sm font-medium">Sectors of interest</label>
+          <input pInputText id="sectors" formControlName="sectors" placeholder="Fintech, Climate, Health" class="w-full" />
+          <small class="text-muted-color">Comma-separated.</small>
+        </div>
 
-        <label for="ticketMin">Ticket size — minimum</label>
-        <input id="ticketMin" type="number" min="0" formControlName="ticketMin" />
+        <div class="flex flex-col gap-1.5">
+          <label for="ticketMin" class="text-sm font-medium">Ticket size — minimum</label>
+          <input pInputText id="ticketMin" type="number" min="0" formControlName="ticketMin" class="w-full" />
+        </div>
 
-        <label for="ticketMax">Ticket size — maximum</label>
-        <input id="ticketMax" type="number" min="0" formControlName="ticketMax" />
+        <div class="flex flex-col gap-1.5">
+          <label for="ticketMax" class="text-sm font-medium">Ticket size — maximum</label>
+          <input pInputText id="ticketMax" type="number" min="0" formControlName="ticketMax" class="w-full" />
+        </div>
       } @else {
-        <label for="description">About your fund / thesis</label>
-        <textarea id="description" rows="6" formControlName="description"></textarea>
+        <div class="flex flex-col gap-1.5">
+          <label for="description" class="text-sm font-medium">About your fund / thesis</label>
+          <textarea pTextarea id="description" rows="6" formControlName="description" class="w-full"></textarea>
+        </div>
 
-        <label for="website">Website</label>
-        <input id="website" formControlName="website" placeholder="https://example.com" />
+        <div class="flex flex-col gap-1.5">
+          <label for="website" class="text-sm font-medium">Website</label>
+          <input pInputText id="website" formControlName="website" placeholder="https://example.com" class="w-full" />
+        </div>
       }
 
-      <div class="wizard-actions">
+      <div class="flex gap-3 mt-2">
         @if (step() > 1) {
-          <button type="button" class="btn secondary" (click)="back()" [disabled]="saving()">Back</button>
+          <p-button label="Back" severity="secondary" [outlined]="true" (onClick)="back()" [disabled]="saving()" />
         }
         @if (step() < totalSteps) {
-          <button type="button" class="btn" (click)="next()" [disabled]="saving()">
-            {{ saving() ? 'Saving…' : 'Save and continue' }}
-          </button>
+          <p-button
+            [label]="saving() ? 'Saving…' : 'Save and continue'"
+            [loading]="saving()"
+            (onClick)="next()"
+            [disabled]="saving()"
+          />
         } @else {
-          <button type="button" class="btn" (click)="finish()" [disabled]="saving()">
-            {{ saving() ? 'Saving…' : 'Finish' }}
-          </button>
+          <p-button
+            [label]="saving() ? 'Saving…' : 'Finish'"
+            [loading]="saving()"
+            (onClick)="finish()"
+            [disabled]="saving()"
+          />
         }
       </div>
     </form>
   }
-</section>
+</p-card>

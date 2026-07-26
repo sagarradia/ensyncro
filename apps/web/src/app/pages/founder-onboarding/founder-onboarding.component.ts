@@ -1,5 +1,11 @@
 import { Component, inject, signal } from '@angular/core';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
+import { CardModule } from 'primeng/card';
+import { ButtonModule } from 'primeng/button';
+import { InputTextModule } from 'primeng/inputtext';
+import { TextareaModule } from 'primeng/textarea';
+import { SelectModule } from 'primeng/select';
+import { MessageModule } from 'primeng/message';
 import { FUNDING_STAGES, FundingStage } from '../../core/models';
 import { ProfileService } from '../../core/profile.service';
 
@@ -7,14 +13,24 @@ import { ProfileService } from '../../core/profile.service';
 @Component({
   selector: 'app-founder-onboarding',
   standalone: true,
-  imports: [ReactiveFormsModule],
+  imports: [
+    ReactiveFormsModule,
+    CardModule,
+    ButtonModule,
+    InputTextModule,
+    TextareaModule,
+    SelectModule,
+    MessageModule,
+  ],
   templateUrl: './founder-onboarding.component.html',
 })
 export class FounderOnboardingComponent {
   private readonly fb = inject(FormBuilder);
   private readonly profiles = inject(ProfileService);
 
-  readonly stages = FUNDING_STAGES;
+  // Mutable copy: PrimeNG's p-select `options` input is typed as a mutable
+  // array and rejects the readonly FUNDING_STAGES tuple.
+  readonly stages = [...FUNDING_STAGES];
   readonly totalSteps = 3;
 
   readonly step = signal(1);
