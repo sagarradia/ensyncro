@@ -613,7 +613,8 @@ export class FounderProfileService {
     const completionScore = this.computeCompletionScore(p);
     // Expose the milestones list under the name the UI uses for it, and drop
     // the fields that were only selected to feed the completion score.
-    const { milestones, _count, companyName, description, mrr, logoFileId, pitchVideoId, pitchVideoFileId, ...rest } = p;
+    // companyName is kept — the editor uses it to name generated documents.
+    const { milestones, _count, description, mrr, logoFileId, pitchVideoId, pitchVideoFileId, ...rest } = p;
     return { ...rest, journey: milestones, completionScore };
   }
 

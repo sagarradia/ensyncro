@@ -12,6 +12,10 @@
     <p class="alert info" data-testid="fc-notice">{{ notice() }}</p>
   }
 
+  @if (auth.user(); as me) {
+    <app-doc-downloads [userId]="me.id" [companyName]="sections()?.companyName ?? ''" />
+  }
+
   @if (usage(); as u) {
     <div class="card">
       <h2>Storage</h2>

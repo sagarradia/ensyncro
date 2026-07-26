@@ -2,8 +2,10 @@ import { DatePipe } from '@angular/common';
 import { Component, computed, inject, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { DomSanitizer, SafeResourceUrl } from '@angular/platform-browser';
+import { AuthService } from '../../core/auth.service';
 import { FounderContentService } from '../../core/founder-content.service';
 import { UploadService } from '../../core/upload.service';
+import { DocDownloadsComponent } from '../documents/doc-downloads.component';
 import {
   BusinessStage,
   CompanyClassification,
@@ -78,13 +80,14 @@ const RISK_SEVERITIES: ReadonlyArray<{ value: RiskSeverity; label: string }> = [
 @Component({
   selector: 'app-founder-content',
   standalone: true,
-  imports: [FormsModule, DatePipe],
+  imports: [FormsModule, DatePipe, DocDownloadsComponent],
   templateUrl: './founder-content.component.html',
 })
 export class FounderContentComponent {
   private readonly content = inject(FounderContentService);
   private readonly uploads = inject(UploadService);
   private readonly sanitizer = inject(DomSanitizer);
+  readonly auth = inject(AuthService);
 
   readonly visibilityOptions = VISIBILITY_OPTIONS;
   readonly stages = FUNDING_STAGES;

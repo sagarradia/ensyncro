@@ -5,6 +5,7 @@ import { ActivatedRoute, RouterLink } from '@angular/router';
 import { DomSanitizer, SafeResourceUrl } from '@angular/platform-browser';
 import { FounderContentService } from '../../core/founder-content.service';
 import { IntroService } from '../../core/intro.service';
+import { DocDownloadsComponent } from '../documents/doc-downloads.component';
 import {
   Financials,
   FundingHistory,
@@ -24,7 +25,7 @@ import {
 @Component({
   selector: 'app-product',
   standalone: true,
-  imports: [FormsModule, DatePipe, RouterLink],
+  imports: [FormsModule, DatePipe, RouterLink, DocDownloadsComponent],
   templateUrl: './product.component.html',
 })
 export class ProductComponent {

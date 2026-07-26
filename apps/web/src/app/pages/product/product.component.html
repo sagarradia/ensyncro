@@ -27,6 +27,8 @@
       </div>
     </header>
 
+    <app-doc-downloads [userId]="p.userId" [companyName]="p.companyName" />
+
     @if (p.video; as v) {
       <div class="card">
         @if (v.source === 'link') {

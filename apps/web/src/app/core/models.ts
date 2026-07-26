@@ -416,6 +416,7 @@ export interface SectorOption {
 }
 
 export interface OwnSections {
+  companyName: string | null;
   sector: string | null;
   usp: string | null;
   businessModel: string | null;
