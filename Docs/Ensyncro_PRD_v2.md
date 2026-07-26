@@ -198,6 +198,12 @@ The current build uses plain Angular with hand-written CSS (no component library
 
 This is a real, not-yet-done piece of work — see §16 for the concrete build prompt.
 
+### 15.2 Structured-information data entry — profile editor panels, not wizard steps (design decision, confirmed)
+
+The deep Investee structured-information sections (Promoters, Group Companies, Products & Services, USP, Business Model, Market, Competition, Risks, Future Plans, SWOT, Benchmarking & Ratios, and the further §7/§8 sections — Funding Requirement, Shareholding, Classification, Customers, Suppliers, Manufacturing, Operations, Projected Financials, Completion Score) are entered and edited as **independently autosaving panels within the Investee profile editor** (currently `/founder/content`). Each panel persists on its own and is resumable across sessions.
+
+They are deliberately **not** steps in the first-run onboarding wizard: onboarding stays lightweight (core company profile only), while the depth of structured information is filled in and revised over time in the profile editor. This **overrides the earlier "polished multi-step forms / add as new wizard steps" framing** for the structured-information modules — that wording applies to short flows (signup, onboarding), not to the large structured-info surface.
+
 ## 16. Open decisions
 1. ~~Confirm "Ensyncro" stays as the product name~~ — **Confirmed: yes**
 2. ~~Success fee percentage~~ — **Confirmed: Admin-configurable dashboard control, default 5% flat (see §2 for benchmarking)**
