@@ -70,6 +70,37 @@ export class UpdateFounderProductDto {
   @ValidateIf((_, v) => v !== null && v !== '')
   @IsUUID()
   logoFileId?: string | null;
+
+  // ── Public structured detail (aids discovery) ──────────────
+  @IsOptional()
+  @ValidateIf((_, v) => v !== null && v !== '')
+  @IsString()
+  @MaxLength(1000)
+  usp?: string | null;
+
+  @IsOptional()
+  @ValidateIf((_, v) => v !== null && v !== '')
+  @IsString()
+  @MaxLength(2000)
+  businessModel?: string | null;
+
+  @IsOptional()
+  @ValidateIf((_, v) => v !== null && v !== '')
+  @IsString()
+  @MaxLength(300)
+  marketSize?: string | null;
+
+  @IsOptional()
+  @ValidateIf((_, v) => v !== null && v !== '')
+  @IsString()
+  @MaxLength(300)
+  targetSegment?: string | null;
+
+  @IsOptional()
+  @ValidateIf((_, v) => v !== null && v !== '')
+  @IsString()
+  @MaxLength(300)
+  marketGeography?: string | null;
 }
 
 export class UpdateFinancialsDto {
@@ -99,6 +130,28 @@ export class UpdateFinancialsDto {
   @IsString()
   @MaxLength(2000)
   useOfFunds?: string | null;
+
+  // ── Extra inputs that make the computed ratios meaningful ──
+  @IsOptional()
+  @IsInt()
+  @Min(0)
+  annualRevenue?: number | null;
+
+  @IsOptional()
+  @IsInt()
+  @Min(0)
+  @Max(100)
+  grossMarginPct?: number | null;
+
+  @IsOptional()
+  @IsInt()
+  @Min(0)
+  cashBalance?: number | null;
+
+  @IsOptional()
+  @IsInt()
+  @Min(0)
+  priorYearArr?: number | null;
 
   @IsOptional()
   @IsEnum(DataRoomVisibility)

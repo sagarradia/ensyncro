@@ -11,6 +11,16 @@ import { PrismaService } from '../prisma/prisma.service';
 import { FileStorage } from '../data-room/storage.service';
 import { AccessTokenPayload } from '../auth/tokens/token.service';
 import { buildEmbedUrl, buildWatchUrl, parsePitchVideoUrl } from './pitch-video';
+import {
+  CreateBenchmarkPeerDto,
+  CreateCompetitorDto,
+  CreateFuturePlanDto,
+  CreateGroupCompanyDto,
+  CreateProductServiceDto,
+  CreatePromoterDto,
+  CreateRiskItemDto,
+  CreateSwotItemDto,
+} from './dto/deep-profile.dto';
 
 /**
  * Long enough that a logo or an uploaded video does not expire while the page
@@ -159,6 +169,11 @@ export class FounderProfileService {
       productDescription?: string | null;
       categories?: string[];
       logoFileId?: string | null;
+      usp?: string | null;
+      businessModel?: string | null;
+      marketSize?: string | null;
+      targetSegment?: string | null;
+      marketGeography?: string | null;
     },
   ) {
     await this.ownProfile(user);
@@ -167,14 +182,21 @@ export class FounderProfileService {
       await this.assertOwnedFile(user.sub, dto.logoFileId, MediaKind.LOGO);
     }
 
+    // Nullable free-text fields: an explicit key means "set it" (empty → null).
+    const textField = (key: keyof typeof dto) =>
+      dto[key] !== undefined ? { [key]: (dto[key] as string) || null } : {};
+
     await this.prisma.founderProfile.update({
       where: { userId: user.sub },
       data: {
-        ...(dto.productName !== undefined ? { productName: dto.productName || null } : {}),
-        ...(dto.tagline !== undefined ? { tagline: dto.tagline || null } : {}),
-        ...(dto.productDescription !== undefined
-          ? { productDescription: dto.productDescription || null }
-          : {}),
+        ...textField('productName'),
+        ...textField('tagline'),
+        ...textField('productDescription'),
+        ...textField('usp'),
+        ...textField('businessModel'),
+        ...textField('marketSize'),
+        ...textField('targetSegment'),
+        ...textField('marketGeography'),
         ...(dto.categories !== undefined
           ? { categories: dto.categories.map((c) => c.trim()).filter(Boolean).slice(0, 12) }
           : {}),
@@ -207,12 +229,27 @@ export class FounderProfileService {
         tagline: true,
         productDescription: true,
         categories: true,
+        // Public structured detail.
+        usp: true,
+        businessModel: true,
+        marketSize: true,
+        targetSegment: true,
+        marketGeography: true,
         financialsVisibility: true,
         fundingHistoryVisibility: true,
+        risksVisibility: true,
+        futurePlansVisibility: true,
         pitchVideoProvider: true,
         pitchVideoId: true,
         logoFile: { select: { id: true, fileName: true, contentType: true } },
         pitchVideoFile: { select: { id: true, fileName: true, contentType: true } },
+        promoters: { orderBy: { createdAt: 'asc' } },
+        groupCompanies: { orderBy: { createdAt: 'asc' } },
+        productsServices: { orderBy: { createdAt: 'asc' } },
+        competitors: { orderBy: { createdAt: 'asc' } },
+        swotItems: { orderBy: { createdAt: 'asc' } },
+        // Company Journey — reuses the milestones timeline, public here.
+        milestones: { orderBy: { occurredOn: 'asc' } },
       },
     });
     if (!p) throw new NotFoundException('Founder not found');
@@ -226,17 +263,29 @@ export class FounderProfileService {
         )
       : null;
 
-    const { logoFile, pitchVideoFile, financialsVisibility, fundingHistoryVisibility, ...rest } = p;
+    const {
+      logoFile,
+      pitchVideoFile,
+      financialsVisibility,
+      fundingHistoryVisibility,
+      risksVisibility,
+      futurePlansVisibility,
+      milestones,
+      ...rest
+    } = p;
 
     return {
       ...rest,
       logoUrl,
       video: await this.resolveVideo(p),
+      journey: milestones,
       // Lets the UI show a locked state instead of discovering the block by
       // firing a request that 404s.
       access: {
         financials: this.mayView(financialsVisibility, p.userId, viewer),
         fundingHistory: this.mayView(fundingHistoryVisibility, p.userId, viewer),
+        risks: this.mayView(risksVisibility, p.userId, viewer),
+        futurePlans: this.mayView(futurePlansVisibility, p.userId, viewer),
       },
     };
   }
@@ -256,6 +305,17 @@ export class FounderProfileService {
     );
   }
 
+  /** Maps each gated section to the profile column that governs it. */
+  private static readonly VISIBILITY_FIELD: Record<
+    ProfileSection,
+    'financialsVisibility' | 'fundingHistoryVisibility' | 'risksVisibility' | 'futurePlansVisibility'
+  > = {
+    [ProfileSection.FINANCIALS]: 'financialsVisibility',
+    [ProfileSection.FUNDING_HISTORY]: 'fundingHistoryVisibility',
+    [ProfileSection.RISKS]: 'risksVisibility',
+    [ProfileSection.FUTURE_PLANS]: 'futurePlansVisibility',
+  };
+
   private async gate(founderUserId: string, viewer: AccessTokenPayload, section: ProfileSection) {
     const profile = await this.prisma.founderProfile.findUnique({
       where: { userId: founderUserId },
@@ -264,16 +324,15 @@ export class FounderProfileService {
         userId: true,
         financialsVisibility: true,
         fundingHistoryVisibility: true,
+        risksVisibility: true,
+        futurePlansVisibility: true,
       },
     });
     // Same answer for "no such founder" and "not shared with you", so the
     // endpoint cannot be used to discover who is on the platform.
     if (!profile) throw new NotFoundException('Not found');
 
-    const visibility =
-      section === ProfileSection.FINANCIALS
-        ? profile.financialsVisibility
-        : profile.fundingHistoryVisibility;
+    const visibility = profile[FounderProfileService.VISIBILITY_FIELD[section]];
 
     if (!this.mayView(visibility, profile.userId, viewer)) {
       throw new NotFoundException('Not found');
@@ -299,11 +358,52 @@ export class FounderProfileService {
         monthlyBurn: true,
         runwayMonths: true,
         useOfFunds: true,
+        annualRevenue: true,
+        grossMarginPct: true,
+        cashBalance: true,
+        priorYearArr: true,
+        teamSize: true,
         financialsVisibility: true,
-        milestones: { orderBy: { occurredOn: 'asc' } },
+        benchmarkPeers: { orderBy: { createdAt: 'asc' } },
       },
     });
-    return p;
+    // Milestones moved to the public Company Journey section; financials is now
+    // purely the numbers, their ratios and peer benchmarking.
+    const { teamSize, ...rest } = p;
+    return { ...rest, ratios: this.computeRatios(p) };
+  }
+
+  /**
+   * Ratios derived from the raw inputs — only those we have enough data for are
+   * returned, so the UI shows exactly what the founder has filled in.
+   */
+  private computeRatios(f: {
+    arr: number | null;
+    mrr: number | null;
+    monthlyBurn: number | null;
+    annualRevenue: number | null;
+    cashBalance: number | null;
+    priorYearArr: number | null;
+    teamSize: number | null;
+  }): Record<string, number> {
+    const r: Record<string, number> = {};
+    if (f.arr != null && f.priorYearArr != null && f.priorYearArr > 0) {
+      r.arrGrowthPct = Math.round(((f.arr - f.priorYearArr) / f.priorYearArr) * 100);
+    }
+    if (f.cashBalance != null && f.monthlyBurn != null && f.monthlyBurn > 0) {
+      r.runwayMonthsFromCash = Math.round(f.cashBalance / f.monthlyBurn);
+    }
+    if (f.annualRevenue != null && f.teamSize != null && f.teamSize > 0) {
+      r.revenuePerEmployee = Math.round(f.annualRevenue / f.teamSize);
+    }
+    const netNewArr = f.arr != null && f.priorYearArr != null ? f.arr - f.priorYearArr : null;
+    if (netNewArr != null && netNewArr > 0 && f.monthlyBurn != null) {
+      r.burnMultiple = Math.round(((f.monthlyBurn * 12) / netNewArr) * 100) / 100;
+    }
+    if (f.arr != null && f.mrr != null && f.mrr > 0) {
+      r.arrToMrrMultiple = Math.round((f.arr / f.mrr) * 10) / 10;
+    }
+    return r;
   }
 
   async fundingHistory(founderUserId: string, viewer: AccessTokenPayload) {
@@ -326,6 +426,10 @@ export class FounderProfileService {
       monthlyBurn?: number | null;
       runwayMonths?: number | null;
       useOfFunds?: string | null;
+      annualRevenue?: number | null;
+      grossMarginPct?: number | null;
+      cashBalance?: number | null;
+      priorYearArr?: number | null;
       financialsVisibility?: DataRoomVisibility;
     },
   ) {
@@ -342,10 +446,7 @@ export class FounderProfileService {
     await this.ownProfile(user);
     await this.prisma.founderProfile.update({
       where: { userId: user.sub },
-      data:
-        section === ProfileSection.FINANCIALS
-          ? { financialsVisibility: visibility }
-          : { fundingHistoryVisibility: visibility },
+      data: { [FounderProfileService.VISIBILITY_FIELD[section]]: visibility },
     });
     return { section, visibility };
   }
@@ -407,6 +508,150 @@ export class FounderProfileService {
     });
     if (!count) throw new NotFoundException('Funding round not found');
     return { id, deleted: true };
+  }
+
+  // ── Deep profile: owner reads everything ───────────────────────
+
+  /** Everything the founder needs to edit their structured profile. */
+  async ownSections(user: AccessTokenPayload) {
+    const p = await this.prisma.founderProfile.findUnique({
+      where: { userId: user.sub },
+      select: {
+        usp: true,
+        businessModel: true,
+        marketSize: true,
+        targetSegment: true,
+        marketGeography: true,
+        risksVisibility: true,
+        futurePlansVisibility: true,
+        promoters: { orderBy: { createdAt: 'asc' } },
+        groupCompanies: { orderBy: { createdAt: 'asc' } },
+        productsServices: { orderBy: { createdAt: 'asc' } },
+        competitors: { orderBy: { createdAt: 'asc' } },
+        swotItems: { orderBy: { createdAt: 'asc' } },
+        riskItems: { orderBy: { createdAt: 'asc' } },
+        futurePlanItems: { orderBy: { createdAt: 'asc' } },
+        milestones: { orderBy: { occurredOn: 'asc' } },
+      },
+    });
+    if (!p) throw new NotFoundException('Complete your company profile first');
+    // Expose the milestones list under the name the UI uses for it.
+    const { milestones, ...rest } = p;
+    return { ...rest, journey: milestones };
+  }
+
+  // ── Deep profile: gated section reads (audited) ────────────────
+
+  async risks(founderUserId: string, viewer: AccessTokenPayload) {
+    const { id } = await this.gate(founderUserId, viewer, ProfileSection.RISKS);
+    const items = await this.prisma.riskItem.findMany({
+      where: { founderId: id },
+      orderBy: { createdAt: 'asc' },
+    });
+    return { items };
+  }
+
+  async futurePlans(founderUserId: string, viewer: AccessTokenPayload) {
+    const { id } = await this.gate(founderUserId, viewer, ProfileSection.FUTURE_PLANS);
+    const items = await this.prisma.futurePlan.findMany({
+      where: { founderId: id },
+      orderBy: { createdAt: 'asc' },
+    });
+    return { items };
+  }
+
+  // ── Deep profile: list CRUD ────────────────────────────────────
+  // Every child row is scoped to the caller's own profile on both create and
+  // delete, so a founder can only ever touch their own structured data.
+
+  private async removeChild(
+    user: AccessTokenPayload,
+    deleteMany: (founderId: string) => Promise<{ count: number }>,
+  ) {
+    const profile = await this.ownProfile(user);
+    const { count } = await deleteMany(profile.id);
+    if (!count) throw new NotFoundException('Not found');
+    return { deleted: true };
+  }
+
+  async addPromoter(user: AccessTokenPayload, dto: CreatePromoterDto) {
+    const profile = await this.ownProfile(user);
+    return this.prisma.promoter.create({ data: { founderId: profile.id, ...dto } });
+  }
+  removePromoter(user: AccessTokenPayload, id: string) {
+    return this.removeChild(user, (founderId) =>
+      this.prisma.promoter.deleteMany({ where: { id, founderId } }),
+    );
+  }
+
+  async addGroupCompany(user: AccessTokenPayload, dto: CreateGroupCompanyDto) {
+    const profile = await this.ownProfile(user);
+    return this.prisma.groupCompany.create({ data: { founderId: profile.id, ...dto } });
+  }
+  removeGroupCompany(user: AccessTokenPayload, id: string) {
+    return this.removeChild(user, (founderId) =>
+      this.prisma.groupCompany.deleteMany({ where: { id, founderId } }),
+    );
+  }
+
+  async addProductService(user: AccessTokenPayload, dto: CreateProductServiceDto) {
+    const profile = await this.ownProfile(user);
+    return this.prisma.productService.create({ data: { founderId: profile.id, ...dto } });
+  }
+  removeProductService(user: AccessTokenPayload, id: string) {
+    return this.removeChild(user, (founderId) =>
+      this.prisma.productService.deleteMany({ where: { id, founderId } }),
+    );
+  }
+
+  async addCompetitor(user: AccessTokenPayload, dto: CreateCompetitorDto) {
+    const profile = await this.ownProfile(user);
+    return this.prisma.competitor.create({ data: { founderId: profile.id, ...dto } });
+  }
+  removeCompetitor(user: AccessTokenPayload, id: string) {
+    return this.removeChild(user, (founderId) =>
+      this.prisma.competitor.deleteMany({ where: { id, founderId } }),
+    );
+  }
+
+  async addSwotItem(user: AccessTokenPayload, dto: CreateSwotItemDto) {
+    const profile = await this.ownProfile(user);
+    return this.prisma.swotItem.create({ data: { founderId: profile.id, ...dto } });
+  }
+  removeSwotItem(user: AccessTokenPayload, id: string) {
+    return this.removeChild(user, (founderId) =>
+      this.prisma.swotItem.deleteMany({ where: { id, founderId } }),
+    );
+  }
+
+  async addRiskItem(user: AccessTokenPayload, dto: CreateRiskItemDto) {
+    const profile = await this.ownProfile(user);
+    return this.prisma.riskItem.create({ data: { founderId: profile.id, ...dto } });
+  }
+  removeRiskItem(user: AccessTokenPayload, id: string) {
+    return this.removeChild(user, (founderId) =>
+      this.prisma.riskItem.deleteMany({ where: { id, founderId } }),
+    );
+  }
+
+  async addFuturePlan(user: AccessTokenPayload, dto: CreateFuturePlanDto) {
+    const profile = await this.ownProfile(user);
+    return this.prisma.futurePlan.create({ data: { founderId: profile.id, ...dto } });
+  }
+  removeFuturePlan(user: AccessTokenPayload, id: string) {
+    return this.removeChild(user, (founderId) =>
+      this.prisma.futurePlan.deleteMany({ where: { id, founderId } }),
+    );
+  }
+
+  async addBenchmarkPeer(user: AccessTokenPayload, dto: CreateBenchmarkPeerDto) {
+    const profile = await this.ownProfile(user);
+    return this.prisma.benchmarkPeer.create({ data: { founderId: profile.id, ...dto } });
+  }
+  removeBenchmarkPeer(user: AccessTokenPayload, id: string) {
+    return this.removeChild(user, (founderId) =>
+      this.prisma.benchmarkPeer.deleteMany({ where: { id, founderId } }),
+    );
   }
 
   /** Task #13 equivalent for profile sections: who opened what. */

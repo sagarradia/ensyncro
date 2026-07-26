@@ -20,6 +20,16 @@ import {
   UpdateFounderMediaDto,
   UpdateFounderProductDto,
 } from './dto/founder-media.dto';
+import {
+  CreateBenchmarkPeerDto,
+  CreateCompetitorDto,
+  CreateFuturePlanDto,
+  CreateGroupCompanyDto,
+  CreateProductServiceDto,
+  CreatePromoterDto,
+  CreateRiskItemDto,
+  CreateSwotItemDto,
+} from './dto/deep-profile.dto';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { RolesGuard } from '../auth/guards/roles.guard';
 import { Roles } from '../auth/decorators/roles.decorator';
@@ -134,6 +144,101 @@ export class FounderProfileController {
   sectionAccessLog(@CurrentUser() user: AccessTokenPayload) {
     return this.founders.sectionAccessLog(user);
   }
+
+  // ── Deep profile: all structured sections for the editor ─────
+
+  @Get('sections')
+  sections(@CurrentUser() user: AccessTokenPayload) {
+    return this.founders.ownSections(user);
+  }
+
+  // Promoters
+  @Post('promoters')
+  addPromoter(@CurrentUser() user: AccessTokenPayload, @Body() dto: CreatePromoterDto) {
+    return this.founders.addPromoter(user, dto);
+  }
+  @Delete('promoters/:id')
+  removePromoter(@CurrentUser() user: AccessTokenPayload, @Param('id', ParseUUIDPipe) id: string) {
+    return this.founders.removePromoter(user, id);
+  }
+
+  // Group companies
+  @Post('group-companies')
+  addGroupCompany(@CurrentUser() user: AccessTokenPayload, @Body() dto: CreateGroupCompanyDto) {
+    return this.founders.addGroupCompany(user, dto);
+  }
+  @Delete('group-companies/:id')
+  removeGroupCompany(@CurrentUser() user: AccessTokenPayload, @Param('id', ParseUUIDPipe) id: string) {
+    return this.founders.removeGroupCompany(user, id);
+  }
+
+  // Products & services
+  @Post('products-services')
+  addProductService(@CurrentUser() user: AccessTokenPayload, @Body() dto: CreateProductServiceDto) {
+    return this.founders.addProductService(user, dto);
+  }
+  @Delete('products-services/:id')
+  removeProductService(@CurrentUser() user: AccessTokenPayload, @Param('id', ParseUUIDPipe) id: string) {
+    return this.founders.removeProductService(user, id);
+  }
+
+  // Competitors
+  @Post('competitors')
+  addCompetitor(@CurrentUser() user: AccessTokenPayload, @Body() dto: CreateCompetitorDto) {
+    return this.founders.addCompetitor(user, dto);
+  }
+  @Delete('competitors/:id')
+  removeCompetitor(@CurrentUser() user: AccessTokenPayload, @Param('id', ParseUUIDPipe) id: string) {
+    return this.founders.removeCompetitor(user, id);
+  }
+
+  // SWOT
+  @Post('swot')
+  addSwot(@CurrentUser() user: AccessTokenPayload, @Body() dto: CreateSwotItemDto) {
+    return this.founders.addSwotItem(user, dto);
+  }
+  @Delete('swot/:id')
+  removeSwot(@CurrentUser() user: AccessTokenPayload, @Param('id', ParseUUIDPipe) id: string) {
+    return this.founders.removeSwotItem(user, id);
+  }
+
+  // Risks (gated)
+  @Get('risks')
+  risks(@CurrentUser() user: AccessTokenPayload) {
+    return this.founders.risks(user.sub, user);
+  }
+  @Post('risks')
+  addRisk(@CurrentUser() user: AccessTokenPayload, @Body() dto: CreateRiskItemDto) {
+    return this.founders.addRiskItem(user, dto);
+  }
+  @Delete('risks/:id')
+  removeRisk(@CurrentUser() user: AccessTokenPayload, @Param('id', ParseUUIDPipe) id: string) {
+    return this.founders.removeRiskItem(user, id);
+  }
+
+  // Future plans (gated)
+  @Get('future-plans')
+  futurePlans(@CurrentUser() user: AccessTokenPayload) {
+    return this.founders.futurePlans(user.sub, user);
+  }
+  @Post('future-plans')
+  addFuturePlan(@CurrentUser() user: AccessTokenPayload, @Body() dto: CreateFuturePlanDto) {
+    return this.founders.addFuturePlan(user, dto);
+  }
+  @Delete('future-plans/:id')
+  removeFuturePlan(@CurrentUser() user: AccessTokenPayload, @Param('id', ParseUUIDPipe) id: string) {
+    return this.founders.removeFuturePlan(user, id);
+  }
+
+  // Benchmark peers (part of the gated Financials section)
+  @Post('benchmark-peers')
+  addBenchmarkPeer(@CurrentUser() user: AccessTokenPayload, @Body() dto: CreateBenchmarkPeerDto) {
+    return this.founders.addBenchmarkPeer(user, dto);
+  }
+  @Delete('benchmark-peers/:id')
+  removeBenchmarkPeer(@CurrentUser() user: AccessTokenPayload, @Param('id', ParseUUIDPipe) id: string) {
+    return this.founders.removeBenchmarkPeer(user, id);
+  }
 }
 
 /**
@@ -169,5 +274,20 @@ export class FounderPublicController {
     @CurrentUser() viewer: AccessTokenPayload,
   ) {
     return this.founders.fundingHistory(userId, viewer);
+  }
+
+  /** Gated: structured risks, authorised per viewer and audited. */
+  @Get(':userId/risks')
+  risks(@Param('userId', ParseUUIDPipe) userId: string, @CurrentUser() viewer: AccessTokenPayload) {
+    return this.founders.risks(userId, viewer);
+  }
+
+  /** Gated: roadmap / future plans, authorised per viewer and audited. */
+  @Get(':userId/future-plans')
+  futurePlans(
+    @Param('userId', ParseUUIDPipe) userId: string,
+    @CurrentUser() viewer: AccessTokenPayload,
+  ) {
+    return this.founders.futurePlans(userId, viewer);
   }
 }
