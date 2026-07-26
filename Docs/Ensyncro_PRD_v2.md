@@ -2,6 +2,8 @@
 
 *Supersedes Ensyncro_PRD_v1.md. This is a structural pivot, not an edit — see §9 for what carries over.*
 
+> **Maintained incrementally by Claude Code** per instructions relayed from planning discussions — see [Docs/Prompts_Summary.md](Prompts_Summary.md) for the full decision history.
+
 ## 1. Product summary & positioning
 
 Ensyncro is a **technology-enabled Virtual Merchant Banker (VMB)** — not a discovery marketplace. Per the source spec, this distinction is deliberate and central to every design decision:
