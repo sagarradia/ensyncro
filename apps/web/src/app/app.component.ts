@@ -1,4 +1,4 @@
-import { Component, computed, inject } from '@angular/core';
+import { Component, computed, inject, signal } from '@angular/core';
 import { Router, RouterLink, RouterOutlet } from '@angular/router';
 import { ButtonModule } from 'primeng/button';
 import { environment } from '../environments/environment';
@@ -32,7 +32,19 @@ export class AppComponent {
   });
   readonly year = new Date().getFullYear();
 
+  /** Mobile nav menu open state (below the md breakpoint). */
+  readonly mobileMenuOpen = signal(false);
+
+  toggleMobileMenu(): void {
+    this.mobileMenuOpen.update((open) => !open);
+  }
+
+  closeMobileMenu(): void {
+    this.mobileMenuOpen.set(false);
+  }
+
   logout(): void {
+    this.closeMobileMenu();
     this.auth.logout();
     void this.router.navigateByUrl('/');
   }

@@ -1,9 +1,10 @@
-<header class="flex items-center justify-between gap-4 px-6 py-4 bg-surface-900 text-surface-0">
-  <a routerLink="/" class="inline-flex items-center shrink-0" aria-label="Ensyncro home">
-    <img src="assets/logo/ensyncro-logo-white-on-transparent.png" alt="Ensyncro" class="h-11 w-auto" />
+<header class="flex items-center justify-between gap-4 px-4 sm:px-6 py-3 bg-surface-900 text-surface-0">
+  <a routerLink="/" (click)="closeMobileMenu()" class="inline-flex items-center shrink-0" aria-label="Ensyncro home">
+    <img src="assets/logo/ensyncro-logo-white-on-transparent.png" alt="Ensyncro" class="h-10 sm:h-11 w-auto" />
   </a>
 
-  <nav class="flex items-center gap-4">
+  <!-- Desktop nav (md and up) -->
+  <nav class="hidden md:flex items-center gap-4">
     @if (auth.isAuthenticated()) {
       @if (canIntro()) {
         <a class="text-sm text-surface-0 no-underline hover:underline" routerLink="/intros">Intros</a>
@@ -15,7 +16,7 @@
         <a class="text-sm text-surface-0 no-underline hover:underline" routerLink="/data-room">Data room</a>
         <a class="text-sm text-surface-0 no-underline hover:underline" routerLink="/founder/content">My profile</a>
       }
-      <span class="text-sm text-surface-300">{{ auth.user()?.email }}</span>
+      <span class="text-sm text-surface-300 hidden lg:inline">{{ auth.user()?.email }}</span>
       <p-button label="Log out" severity="secondary" [text]="true" size="small" (onClick)="logout()" />
     } @else {
       <a class="text-sm text-surface-0 no-underline hover:underline" routerLink="/login">Log in</a>
@@ -30,7 +31,54 @@
       [class.text-surface-300]="env === 'production'"
     >{{ env }}</span>
   </nav>
+
+  <!-- Mobile hamburger (below md) -->
+  <button
+    type="button"
+    class="md:hidden inline-flex items-center justify-center w-10 h-10 -mr-2 text-surface-0 text-2xl bg-transparent border-0 cursor-pointer"
+    (click)="toggleMobileMenu()"
+    [attr.aria-expanded]="mobileMenuOpen()"
+    aria-controls="mobile-menu"
+    aria-label="Toggle navigation menu"
+  >
+    <i class="pi" [class.pi-bars]="!mobileMenuOpen()" [class.pi-times]="mobileMenuOpen()"></i>
+  </button>
 </header>
+
+<!-- Mobile menu panel (below md, when open) -->
+@if (mobileMenuOpen()) {
+  <nav id="mobile-menu" class="md:hidden flex flex-col px-4 py-2 bg-surface-900 text-surface-0 border-t border-surface-700">
+    @if (auth.isAuthenticated()) {
+      @if (canIntro()) {
+        <a class="block py-3 text-surface-0 no-underline border-b border-surface-800" routerLink="/intros" (click)="closeMobileMenu()">Intros</a>
+      }
+      @if (discoverLink(); as link) {
+        <a class="block py-3 text-surface-0 no-underline border-b border-surface-800" [routerLink]="link" (click)="closeMobileMenu()">Discover</a>
+      }
+      @if (isFounder()) {
+        <a class="block py-3 text-surface-0 no-underline border-b border-surface-800" routerLink="/data-room" (click)="closeMobileMenu()">Data room</a>
+        <a class="block py-3 text-surface-0 no-underline border-b border-surface-800" routerLink="/founder/content" (click)="closeMobileMenu()">My profile</a>
+      }
+      <span class="block py-3 text-sm text-surface-300 border-b border-surface-800">{{ auth.user()?.email }}</span>
+      <div class="py-3">
+        <p-button label="Log out" severity="secondary" [outlined]="true" (onClick)="logout()" styleClass="w-full" />
+      </div>
+    } @else {
+      <a class="block py-3 text-surface-0 no-underline border-b border-surface-800" routerLink="/login" (click)="closeMobileMenu()">Log in</a>
+      <div class="py-3">
+        <a pButton routerLink="/signup" label="Sign up" (click)="closeMobileMenu()" class="no-underline w-full justify-center"></a>
+      </div>
+    }
+    <span
+      class="text-xs uppercase tracking-wider px-2.5 py-1 rounded-full self-start mt-1 mb-2"
+      [class.bg-primary]="env !== 'production'"
+      [class.text-primary-contrast]="env !== 'production'"
+      [class.border]="env === 'production'"
+      [class.border-surface-500]="env === 'production'"
+      [class.text-surface-300]="env === 'production'"
+    >{{ env }}</span>
+  </nav>
+}
 
 <main class="flex-1 w-full max-w-5xl mx-auto px-6 py-10">
   <router-outlet />
