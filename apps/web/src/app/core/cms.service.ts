@@ -36,6 +36,13 @@ export interface PublicContent {
   pricing: { tiers: PricingTier[]; successFeePct: number };
 }
 
+export interface PlatformStats {
+  founders: number;
+  investors: number;
+  deals: number;
+  dealsClosed: number;
+}
+
 /** Admin CMS + the public content feed the homepage renders (PRD §6). */
 @Injectable({ providedIn: 'root' })
 export class CmsService {
@@ -45,6 +52,11 @@ export class CmsService {
   /** World-readable content for the homepage (no auth required). */
   publicContent(): Observable<PublicContent> {
     return this.http.get<PublicContent>(`${this.base}/config/content`);
+  }
+
+  /** Live platform counters for the homepage stats row (no auth required). */
+  stats(): Observable<PlatformStats> {
+    return this.http.get<PlatformStats>(`${this.base}/stats`);
   }
 
   adminContent(): Observable<AdminCmsContent> {

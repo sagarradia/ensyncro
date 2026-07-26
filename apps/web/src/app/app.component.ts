@@ -1,5 +1,6 @@
 import { Component, computed, inject, signal } from '@angular/core';
-import { Router, RouterLink, RouterOutlet } from '@angular/router';
+import { NavigationEnd, Router, RouterLink, RouterOutlet } from '@angular/router';
+import { filter } from 'rxjs';
 import { ButtonModule } from 'primeng/button';
 import { environment } from '../environments/environment';
 import { AuthService } from './core/auth.service';
@@ -39,8 +40,21 @@ export class AppComponent {
   });
   readonly year = new Date().getFullYear();
 
+  /**
+   * The public landing page renders its own marketing nav + footer, so the app
+   * shell chrome (and the max-width content container) is suppressed there.
+   */
+  private readonly currentUrl = signal(this.router.url);
+  readonly isLanding = computed(() => this.currentUrl().split(/[?#]/)[0] === '/');
+
   /** Mobile nav menu open state (below the md breakpoint). */
   readonly mobileMenuOpen = signal(false);
+
+  constructor() {
+    this.router.events
+      .pipe(filter((e): e is NavigationEnd => e instanceof NavigationEnd))
+      .subscribe((e) => this.currentUrl.set(e.urlAfterRedirects));
+  }
 
   toggleMobileMenu(): void {
     this.mobileMenuOpen.update((open) => !open);

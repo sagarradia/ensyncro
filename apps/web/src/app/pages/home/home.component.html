@@ -1,39 +1,217 @@
-<section class="hero">
-  <img
-    src="assets/logo/ensyncro-logo-dark-on-transparent.png"
-    alt="Ensyncro"
-    class="h-24 w-auto mb-6"
-  />
-  <h1 data-testid="home-headline">{{ headline() }}</h1>
-  <p class="lede" data-testid="home-subtext">{{ subtext() }}</p>
+<!-- ── Marketing nav ─────────────────────────────────────────── -->
+<header class="lp-nav">
+  <div class="lp-container flex items-center justify-between gap-4 py-3">
+    <a routerLink="/" (click)="closeMobile()" class="inline-flex items-center shrink-0" aria-label="Ensyncro home">
+      <img src="assets/logo/ensyncro-logo-white-on-transparent.png" alt="Ensyncro" class="h-10 w-auto" />
+    </a>
+
+    <nav class="hidden lg:flex items-center gap-6">
+      <a class="lp-navlink" routerLink="/">Home</a>
+      @for (l of navLinks; track l.href) {
+        <a class="lp-navlink" [href]="l.href">{{ l.label }}</a>
+      }
+      <a class="lp-navlink" [routerLink]="appLink()">Discover</a>
+    </nav>
+
+    <div class="hidden lg:flex items-center gap-3">
+      @if (auth.isAuthenticated()) {
+        <a pButton [routerLink]="appLink()" label="Go to app" size="small" class="no-underline"></a>
+      } @else {
+        <a class="lp-navlink" routerLink="/login">Log in</a>
+        <a pButton routerLink="/signup" label="Get Started" size="small" class="no-underline" data-testid="nav-get-started"></a>
+      }
+    </div>
+
+    <button
+      type="button"
+      class="lg:hidden inline-flex items-center justify-center w-10 h-10 -mr-2 text-surface-0 text-2xl bg-transparent border-0 cursor-pointer"
+      (click)="toggleMobile()"
+      [attr.aria-expanded]="mobileOpen()"
+      aria-label="Toggle navigation menu"
+    >
+      <i class="pi" [class.pi-bars]="!mobileOpen()" [class.pi-times]="mobileOpen()"></i>
+    </button>
+  </div>
+
+  @if (mobileOpen()) {
+    <nav class="lg:hidden flex flex-col px-6 pb-3 border-t border-surface-700">
+      <a class="lp-mobilelink" routerLink="/" (click)="closeMobile()">Home</a>
+      @for (l of navLinks; track l.href) {
+        <a class="lp-mobilelink" [href]="l.href" (click)="closeMobile()">{{ l.label }}</a>
+      }
+      <a class="lp-mobilelink" [routerLink]="appLink()" (click)="closeMobile()">Discover</a>
+      @if (auth.isAuthenticated()) {
+        <a class="lp-mobilelink" [routerLink]="appLink()" (click)="closeMobile()">Go to app</a>
+      } @else {
+        <a class="lp-mobilelink" routerLink="/login" (click)="closeMobile()">Log in</a>
+        <div class="py-3">
+          <a pButton routerLink="/signup" label="Get Started" (click)="closeMobile()" class="no-underline w-full justify-center"></a>
+        </div>
+      }
+    </nav>
+  }
+</header>
+
+<!-- ── Hero ──────────────────────────────────────────────────── -->
+<section class="lp-hero">
+  <div class="lp-container text-center">
+    <img src="assets/logo/ensyncro-logo-dark-on-transparent.png" alt="Ensyncro" class="h-16 w-auto mx-auto mb-8" />
+    <h1 class="lp-h1" data-testid="home-headline">{{ headline() }}</h1>
+    <p class="lp-lede mx-auto" data-testid="home-subtext">{{ subtext() }}</p>
+    <div class="flex flex-wrap items-center justify-center gap-3 mt-8">
+      <a pButton routerLink="/signup" label="Raise capital — for founders" class="no-underline" data-testid="cta-founder"></a>
+      <a pButton routerLink="/signup" label="Find deals — for investors" severity="secondary" [outlined]="true" class="no-underline" data-testid="cta-investor"></a>
+    </div>
+  </div>
 </section>
 
-@if (tiers().length) {
-  <section class="pricing" data-testid="pricing">
-    @for (tier of tiers(); track tier.name) {
-      <article class="tier-card">
-        <h3>{{ tier.name }}</h3>
-        <p class="price">{{ tier.price }}</p>
-        <ul>
-          @for (feat of tier.features; track feat) {
-            <li>{{ feat }}</li>
-          }
-        </ul>
-      </article>
+<!-- ── Live stats ────────────────────────────────────────────── -->
+<section class="lp-stats" data-testid="stats">
+  <div class="lp-container grid grid-cols-2 md:grid-cols-4 gap-6">
+    <div class="lp-stat">
+      <span class="lp-stat-num" data-testid="stat-founders">{{ stats()?.founders ?? '—' }}</span>
+      <span class="lp-stat-label">Founders</span>
+    </div>
+    <div class="lp-stat">
+      <span class="lp-stat-num" data-testid="stat-investors">{{ stats()?.investors ?? '—' }}</span>
+      <span class="lp-stat-label">Investors</span>
+    </div>
+    <div class="lp-stat">
+      <span class="lp-stat-num" data-testid="stat-deals">{{ stats()?.deals ?? '—' }}</span>
+      <span class="lp-stat-label">Active deals</span>
+    </div>
+    <div class="lp-stat">
+      <span class="lp-stat-num">{{ stats()?.dealsClosed ?? '—' }}</span>
+      <span class="lp-stat-label">Deals closed</span>
+    </div>
+  </div>
+</section>
+
+<!-- ── For Founders ──────────────────────────────────────────── -->
+<section id="for-founders" class="lp-section">
+  <div class="lp-container">
+    <p class="lp-kicker">For Founders</p>
+    <h2 class="lp-h2">Everything you need to raise — in one profile</h2>
+    <div class="lp-grid mt-8">
+      @for (f of founderFeatures; track f.title) {
+        <article class="lp-card">
+          <i class="pi {{ f.icon }} lp-card-icon"></i>
+          <h3 class="lp-card-title">{{ f.title }}</h3>
+          <p class="lp-card-blurb">{{ f.blurb }}</p>
+        </article>
+      }
+    </div>
+  </div>
+</section>
+
+<!-- ── For Investors ─────────────────────────────────────────── -->
+<section id="for-investors" class="lp-section lp-section-alt">
+  <div class="lp-container">
+    <p class="lp-kicker">For Investors</p>
+    <h2 class="lp-h2">Find and evaluate founders with real signal</h2>
+    <div class="lp-grid mt-8">
+      @for (f of investorFeatures; track f.title) {
+        <article class="lp-card">
+          <i class="pi {{ f.icon }} lp-card-icon"></i>
+          <h3 class="lp-card-title">{{ f.title }}</h3>
+          <p class="lp-card-blurb">{{ f.blurb }}</p>
+        </article>
+      }
+    </div>
+  </div>
+</section>
+
+<!-- ── How it works ──────────────────────────────────────────── -->
+<section id="how-it-works" class="lp-section">
+  <div class="lp-container">
+    <p class="lp-kicker">How it Works</p>
+    <h2 class="lp-h2">From profile to deal in three steps</h2>
+    <div class="lp-steps mt-8">
+      @for (s of steps; track s.n) {
+        <article class="lp-step">
+          <span class="lp-step-num">{{ s.n }}</span>
+          <h3 class="lp-card-title">{{ s.title }}</h3>
+          <p class="lp-card-blurb">{{ s.blurb }}</p>
+        </article>
+      }
+    </div>
+  </div>
+</section>
+
+<!-- ── Pricing ───────────────────────────────────────────────── -->
+<section id="pricing" class="lp-section lp-section-alt">
+  <div class="lp-container">
+    <p class="lp-kicker">Pricing</p>
+    <h2 class="lp-h2">Simple, aligned with your raise</h2>
+    @if (tiers().length) {
+      <div class="lp-grid lp-grid-3 mt-8" data-testid="pricing">
+        @for (tier of tiers(); track tier.name) {
+          <article class="lp-tier">
+            <h3 class="lp-tier-name">{{ tier.name }}</h3>
+            <p class="lp-tier-price">{{ tier.price }}</p>
+            <ul class="lp-tier-features">
+              @for (feat of tier.features; track feat) {
+                <li><i class="pi pi-check"></i> {{ feat }}</li>
+              }
+            </ul>
+          </article>
+        }
+      </div>
     }
-  </section>
-  @if (successFeePct() !== null) {
-    <p class="fee-note" data-testid="success-fee">
-      Plus a {{ successFeePct() }}% success fee on a completed raise.
-    </p>
-  }
-}
-
-<section class="roles">
-  @for (role of roles; track role.title) {
-    <article class="role-card">
-      <h2>{{ role.title }}</h2>
-      <p>{{ role.blurb }}</p>
-    </article>
-  }
+    @if (successFeePct() !== null) {
+      <p class="lp-fee" data-testid="success-fee">
+        Plus a {{ successFeePct() }}% success fee on a completed raise — we win when you do.
+      </p>
+    }
+  </div>
 </section>
+
+<!-- ── About ─────────────────────────────────────────────────── -->
+<section id="about" class="lp-section">
+  <div class="lp-container lp-about">
+    <p class="lp-kicker">About</p>
+    <h2 class="lp-h2">Built to make private fundraising less of a black box</h2>
+    <p class="lp-lede">
+      Ensyncro brings founders and investors onto common ground: structured company information,
+      documents shared with intent, and a clear path from first interest to a closed deal. No
+      spray-and-pray decks, no scattered spreadsheets — just the right people, syncing up.
+    </p>
+    <div class="mt-6">
+      <a pButton routerLink="/signup" label="Get Started" class="no-underline"></a>
+    </div>
+  </div>
+</section>
+
+<!-- ── Footer ────────────────────────────────────────────────── -->
+<footer class="lp-footer">
+  <div class="lp-container lp-footer-grid">
+    <div class="lp-footer-brand">
+      <img src="assets/logo/ensyncro-logo-white-on-transparent.png" alt="Ensyncro" class="h-9 w-auto mb-3" />
+      <p class="lp-footer-tag">Where founders and investors sync up.</p>
+    </div>
+    <div>
+      <h4 class="lp-footer-h">Product</h4>
+      <a class="lp-footer-link" href="#for-founders">For Founders</a>
+      <a class="lp-footer-link" href="#for-investors">For Investors</a>
+      <a class="lp-footer-link" href="#pricing">Pricing</a>
+      <a class="lp-footer-link" [routerLink]="appLink()">Discover</a>
+    </div>
+    <div>
+      <h4 class="lp-footer-h">Company</h4>
+      <a class="lp-footer-link" href="#about">About</a>
+      <a class="lp-footer-link" href="#how-it-works">How it Works</a>
+      <a class="lp-footer-link" routerLink="/login">Log in</a>
+      <a class="lp-footer-link" routerLink="/signup">Get Started</a>
+    </div>
+    <div>
+      <h4 class="lp-footer-h">Legal</h4>
+      <span class="lp-footer-muted">Privacy Policy</span>
+      <span class="lp-footer-muted">Terms of Service</span>
+      <span class="lp-footer-muted">Cookie Policy</span>
+    </div>
+  </div>
+  <div class="lp-container lp-footer-base">
+    <span>© {{ year }} Ensyncro</span>
+    <span>Funding marketplace</span>
+  </div>
+</footer>

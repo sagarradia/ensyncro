@@ -1,87 +1,282 @@
-.hero h1 {
-  font-size: clamp(1.75rem, 4vw, 2.75rem);
-  line-height: 1.15;
+/* Landing page. Charcoal-green palette via the locked design tokens. */
+
+.lp-container {
+  width: 100%;
+  max-width: 1120px;
+  margin: 0 auto;
+  padding-left: 1.5rem;
+  padding-right: 1.5rem;
+}
+
+/* ── Nav ─────────────────────────────────────────────────────── */
+.lp-nav {
+  position: sticky;
+  top: 0;
+  z-index: 30;
+  background: var(--color-text-primary); /* charcoal */
+  color: #fff;
+}
+
+.lp-navlink {
+  color: #fff;
+  text-decoration: none;
+  font-size: 0.95rem;
+  opacity: 0.9;
+}
+.lp-navlink:hover {
+  opacity: 1;
+  text-decoration: underline;
+}
+
+.lp-mobilelink {
+  display: block;
+  padding: 0.75rem 0;
+  color: #fff;
+  text-decoration: none;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.12);
+}
+
+/* ── Hero ────────────────────────────────────────────────────── */
+.lp-hero {
+  background: var(--color-bg);
+  padding: 4rem 0 3.5rem;
+}
+
+.lp-h1 {
+  font-size: clamp(2rem, 5vw, 3.25rem);
+  line-height: 1.1;
+  font-weight: 700;
+  color: var(--color-text-primary);
   margin: 0 0 1rem;
-  color: var(--color-text-primary);
 }
 
-.lede {
-  font-size: 1.1rem;
-  max-width: 60ch;
-  color: var(--color-text-primary);
-}
-
-.note {
+.lp-lede {
+  font-size: 1.15rem;
+  line-height: 1.6;
+  max-width: 62ch;
   color: var(--color-text-secondary);
+  margin: 0;
+}
+
+/* ── Stats ───────────────────────────────────────────────────── */
+.lp-stats {
+  background: var(--color-text-primary);
+  color: #fff;
+  padding: 2rem 0;
+}
+.lp-stat {
+  text-align: center;
+}
+.lp-stat-num {
+  display: block;
+  font-size: clamp(1.75rem, 4vw, 2.5rem);
+  font-weight: 700;
+  line-height: 1;
+  color: #fff;
+}
+.lp-stat-label {
+  display: block;
+  margin-top: 0.4rem;
   font-size: 0.9rem;
+  letter-spacing: 0.02em;
+  color: rgba(255, 255, 255, 0.7);
 }
 
-.pricing {
+/* ── Sections ────────────────────────────────────────────────── */
+.lp-section {
+  padding: 4rem 0;
+  background: var(--color-card);
+}
+.lp-section-alt {
+  background: var(--color-bg);
+}
+
+.lp-kicker {
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+  font-size: 0.8rem;
+  font-weight: 700;
+  color: var(--color-accent);
+  margin: 0 0 0.5rem;
+}
+.lp-h2 {
+  font-size: clamp(1.5rem, 3.5vw, 2.25rem);
+  line-height: 1.2;
+  font-weight: 700;
+  color: var(--color-text-primary);
+  margin: 0;
+  max-width: 24ch;
+}
+
+/* ── Feature cards ───────────────────────────────────────────── */
+.lp-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
-  gap: 1rem;
-  margin-top: 2.5rem;
+  grid-template-columns: repeat(auto-fit, minmax(230px, 1fr));
+  gap: 1.25rem;
+}
+.lp-grid-3 {
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
 }
 
-.tier-card {
+.lp-card {
   background: var(--color-card);
   border: 1px solid var(--color-border);
-  border-radius: 12px;
-  padding: 1.25rem;
+  border-radius: 14px;
+  padding: 1.5rem;
 }
-
-.tier-card h3 {
-  margin: 0 0 0.25rem;
-  font-size: 1.05rem;
+.lp-section-alt .lp-card {
+  background: var(--color-card);
+}
+.lp-card-icon {
+  font-size: 1.5rem;
   color: var(--color-accent);
 }
+.lp-card-title {
+  margin: 0.85rem 0 0.4rem;
+  font-size: 1.05rem;
+  font-weight: 600;
+  color: var(--color-text-primary);
+}
+.lp-card-blurb {
+  margin: 0;
+  font-size: 0.95rem;
+  line-height: 1.55;
+  color: var(--color-text-secondary);
+}
 
-.tier-card .price {
-  margin: 0 0 0.75rem;
-  font-size: 1.5rem;
+/* ── Steps ───────────────────────────────────────────────────── */
+.lp-steps {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  gap: 1.25rem;
+}
+.lp-step {
+  padding: 1.5rem;
+  border-left: 3px solid var(--color-accent);
+  background: var(--color-bg);
+  border-radius: 0 12px 12px 0;
+}
+.lp-section-alt .lp-step {
+  background: var(--color-card);
+}
+.lp-step-num {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 2.25rem;
+  height: 2.25rem;
+  border-radius: 999px;
+  background: var(--color-accent);
+  color: #fff;
+  font-weight: 700;
+  margin-bottom: 0.75rem;
+}
+
+/* ── Pricing ─────────────────────────────────────────────────── */
+.lp-tier {
+  background: var(--color-card);
+  border: 1px solid var(--color-border);
+  border-radius: 14px;
+  padding: 1.75rem;
+  display: flex;
+  flex-direction: column;
+}
+.lp-tier-name {
+  margin: 0 0 0.25rem;
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: var(--color-accent);
+}
+.lp-tier-price {
+  margin: 0 0 1rem;
+  font-size: 2rem;
   font-weight: 700;
   color: var(--color-text-primary);
 }
-
-.tier-card ul {
+.lp-tier-features {
+  list-style: none;
   margin: 0;
-  padding-left: 1.1rem;
+  padding: 0;
+}
+.lp-tier-features li {
+  display: flex;
+  align-items: baseline;
+  gap: 0.5rem;
+  padding: 0.4rem 0;
   color: var(--color-text-secondary);
   font-size: 0.95rem;
 }
-
-.tier-card li {
-  margin-bottom: 0.35rem;
-}
-
-.fee-note {
-  margin-top: 1rem;
-  color: var(--color-text-secondary);
-  font-size: 0.95rem;
-}
-
-.roles {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
-  gap: 1rem;
-  margin-top: 2.5rem;
-}
-
-.role-card {
-  background: var(--color-card);
-  border: 1px solid var(--color-border);
-  border-radius: 12px;
-  padding: 1.25rem;
-}
-
-.role-card h2 {
-  margin: 0 0 0.5rem;
-  font-size: 1.1rem;
+.lp-tier-features i {
   color: var(--color-accent);
+  font-size: 0.8rem;
+}
+.lp-fee {
+  margin: 1.5rem 0 0;
+  color: var(--color-text-secondary);
+  font-size: 1rem;
 }
 
-.role-card p {
+/* ── About ───────────────────────────────────────────────────── */
+.lp-about .lp-lede {
+  margin-top: 1rem;
+}
+
+/* ── Footer ──────────────────────────────────────────────────── */
+.lp-footer {
+  background: var(--color-text-primary);
+  color: #fff;
+  padding: 3rem 0 1.5rem;
+}
+.lp-footer-grid {
+  display: grid;
+  grid-template-columns: 1.5fr 1fr 1fr 1fr;
+  gap: 2rem;
+}
+.lp-footer-tag {
   margin: 0;
-  color: var(--color-text-secondary);
+  color: rgba(255, 255, 255, 0.65);
+  font-size: 0.9rem;
+  max-width: 26ch;
+}
+.lp-footer-h {
+  margin: 0 0 0.75rem;
+  font-size: 0.8rem;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: rgba(255, 255, 255, 0.55);
+}
+.lp-footer-link,
+.lp-footer-muted {
+  display: block;
+  padding: 0.3rem 0;
   font-size: 0.95rem;
+  color: rgba(255, 255, 255, 0.85);
+  text-decoration: none;
+}
+.lp-footer-link:hover {
+  color: #fff;
+  text-decoration: underline;
+}
+.lp-footer-muted {
+  color: rgba(255, 255, 255, 0.45);
+}
+.lp-footer-base {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  gap: 0.5rem;
+  margin-top: 2.5rem;
+  padding-top: 1.5rem;
+  border-top: 1px solid rgba(255, 255, 255, 0.12);
+  font-size: 0.85rem;
+  color: rgba(255, 255, 255, 0.55);
+}
+
+@media (max-width: 720px) {
+  .lp-footer-grid {
+    grid-template-columns: 1fr 1fr;
+  }
+  .lp-footer-brand {
+    grid-column: 1 / -1;
+  }
 }

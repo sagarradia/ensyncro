@@ -1,3 +1,4 @@
+@if (!isLanding()) {
 <header class="flex items-center justify-between gap-4 px-4 sm:px-6 py-3 bg-surface-900 text-surface-0">
   <a routerLink="/" (click)="closeMobileMenu()" class="inline-flex items-center shrink-0" aria-label="Ensyncro home">
     <img src="assets/logo/ensyncro-logo-white-on-transparent.png" alt="Ensyncro" class="h-10 sm:h-11 w-auto" />
@@ -97,11 +98,13 @@
     >{{ env }}</span>
   </nav>
 }
+}
 
-<main class="flex-1 w-full max-w-5xl mx-auto px-6 py-10">
+<main [class]="isLanding() ? 'flex-1 w-full' : 'flex-1 w-full max-w-5xl mx-auto px-6 py-10'">
   <router-outlet />
 </main>
 
+@if (!isLanding()) {
 <footer class="flex flex-wrap items-center justify-between gap-3 px-6 py-5 border-t border-surface-200 text-muted-color text-sm">
   <span class="flex items-center gap-2.5">
     <img src="assets/logo/ensyncro-logo-dark-on-transparent.png" alt="Ensyncro" class="h-7 w-auto" />
@@ -109,3 +112,4 @@
   </span>
   <span>Funding marketplace</span>
 </footer>
+}
