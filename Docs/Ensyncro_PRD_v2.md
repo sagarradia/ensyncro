@@ -211,3 +211,39 @@ They are deliberately **not** steps in the first-run onboarding wizard: onboardi
 4. ~~Geographic scope~~ — **Confirmed: Global, India-priority (see §6a)** — revised from India-only
 5. **§14.8 — single environment vs. separate Dev/Test/Prod**: still open — **deferred pending a direct discussion with the partner** (not resolved here, since it's his stated requirement)
 6. Anti-virus scanning provider — defaulting to a cloud scanning API (e.g. VirusTotal) over self-hosted ClamAV, to avoid added infrastructure; flag if this should be discussed further. Document versioning (never-overwrite, version chains) still needs implementation design
+
+## 17. Site map (current, per role)
+
+*A reality snapshot of what is actually built and routable today — audited against `apps/web/src/app/app.routes.ts` and the NestJS controllers. This is **not** the target information architecture from §7; it is the current state. "Access" is the client-side route guard; the API independently enforces the same rules server-side on every request. (Terminology note: the PRD says "Investee", but the code and routes still say "founder" — `/founder/*`, `FounderProfile` — a rename is pending, tracked separately.)*
+
+### 17.1 Pages that exist
+
+| Route | Page | What it does | Access |
+|---|---|---|---|
+| `/` | Home | Marketing landing — hero + role cards. | Public |
+| `/login` | Log in | Email/password login, plus one-click demo "Pitch shortcuts" (Founder/Investor/Admin) when demo logins are enabled. | Public |
+| `/signup` | Sign up | Two-step registration: details → email + mobile OTP verification. | Public |
+| `/founder/onboarding` | Founder onboarding | 3-step company-profile wizard (Company · Funding · About), saved per step. | Founder |
+| `/investor/onboarding` | Investor onboarding | 3-step investor-profile wizard (Identity · Focus · About), incl. investor-type multi-select. | Investor |
+| `/discover/investors` | Discover investors | Founders browse investors; filter by type, sector, cheque size. | Founder, Admin |
+| `/discover/founders` | Discover founders | Investors browse founders; filter by sector, stage, amount sought; links through to each founder's product page. | Investor, Admin |
+| `/data-room` | Data room | Founder uploads/manages documents with per-file visibility, secure (signed-URL) view, and the "who accessed" audit log. | Founder |
+| `/founder/content` | Profile editor ("My profile") | Founder edits the full structured Investee profile as autosaving panels: media, product page, USP/business model/market, promoters, group companies, products & services, competition, SWOT, company journey, classification (§8), funding requirement, operations, key customers, key suppliers; plus gated sections (financials + ratios + benchmarking, funding history, risks, future plans, shareholding, projected financials) each with its own visibility control; a profile-completeness score; and the gated-section access log. | Founder |
+| `/founders/:userId` | Product page | A founder's profile as seen by others: all public sections, plus each gated section shown or shown-locked per the viewer's permission (authorised + audited server-side). Carries the "Request intro" action. | Founder, Investor, Admin |
+| `/intros` | Intros | Intro-request inbox — sent + received, accept/decline; contact details released only on acceptance. | Founder, Investor |
+| `**` (unknown) | — | Redirects to Home. | Public |
+
+### 17.2 Per-role summary
+
+- **Founder** — onboarding wizard; profile editor (`/founder/content`, the 20+ structured sections covering the first 12 deep sections plus the §7/§8 additions); data room and its access audit log; discover investors; view any founder's product page; intros inbox.
+- **Investor** — onboarding wizard; discover founders; view any founder's product page (public sections always; financials / funding history / risks / future plans / shareholding / projected financials only where that founder has shared them); intros inbox.
+- **Admin** — **no dedicated admin UI is built.** An admin can reach the shared pages whose guards include `ADMIN`: `/discover/founders`, `/discover/investors`, and any `/founders/:userId` product page (where the API grants an admin the view of every gated section). All other admin capability exists **only as API endpoints, with no screens**:
+  - `GET /api/admin/me` · `GET /api/admin/stats` · `GET /api/admin/invites` · `POST /api/admin/invites` (create — SUPER sub-role only) · `POST /api/admin/invites/accept`.
+  - Admin sub-roles exist in the data model and are enforced server-side (**SUPER · FINANCE · LEGAL · OPS**), but there is no UI to manage them; the first admin is created by a server-side bootstrap script. Platform config (e.g. the configurable success-fee control from §2) is **not built** — no data model, no endpoint, no screen.
+- **Consultant** — defined as a role in §4 but has **zero pages, zero routes, and zero API**. Entirely unbuilt (targeted for phase v1.2).
+
+### 17.3 Reality notes (what is deliberately absent)
+
+- No Deal, Teaser/IM generation, Investment Opportunity, Agreement, Due-Diligence, Notification-centre, or Platform-Administration UI exists yet — these are the phased §7 builds, none started.
+- Discovery still uses the old flat sector/stage/ticket filters. The multi-dimensional §8 taxonomy now exists on the Investee profile, but the discover filters have **not** been reworked to use it (§9 "Discover — rework").
+- There are no dashboards, reports, or search-beyond-filters screens yet.
