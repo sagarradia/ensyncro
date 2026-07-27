@@ -16,6 +16,9 @@ import { DealsListComponent } from './pages/deals/deals-list.component';
 import { DealDetailComponent } from './pages/deals/deal-detail.component';
 import { AdminCmsComponent } from './pages/admin/admin-cms.component';
 import { AdminCollectionsComponent } from './pages/admin/admin-collections.component';
+import { BlogListComponent } from './pages/blog/blog-list.component';
+import { BlogPostComponent } from './pages/blog/blog-post.component';
+import { LegalComponent } from './pages/legal/legal.component';
 import { roleGuard } from './core/auth.guard';
 
 /**
@@ -26,6 +29,11 @@ export const routes: Routes = [
   { path: '', component: HomeComponent },
   { path: 'login', component: LoginComponent },
   { path: 'signup', component: SignupComponent },
+  // Public marketing pages.
+  { path: 'blog', component: BlogListComponent },
+  { path: 'blog/:id', component: BlogPostComponent },
+  { path: 'legal/privacy', component: LegalComponent, data: { doc: 'privacy' } },
+  { path: 'legal/terms', component: LegalComponent, data: { doc: 'terms' } },
   {
     path: 'founder/onboarding',
     component: FounderOnboardingComponent,
