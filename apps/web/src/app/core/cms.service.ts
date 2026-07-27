@@ -32,7 +32,12 @@ export interface PricingTier {
   features: string[];
 }
 export interface PublicContent {
-  homepage: { headline: string; subtext: string };
+  homepage: {
+    tagline: string;
+    headline: string;
+    subtext: string;
+    cta: { headline: string; subtext: string; button: string };
+  };
   pricing: { tiers: PricingTier[]; successFeePct: number };
 }
 

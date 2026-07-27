@@ -216,6 +216,239 @@
   font-size: 1rem;
 }
 
+/* ── Hero tagline ────────────────────────────────────────────── */
+.lp-tagline {
+  text-transform: uppercase;
+  letter-spacing: 0.16em;
+  font-size: 0.8rem;
+  font-weight: 700;
+  color: var(--color-accent);
+  margin: 0 0 0.75rem;
+}
+
+/* ── Illustrative example marker ─────────────────────────────── */
+.lp-illus {
+  display: inline-block;
+  font-size: 0.7rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: #8a5a00;
+  background: #fdf1d6;
+  border: 1px solid #f0d79a;
+  border-radius: 999px;
+  padding: 0.15rem 0.55rem;
+  margin-bottom: 0.75rem;
+}
+.lp-illus-note {
+  margin-top: 1rem;
+  font-size: 0.85rem;
+  font-style: italic;
+  color: var(--color-text-secondary);
+}
+
+/* ── Sample listing cards ────────────────────────────────────── */
+.lp-listing {
+  background: var(--color-card);
+  border: 1px dashed var(--color-border);
+  border-radius: 14px;
+  padding: 1.25rem;
+}
+.lp-listing-head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 0.5rem;
+}
+.lp-listing-name {
+  font-size: 1.05rem;
+  color: var(--color-text-primary);
+}
+.lp-match {
+  font-size: 0.85rem;
+  font-weight: 700;
+  color: var(--color-accent);
+  white-space: nowrap;
+}
+.lp-sector {
+  margin-top: 0.6rem;
+}
+
+/* ── Match preview card ──────────────────────────────────────── */
+.lp-matchcard {
+  background: var(--color-card);
+  border: 1px dashed var(--color-border);
+  border-radius: 16px;
+  padding: 1.5rem;
+  max-width: 720px;
+}
+.lp-match-sides {
+  display: grid;
+  grid-template-columns: 1fr auto 1fr;
+  align-items: center;
+  gap: 1rem;
+}
+.lp-match-side strong {
+  display: block;
+  color: var(--color-text-primary);
+  margin-top: 0.2rem;
+}
+.lp-match-role {
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--color-text-secondary);
+}
+.lp-match-link {
+  text-align: center;
+  color: var(--color-accent);
+}
+.lp-match-big {
+  display: block;
+  font-weight: 700;
+  font-size: 1.1rem;
+}
+.lp-match-why {
+  margin-top: 1rem;
+  border-top: 1px solid var(--color-border);
+  padding-top: 0.85rem;
+}
+
+/* ── Testimonials ────────────────────────────────────────────── */
+.lp-quote {
+  background: var(--color-card);
+  border: 1px solid var(--color-border);
+  border-radius: 14px;
+  padding: 1.5rem;
+}
+.lp-quote-text {
+  font-size: 1.05rem;
+  line-height: 1.55;
+  color: var(--color-text-primary);
+  margin: 0 0 1rem;
+}
+.lp-quote-by {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+.lp-avatar {
+  width: 40px;
+  height: 40px;
+  border-radius: 999px;
+  object-fit: cover;
+}
+.lp-quote-by .meta {
+  margin: 0.1rem 0 0;
+  font-size: 0.85rem;
+  color: var(--color-text-secondary);
+}
+
+/* ── Team ────────────────────────────────────────────────────── */
+.lp-person {
+  text-align: center;
+}
+.lp-person-photo {
+  width: 96px;
+  height: 96px;
+  border-radius: 999px;
+  object-fit: cover;
+  margin: 0 auto 0.75rem;
+  display: block;
+}
+.lp-person-placeholder {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--color-border);
+  color: var(--color-text-secondary);
+  font-size: 2rem;
+}
+.lp-person strong {
+  color: var(--color-text-primary);
+}
+.lp-person-role {
+  margin: 0.2rem 0 0.5rem;
+  color: var(--color-accent);
+  font-size: 0.9rem;
+}
+
+/* ── Blog teaser ─────────────────────────────────────────────── */
+.lp-blog-head {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 1rem;
+  flex-wrap: wrap;
+}
+.lp-morelink {
+  color: var(--color-accent);
+  text-decoration: none;
+  font-weight: 600;
+  white-space: nowrap;
+}
+.lp-morelink:hover {
+  text-decoration: underline;
+}
+.lp-post {
+  display: block;
+  background: var(--color-card);
+  border: 1px solid var(--color-border);
+  border-radius: 14px;
+  padding: 1.25rem;
+  text-decoration: none;
+}
+.lp-post:hover {
+  border-color: var(--color-accent);
+}
+.lp-post-cover {
+  width: 100%;
+  height: 140px;
+  object-fit: cover;
+  border-radius: 10px;
+  margin-bottom: 0.75rem;
+}
+.lp-post-date {
+  font-size: 0.8rem;
+  color: var(--color-text-secondary);
+}
+.lp-post-title {
+  display: block;
+  margin: 0.25rem 0 0.5rem;
+  font-size: 1.05rem;
+  color: var(--color-text-primary);
+}
+
+/* ── Closing CTA banner ──────────────────────────────────────── */
+.lp-cta {
+  background: var(--color-accent);
+  color: #fff;
+  padding: 3.5rem 0;
+}
+.lp-cta-h {
+  font-size: clamp(1.5rem, 3.5vw, 2.25rem);
+  font-weight: 700;
+  margin: 0;
+}
+.lp-cta-sub {
+  margin: 0.75rem auto 0;
+  max-width: 52ch;
+  color: rgba(255, 255, 255, 0.9);
+  font-size: 1.05rem;
+}
+.lp-cta-btn {
+  display: inline-block;
+  background: #fff;
+  color: var(--color-accent);
+  font-weight: 600;
+  text-decoration: none;
+  padding: 0.7rem 1.5rem;
+  border-radius: 8px;
+}
+.lp-cta-btn:hover {
+  background: #f2f2ee;
+}
+
 /* ── About ───────────────────────────────────────────────────── */
 .lp-about .lp-lede {
   margin-top: 1rem;
@@ -229,7 +462,7 @@
 }
 .lp-footer-grid {
   display: grid;
-  grid-template-columns: 1.5fr 1fr 1fr 1fr;
+  grid-template-columns: 1.6fr repeat(auto-fit, minmax(130px, 1fr));
   gap: 2rem;
 }
 .lp-footer-tag {

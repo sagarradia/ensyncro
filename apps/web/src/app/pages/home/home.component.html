@@ -56,6 +56,7 @@
 <section class="lp-hero">
   <div class="lp-container text-center">
     <img src="assets/logo/ensyncro-logo-dark-on-transparent.png" alt="Ensyncro" class="h-16 w-auto mx-auto mb-8" />
+    @if (tagline()) { <p class="lp-tagline" data-testid="home-tagline">{{ tagline() }}</p> }
     <h1 class="lp-h1" data-testid="home-headline">{{ headline() }}</h1>
     <p class="lp-lede mx-auto" data-testid="home-subtext">{{ subtext() }}</p>
     <div class="flex flex-wrap items-center justify-center gap-3 mt-8">
@@ -86,6 +87,30 @@
     </div>
   </div>
 </section>
+
+<!-- ── Sample listings (illustrative) ────────────────────────── -->
+@if (sampleListings().length) {
+  <section class="lp-section" data-testid="sample-listings">
+    <div class="lp-container">
+      <p class="lp-kicker">A glimpse</p>
+      <h2 class="lp-h2">What founder listings look like</h2>
+      <div class="lp-grid mt-8">
+        @for (s of sampleListings(); track s.id) {
+          <article class="lp-listing">
+            <span class="lp-illus" data-testid="illustrative-badge">Illustrative example</span>
+            <div class="lp-listing-head">
+              <strong class="lp-listing-name">{{ s.title }}</strong>
+              @if (s.matchPct != null) { <span class="lp-match">{{ s.matchPct }}% match</span> }
+            </div>
+            @if (s.subtitle) { <p class="lp-card-blurb">{{ s.subtitle }}</p> }
+            @if (s.sector) { <span class="pill lp-sector">{{ s.sector }}</span> }
+          </article>
+        }
+      </div>
+      <p class="lp-illus-note">Illustrative examples for demonstration — not real founders or live data.</p>
+    </div>
+  </section>
+}
 
 <!-- ── For Founders ──────────────────────────────────────────── -->
 <section id="for-founders" class="lp-section">
@@ -138,6 +163,59 @@
   </div>
 </section>
 
+<!-- ── Match preview (illustrative) ──────────────────────────── -->
+@if (matchPreview(); as m) {
+  <section class="lp-section lp-section-alt" data-testid="match-preview">
+    <div class="lp-container">
+      <p class="lp-kicker">The match</p>
+      <h2 class="lp-h2">How a founder meets the right investor</h2>
+      <article class="lp-matchcard mt-8">
+        <span class="lp-illus" data-testid="illustrative-badge">Illustrative example</span>
+        <div class="lp-match-sides">
+          <div class="lp-match-side">
+            <span class="lp-match-role">Founder</span>
+            <strong>{{ m.title }}</strong>
+          </div>
+          <div class="lp-match-link">
+            <i class="pi pi-arrow-right-arrow-left"></i>
+            @if (m.matchPct != null) { <span class="lp-match-big">{{ m.matchPct }}%</span> }
+          </div>
+          <div class="lp-match-side">
+            <span class="lp-match-role">Investor</span>
+            <strong>{{ m.subtitle }}</strong>
+          </div>
+        </div>
+        @if (m.body) { <p class="lp-card-blurb lp-match-why">{{ m.body }}</p> }
+      </article>
+      <p class="lp-illus-note">Illustrative example for demonstration — not a real match.</p>
+    </div>
+  </section>
+}
+
+<!-- ── Testimonials (hidden when empty) ──────────────────────── -->
+@if (testimonials().length) {
+  <section class="lp-section" data-testid="testimonials">
+    <div class="lp-container">
+      <p class="lp-kicker">Testimonials</p>
+      <h2 class="lp-h2">What people say</h2>
+      <div class="lp-grid mt-8">
+        @for (t of testimonials(); track t.id) {
+          <article class="lp-quote">
+            <p class="lp-quote-text">“{{ t.body }}”</p>
+            <div class="lp-quote-by">
+              @if (media(t.imageUrl); as img) { <img class="lp-avatar" [src]="img" [alt]="t.title" /> }
+              <div>
+                <strong>{{ t.title }}</strong>
+                @if (t.subtitle) { <p class="meta">{{ t.subtitle }}</p> }
+              </div>
+            </div>
+          </article>
+        }
+      </div>
+    </div>
+  </section>
+}
+
 <!-- ── Pricing ───────────────────────────────────────────────── -->
 <section id="pricing" class="lp-section lp-section-alt">
   <div class="lp-container">
@@ -182,6 +260,68 @@
   </div>
 </section>
 
+<!-- ── Team (hidden when empty) ──────────────────────────────── -->
+@if (team().length) {
+  <section class="lp-section lp-section-alt" data-testid="team">
+    <div class="lp-container">
+      <p class="lp-kicker">Team</p>
+      <h2 class="lp-h2">The people behind Ensyncro</h2>
+      <div class="lp-grid mt-8">
+        @for (p of team(); track p.id) {
+          <article class="lp-person">
+            @if (media(p.imageUrl); as img) {
+              <img class="lp-person-photo" [src]="img" [alt]="p.title" />
+            } @else {
+              <div class="lp-person-photo lp-person-placeholder"><i class="pi pi-user"></i></div>
+            }
+            <strong>{{ p.title }}</strong>
+            @if (p.subtitle) { <p class="lp-person-role">{{ p.subtitle }}</p> }
+            @if (p.body) { <p class="lp-card-blurb">{{ p.body }}</p> }
+          </article>
+        }
+      </div>
+    </div>
+  </section>
+}
+
+<!-- ── Blog teaser (hidden when empty) ───────────────────────── -->
+@if (blog().length) {
+  <section class="lp-section" data-testid="blog-teaser">
+    <div class="lp-container">
+      <div class="lp-blog-head">
+        <div>
+          <p class="lp-kicker">From the blog</p>
+          <h2 class="lp-h2">Ideas on fundraising</h2>
+        </div>
+        <a class="lp-morelink" routerLink="/blog">All posts →</a>
+      </div>
+      <div class="lp-grid mt-8">
+        @for (post of blog(); track post.id) {
+          <a class="lp-post" [routerLink]="['/blog', post.id]">
+            @if (media(post.imageUrl); as img) { <img class="lp-post-cover" [src]="img" [alt]="post.title" /> }
+            @if (post.date) { <span class="lp-post-date">{{ post.date | date: 'mediumDate' }}</span> }
+            <strong class="lp-post-title">{{ post.title }}</strong>
+            <p class="lp-card-blurb">{{ post.excerpt }}</p>
+          </a>
+        }
+      </div>
+    </div>
+  </section>
+}
+
+<!-- ── Closing CTA banner (after pricing, before footer) ─────── -->
+@if (cta(); as c) {
+  <section class="lp-cta" data-testid="closing-cta">
+    <div class="lp-container text-center">
+      <h2 class="lp-cta-h">{{ c.headline || 'Ready to sync up?' }}</h2>
+      @if (c.subtext) { <p class="lp-cta-sub">{{ c.subtext }}</p> }
+      <div class="mt-6">
+        <a routerLink="/signup" class="lp-cta-btn">{{ c.button || 'Get Started' }}</a>
+      </div>
+    </div>
+  </section>
+}
+
 <!-- ── Footer ────────────────────────────────────────────────── -->
 <footer class="lp-footer">
   <div class="lp-container lp-footer-grid">
@@ -205,10 +345,21 @@
     </div>
     <div>
       <h4 class="lp-footer-h">Legal</h4>
-      <span class="lp-footer-muted">Privacy Policy</span>
-      <span class="lp-footer-muted">Terms of Service</span>
-      <span class="lp-footer-muted">Cookie Policy</span>
+      <a class="lp-footer-link" routerLink="/legal/privacy">Privacy Policy</a>
+      <a class="lp-footer-link" routerLink="/legal/terms">Terms of Service</a>
     </div>
+    @if (achievements().length) {
+      <div data-testid="achievements">
+        <h4 class="lp-footer-h">Success stories</h4>
+        @for (a of achievements(); track a.id) {
+          @if (a.linkUrl) {
+            <a class="lp-footer-link" [href]="a.linkUrl" [title]="a.body || ''">{{ a.title }}</a>
+          } @else {
+            <span class="lp-footer-link" [title]="a.body || ''">{{ a.title }}</span>
+          }
+        }
+      </div>
+    }
   </div>
   <div class="lp-container lp-footer-base">
     <span>© {{ year }} Ensyncro</span>
