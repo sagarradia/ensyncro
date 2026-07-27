@@ -49,18 +49,13 @@ export class CollectionsAdminController {
     return this.collections.specs();
   }
 
-  @Get(':slug')
-  list(@Param('slug') slug: string) {
-    return this.collections.list(slug);
-  }
-
-  @Post(':slug')
-  create(
-    @Param('slug') slug: string,
-    @Body() dto: UpsertCollectionItemDto,
-    @CurrentUser() user: AccessTokenPayload,
-  ) {
-    return this.collections.create(slug, dto, user.sub);
+  // Static segments (image, item/…) MUST be declared before the ':slug'
+  // wildcards, or a POST /image would be routed to create() with slug="image".
+  @Post('image')
+  @UseInterceptors(FileInterceptor('file', { limits: { fileSize: MAX_IMAGE_BYTES } }))
+  uploadImage(@UploadedFile() file: Express.Multer.File | undefined) {
+    if (!file) throw new BadRequestException('Attach an image file');
+    return this.collections.uploadImage(file);
   }
 
   @Put('item/:id')
@@ -73,11 +68,18 @@ export class CollectionsAdminController {
     return this.collections.remove(id);
   }
 
-  @Post('image')
-  @UseInterceptors(FileInterceptor('file', { limits: { fileSize: MAX_IMAGE_BYTES } }))
-  uploadImage(@UploadedFile() file: Express.Multer.File | undefined) {
-    if (!file) throw new BadRequestException('Attach an image file');
-    return this.collections.uploadImage(file);
+  @Get(':slug')
+  list(@Param('slug') slug: string) {
+    return this.collections.list(slug);
+  }
+
+  @Post(':slug')
+  create(
+    @Param('slug') slug: string,
+    @Body() dto: UpsertCollectionItemDto,
+    @CurrentUser() user: AccessTokenPayload,
+  ) {
+    return this.collections.create(slug, dto, user.sub);
   }
 }
 
