@@ -912,3 +912,59 @@ model PlatformStat {
 
   @@map("platform_stats")
 }
+
+// ─────────────────────────────────────────────────────────────
+// Homepage content collections (marketing) + CMS images
+// ─────────────────────────────────────────────────────────────
+
+/// An image an admin uploads for marketing content — team photos, blog covers,
+/// testimonial avatars. Bytes live in the shared FileStorage; this row holds the
+/// metadata and is what the public media route serves.
+model CmsImage {
+  id          String           @id @default(uuid())
+  fileName    String
+  contentType String
+  sizeBytes   Int
+  createdAt   DateTime         @default(now())
+  items       CollectionItem[]
+
+  @@map("cms_images")
+}
+
+enum CollectionKind {
+  SAMPLE_LISTING
+  MATCH_PREVIEW
+  TEAM
+  TESTIMONIAL
+  BLOG
+  ACHIEVEMENT
+}
+
+/// A single repeatable marketing entry. One table backs all six homepage
+/// collections (sample listings, match preview, team, testimonials, blog,
+/// achievements); each collection uses the subset of fields it needs, keeping a
+/// single CRUD/admin shape rather than six bespoke tables.
+model CollectionItem {
+  id          String         @id @default(uuid())
+  collection  CollectionKind
+  title       String
+  subtitle    String?
+  body        String?
+  linkUrl     String?
+  /// Illustrative match percentage (sample-listing / match-preview cards).
+  matchPct    Int?
+  /// Sector tag (sample-listing cards).
+  sector      String?
+  /// Publish date (blog posts).
+  date        DateTime?
+  imageId     String?
+  image       CmsImage?      @relation(fields: [imageId], references: [id], onDelete: SetNull)
+  sortOrder   Int            @default(0)
+  published   Boolean        @default(true)
+  createdById String?
+  createdAt   DateTime       @default(now())
+  updatedAt   DateTime       @updatedAt
+
+  @@index([collection, published])
+  @@map("collection_items")
+}
