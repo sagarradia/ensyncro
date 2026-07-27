@@ -23,6 +23,14 @@ export type CmsGroup = 'homepage' | 'pricing' | 'settings';
 /** A pricing tier's feature list is stored as one newline-separated string. */
 export const CMS_FIELDS: readonly CmsField[] = [
   {
+    key: 'homepage.tagline',
+    label: 'Hero tagline (above headline)',
+    group: 'homepage',
+    type: 'text',
+    default: 'The funding marketplace',
+    help: 'Short line shown above the main headline.',
+  },
+  {
     key: 'homepage.headline',
     label: 'Homepage headline',
     group: 'homepage',
@@ -68,6 +76,29 @@ export const CMS_FIELDS: readonly CmsField[] = [
     type: 'list',
     default: 'Everything in Investor\nDedicated support\nCustom onboarding',
     help: 'One feature per line.',
+  },
+
+  // ── Closing CTA banner (after pricing, before the footer) ────
+  {
+    key: 'homepage.cta.headline',
+    label: 'Closing CTA · headline',
+    group: 'homepage',
+    type: 'text',
+    default: 'Ready to sync up?',
+  },
+  {
+    key: 'homepage.cta.subtext',
+    label: 'Closing CTA · subtext',
+    group: 'homepage',
+    type: 'textarea',
+    default: 'Join founders and investors already building their next chapter on Ensyncro.',
+  },
+  {
+    key: 'homepage.cta.button',
+    label: 'Closing CTA · button label',
+    group: 'homepage',
+    type: 'text',
+    default: 'Get Started',
   },
 
   // ── Settings ─────────────────────────────────────────────────

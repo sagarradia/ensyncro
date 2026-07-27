@@ -62,8 +62,14 @@ export class CmsService {
     });
     return {
       homepage: {
+        tagline: v.get('homepage.tagline') ?? '',
         headline: v.get('homepage.headline') ?? '',
         subtext: v.get('homepage.subtext') ?? '',
+        cta: {
+          headline: v.get('homepage.cta.headline') ?? '',
+          subtext: v.get('homepage.cta.subtext') ?? '',
+          button: v.get('homepage.cta.button') ?? '',
+        },
       },
       pricing: {
         tiers: [tier(1), tier(2), tier(3)],
