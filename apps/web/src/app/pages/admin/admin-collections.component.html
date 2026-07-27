@@ -1,0 +1,115 @@
+<section class="discover">
+  <h1>Homepage content</h1>
+  <p class="muted">
+    Manage the repeatable homepage sections. Sample listings and the match preview always
+    carry an "Illustrative example" badge. Team, testimonials, blog and achievements are hidden
+    on the homepage until you add entries.
+  </p>
+
+  @if (error()) { <p class="alert" role="alert" data-testid="col-error">{{ error() }}</p> }
+  @if (notice()) { <p class="alert info" data-testid="col-notice">{{ notice() }}</p> }
+
+  @if (loading()) {
+    <p class="muted">Loading…</p>
+  } @else {
+    <!-- Collection switcher -->
+    <div class="col-tabs">
+      @for (s of specs(); track s.slug) {
+        <button
+          type="button"
+          class="col-tab"
+          [class.active]="selectedSlug() === s.slug"
+          (click)="select(s.slug)"
+          [attr.data-slug]="s.slug"
+        >{{ s.label }}</button>
+      }
+    </div>
+
+    @if (spec(); as sp) {
+      <p class="muted col-note">{{ sp.note }}</p>
+
+      <!-- Existing entries -->
+      <div class="card">
+        <h2>Entries ({{ items().length }})</h2>
+        @if (items().length) {
+          <ul class="col-list" data-testid="col-list">
+            @for (item of items(); track item.id) {
+              <li class="col-row">
+                <div class="col-row-main">
+                  @if (item.imageUrl) {
+                    <img class="col-thumb" [src]="collectionsMedia(item.imageUrl)" alt="" />
+                  }
+                  <div>
+                    <strong>{{ item.title }}</strong>
+                    @if (!item.published) { <span class="pill">Hidden</span> }
+                    @if (item.subtitle) { <p class="meta">{{ item.subtitle }}</p> }
+                  </div>
+                </div>
+                <div class="col-row-actions">
+                  <button type="button" class="btn secondary" (click)="edit(item)" [attr.data-edit]="item.id">Edit</button>
+                  <button type="button" class="btn secondary" (click)="remove(item)" [attr.data-remove]="item.id">Remove</button>
+                </div>
+              </li>
+            }
+          </ul>
+        } @else {
+          <p class="muted">No entries yet. Add one below.</p>
+        }
+      </div>
+
+      <!-- Add / edit form -->
+      <div class="card">
+        <h2>{{ editingId() ? 'Edit entry' : 'Add entry' }}</h2>
+        @for (f of sp.fields; track f.name) {
+          <div class="field">
+            <label [for]="'f_' + f.name">{{ f.label }}@if (f.required) { <span class="req">*</span> }</label>
+            @if (f.type === 'textarea') {
+              <textarea [id]="'f_' + f.name" rows="4" [(ngModel)]="form[f.name]" [name]="f.name"></textarea>
+            } @else {
+              <input
+                [id]="'f_' + f.name"
+                [type]="f.type === 'number' ? 'number' : (f.type === 'date' ? 'date' : 'text')"
+                [(ngModel)]="form[f.name]"
+                [name]="f.name"
+              />
+            }
+          </div>
+        }
+
+        @if (sp.image) {
+          <div class="field">
+            <label>{{ sp.imageLabel || 'Image' }}</label>
+            @if (imageUrl) {
+              <div class="col-img-preview">
+                <img [src]="imageUrl" alt="preview" />
+                <button type="button" class="btn secondary" (click)="clearImage()">Remove image</button>
+              </div>
+            }
+            <input type="file" accept="image/*" (change)="onImageSelected($event)" data-testid="col-image" />
+            @if (uploading()) { <small class="muted">Uploading…</small> }
+          </div>
+        }
+
+        <div class="field col-inline">
+          <label class="inline">
+            <input type="checkbox" [(ngModel)]="form['published']" name="published" />
+            Published (visible on the site)
+          </label>
+          <label>
+            Sort order
+            <input type="number" [(ngModel)]="form['sortOrder']" name="sortOrder" style="width:6rem;" />
+          </label>
+        </div>
+
+        <div class="col-form-actions">
+          <button type="button" class="btn" (click)="save()" [disabled]="saving()" data-testid="col-save">
+            {{ saving() ? 'Saving…' : (editingId() ? 'Update entry' : 'Add entry') }}
+          </button>
+          @if (editingId()) {
+            <button type="button" class="btn secondary" (click)="cancelEdit()">Cancel</button>
+          }
+        </div>
+      </div>
+    }
+  }
+</section>
