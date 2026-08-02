@@ -1,0 +1,36 @@
+# Local Postgres for offline development.
+#
+# Production uses Neon (managed Postgres on Vercel); this container is purely a
+# convenience for developing the API without a network database.
+#
+#   npm run db:up            # start Postgres in the background
+#   npm run db:down          # stop it (data is kept in the named volume)
+#   npm run db:down -- -v     # stop AND delete the data volume (fresh start)
+#
+# Then point the API at it via a monorepo-root `.env` (see .env.example):
+#   DATABASE_URL=postgresql://ensyncro:ensyncro@localhost:5432/ensyncro?schema=public
+#   DIRECT_URL=postgresql://ensyncro:ensyncro@localhost:5432/ensyncro?schema=public
+# and apply the schema:
+#   npm run prisma:deploy --workspace @ensyncro/api
+
+services:
+  postgres:
+    image: postgres:16-alpine
+    container_name: ensyncro-postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: ensyncro
+      POSTGRES_PASSWORD: ensyncro
+      POSTGRES_DB: ensyncro
+    ports:
+      - '5432:5432'
+    volumes:
+      - ensyncro-pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ['CMD-SHELL', 'pg_isready -U ensyncro -d ensyncro']
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+volumes:
+  ensyncro-pgdata:

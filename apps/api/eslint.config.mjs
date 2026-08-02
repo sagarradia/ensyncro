@@ -35,4 +35,9 @@ export default tseslint.config(
       ],
     },
   },
+  {
+    // Jest globals (describe/it/expect/…) for the unit tests.
+    files: ['**/*.spec.ts'],
+    languageOptions: { globals: { ...globals.jest } },
+  },
 );

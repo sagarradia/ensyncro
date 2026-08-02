@@ -15,12 +15,16 @@
   },
   "scripts": {
     "build": "npm run build --workspaces --if-present",
+    "test": "npm run test --workspaces --if-present",
     "api:dev": "npm run start:dev --workspace @ensyncro/api",
     "api:build": "npm run build --workspace @ensyncro/api",
     "web:dev": "npm run start --workspace @ensyncro/web",
     "web:build": "npm run build --workspace @ensyncro/web",
     "prisma:generate": "npm run prisma:generate --workspace @ensyncro/api",
     "prisma:migrate": "npm run prisma:migrate --workspace @ensyncro/api",
+    "db:up": "docker compose up -d",
+    "db:down": "docker compose down",
+    "db:logs": "docker compose logs -f postgres",
     "lint": "npm run lint --workspaces --if-present"
   }
 }
