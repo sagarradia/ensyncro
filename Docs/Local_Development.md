@@ -35,10 +35,15 @@ npm install
    JWT_REFRESH_SECRET=dev-refresh-secret
    ```
 
+   Both `DATABASE_URL` **and** `DIRECT_URL` are needed — `DIRECT_URL` is the
+   unpooled endpoint Prisma uses for migrations. This root `.env` is the single
+   source of truth: the API reads it at runtime, and the Prisma scripts load it
+   too (via `dotenv-cli`), so you don't need a second `.env` inside `apps/api`.
+
 3. **Apply the schema** (runs all Prisma migrations against the local DB):
 
    ```bash
-   npm run prisma:deploy --workspace @ensyncro/api
+   npm run prisma:deploy
    ```
 
    Optionally seed demo data / an admin:

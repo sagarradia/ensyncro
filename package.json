@@ -22,6 +22,7 @@
     "web:build": "npm run build --workspace @ensyncro/web",
     "prisma:generate": "npm run prisma:generate --workspace @ensyncro/api",
     "prisma:migrate": "npm run prisma:migrate --workspace @ensyncro/api",
+    "prisma:deploy": "npm run prisma:deploy --workspace @ensyncro/api",
     "db:up": "docker compose up -d",
     "db:down": "docker compose down",
     "db:logs": "docker compose logs -f postgres",
