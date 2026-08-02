@@ -31,7 +31,7 @@
       <p-button label="Log out" severity="secondary" [text]="true" size="small" (onClick)="logout()" />
     } @else {
       <a class="text-sm text-surface-0 no-underline hover:underline" routerLink="/login">Log in</a>
-      <a pButton routerLink="/signup" label="Sign up" size="small" class="no-underline"></a>
+      <a pButton routerLink="/signup" size="small" class="no-underline">Sign up</a>
     }
     <span
       class="text-xs uppercase tracking-wider px-2.5 py-1 rounded-full"
@@ -87,7 +87,7 @@
     } @else {
       <a class="block py-3 text-surface-0 no-underline border-b border-surface-800" routerLink="/login" (click)="closeMobileMenu()">Log in</a>
       <div class="py-3">
-        <a pButton routerLink="/signup" label="Sign up" (click)="closeMobileMenu()" class="no-underline w-full justify-center"></a>
+        <a pButton routerLink="/signup" (click)="closeMobileMenu()" class="no-underline w-full justify-center">Sign up</a>
       </div>
     }
     <span

@@ -15,10 +15,10 @@
 
     <div class="hidden lg:flex items-center gap-3">
       @if (auth.isAuthenticated()) {
-        <a pButton [routerLink]="appLink()" label="Go to app" size="small" class="no-underline"></a>
+        <a pButton [routerLink]="appLink()" size="small" class="no-underline">Go to app</a>
       } @else {
         <a class="lp-navlink" routerLink="/login">Log in</a>
-        <a pButton routerLink="/signup" label="Get Started" size="small" class="no-underline" data-testid="nav-get-started"></a>
+        <a pButton routerLink="/signup" size="small" class="no-underline" data-testid="nav-get-started">Get Started</a>
       }
     </div>
 
@@ -45,7 +45,7 @@
       } @else {
         <a class="lp-mobilelink" routerLink="/login" (click)="closeMobile()">Log in</a>
         <div class="py-3">
-          <a pButton routerLink="/signup" label="Get Started" (click)="closeMobile()" class="no-underline w-full justify-center"></a>
+          <a pButton routerLink="/signup" (click)="closeMobile()" class="no-underline w-full justify-center">Get Started</a>
         </div>
       }
     </nav>
@@ -60,8 +60,8 @@
     <h1 class="lp-h1" data-testid="home-headline">{{ headline() }}</h1>
     <p class="lp-lede mx-auto" data-testid="home-subtext">{{ subtext() }}</p>
     <div class="flex flex-wrap items-center justify-center gap-3 mt-8">
-      <a pButton routerLink="/signup" label="Raise capital — for founders" class="no-underline" data-testid="cta-founder"></a>
-      <a pButton routerLink="/signup" label="Find deals — for investors" severity="secondary" [outlined]="true" class="no-underline" data-testid="cta-investor"></a>
+      <a pButton routerLink="/signup" class="no-underline" data-testid="cta-founder">Raise capital — for founders</a>
+      <a pButton routerLink="/signup" severity="secondary" [outlined]="true" class="no-underline" data-testid="cta-investor">Find deals — for investors</a>
     </div>
   </div>
 </section>
@@ -100,7 +100,7 @@
             <span class="lp-illus" data-testid="illustrative-badge">Illustrative example</span>
             <div class="lp-listing-head">
               <strong class="lp-listing-name">{{ s.title }}</strong>
-              @if (s.matchPct != null) { <span class="lp-match">{{ s.matchPct }}% match</span> }
+              @if (s.matchPct !== null) { <span class="lp-match">{{ s.matchPct }}% match</span> }
             </div>
             @if (s.subtitle) { <p class="lp-card-blurb">{{ s.subtitle }}</p> }
             @if (s.sector) { <span class="pill lp-sector">{{ s.sector }}</span> }
@@ -178,7 +178,7 @@
           </div>
           <div class="lp-match-link">
             <i class="pi pi-arrow-right-arrow-left"></i>
-            @if (m.matchPct != null) { <span class="lp-match-big">{{ m.matchPct }}%</span> }
+            @if (m.matchPct !== null) { <span class="lp-match-big">{{ m.matchPct }}%</span> }
           </div>
           <div class="lp-match-side">
             <span class="lp-match-role">Investor</span>
@@ -255,7 +255,7 @@
       spray-and-pray decks, no scattered spreadsheets — just the right people, syncing up.
     </p>
     <div class="mt-6">
-      <a pButton routerLink="/signup" label="Get Started" class="no-underline"></a>
+      <a pButton routerLink="/signup" class="no-underline">Get Started</a>
     </div>
   </div>
 </section>

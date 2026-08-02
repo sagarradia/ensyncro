@@ -14,6 +14,7 @@
     "typescript": "~5.9.0"
   },
   "scripts": {
+    "build": "npm run build --workspaces --if-present",
     "api:dev": "npm run start:dev --workspace @ensyncro/api",
     "api:build": "npm run build --workspace @ensyncro/api",
     "web:dev": "npm run start --workspace @ensyncro/web",

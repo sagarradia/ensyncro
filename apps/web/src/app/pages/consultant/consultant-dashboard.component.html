@@ -22,8 +22,8 @@
 
     <h2 class="section-heading">Your profile</h2>
     <div class="card">
-      <label>Discipline</label>
-      <input [value]="typeLabels[p.consultantType]" disabled />
+      <label for="cDiscipline">Discipline</label>
+      <input id="cDiscipline" [value]="typeLabels[p.consultantType]" disabled />
 
       <label for="cName">Name</label>
       <input id="cName" [(ngModel)]="form.name" name="cName" data-testid="consultant-name" />

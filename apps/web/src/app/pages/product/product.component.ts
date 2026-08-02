@@ -46,7 +46,7 @@ export class ProductComponent {
   readonly introNotice = signal<string | null>(null);
   readonly introSent = signal(false);
 
-  readonly swotCategories: ReadonlyArray<{ value: SwotCategory; label: string }> = [
+  readonly swotCategories: readonly { value: SwotCategory; label: string }[] = [
     { value: 'STRENGTH', label: 'Strengths' },
     { value: 'WEAKNESS', label: 'Weaknesses' },
     { value: 'OPPORTUNITY', label: 'Opportunities' },

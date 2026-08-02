@@ -47,7 +47,7 @@ export type DemoRole = 'ADMIN' | 'FOUNDER' | 'INVESTOR';
  * One-click demo shortcuts (task #18). Labels only — no credentials live in
  * the frontend; POST /auth/demo-login resolves the account server-side.
  */
-export const DEMO_SHORTCUTS: ReadonlyArray<{ role: DemoRole; title: string; detail: string }> = [
+export const DEMO_SHORTCUTS: readonly { role: DemoRole; title: string; detail: string }[] = [
   { role: 'ADMIN', title: 'Admin', detail: 'Ops-level platform access' },
   { role: 'FOUNDER', title: 'Founder', detail: 'Verdant Labs' },
   { role: 'INVESTOR', title: 'Investor', detail: 'Lumen Capital' },
@@ -61,7 +61,7 @@ export type FundingStage =
   | 'SERIES_B'
   | 'SERIES_C_PLUS';
 
-export const FUNDING_STAGES: ReadonlyArray<{ value: FundingStage; label: string }> = [
+export const FUNDING_STAGES: readonly { value: FundingStage; label: string }[] = [
   { value: 'IDEA', label: 'Idea / pre-product' },
   { value: 'PRE_SEED', label: 'Pre-seed' },
   { value: 'SEED', label: 'Seed' },
@@ -98,7 +98,7 @@ export type InvestorType =
   | 'ACCELERATOR_INCUBATOR'
   | 'GOVERNMENT_INSTITUTIONAL';
 
-export const INVESTOR_TYPES: ReadonlyArray<{ value: InvestorType; label: string }> = [
+export const INVESTOR_TYPES: readonly { value: InvestorType; label: string }[] = [
   { value: 'ANGEL', label: 'Angel' },
   { value: 'PRE_SEED', label: 'Pre-seed' },
   { value: 'SEED_VC', label: 'Seed VC' },
@@ -171,7 +171,7 @@ export interface InvestorCard {
 // ── Data room (tasks #12 / #13) ───────────────────────────────
 export type DataRoomVisibility = 'PRIVATE' | 'SHARED_ON_REQUEST' | 'VISIBLE_TO_INVESTORS';
 
-export const VISIBILITY_OPTIONS: ReadonlyArray<{ value: DataRoomVisibility; label: string }> = [
+export const VISIBILITY_OPTIONS: readonly { value: DataRoomVisibility; label: string }[] = [
   { value: 'PRIVATE', label: 'Private — only me' },
   { value: 'SHARED_ON_REQUEST', label: 'Shared on request' },
   { value: 'VISIBLE_TO_INVESTORS', label: 'Visible to investors' },
@@ -541,7 +541,7 @@ export type DealEventKind =
   | 'CREATED' | 'STAGE_CHANGED' | 'COMMENT' | 'TASK_ADDED' | 'TASK_COMPLETED';
 
 /** Ordered stages (terminal states last), for the stage picker/stepper. */
-export const DEAL_STAGES: ReadonlyArray<{ value: DealStage; label: string }> = [
+export const DEAL_STAGES: readonly { value: DealStage; label: string }[] = [
   { value: 'INTEREST', label: 'Interest' },
   { value: 'MEETING_SCHEDULED', label: 'Meeting Scheduled' },
   { value: 'NDA', label: 'NDA' },

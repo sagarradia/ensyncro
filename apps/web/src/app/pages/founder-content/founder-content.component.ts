@@ -27,12 +27,12 @@ import {
   VISIBILITY_OPTIONS,
 } from '../../core/models';
 
-const NATURE_OPTIONS: ReadonlyArray<{ value: NatureOfBusiness; label: string }> = [
+const NATURE_OPTIONS: readonly { value: NatureOfBusiness; label: string }[] = [
   { value: 'MANUFACTURING', label: 'Manufacturing' },
   { value: 'TRADING', label: 'Trading' },
   { value: 'SERVICE', label: 'Service' },
 ];
-const STAGE_OPTIONS: ReadonlyArray<{ value: BusinessStage; label: string }> = [
+const STAGE_OPTIONS: readonly { value: BusinessStage; label: string }[] = [
   { value: 'IDEA', label: 'Idea' },
   { value: 'STARTUP', label: 'Startup' },
   { value: 'EARLY_REVENUE', label: 'Early revenue' },
@@ -41,7 +41,7 @@ const STAGE_OPTIONS: ReadonlyArray<{ value: BusinessStage; label: string }> = [
   { value: 'MATURE', label: 'Mature' },
   { value: 'TURNAROUND', label: 'Turnaround' },
 ];
-const CLASSIFICATION_OPTIONS: ReadonlyArray<{ value: CompanyClassification; label: string }> = [
+const CLASSIFICATION_OPTIONS: readonly { value: CompanyClassification; label: string }[] = [
   { value: 'MSME', label: 'MSME' },
   { value: 'LARGE_ENTERPRISE', label: 'Large enterprise' },
   { value: 'LISTED', label: 'Listed' },
@@ -49,7 +49,7 @@ const CLASSIFICATION_OPTIONS: ReadonlyArray<{ value: CompanyClassification; labe
   { value: 'GOVERNMENT', label: 'Government' },
   { value: 'PSU', label: 'PSU' },
 ];
-const FUNDING_TYPE_OPTIONS: ReadonlyArray<{ value: FundingRequirementType; label: string }> = [
+const FUNDING_TYPE_OPTIONS: readonly { value: FundingRequirementType; label: string }[] = [
   { value: 'SEED', label: 'Seed' },
   { value: 'ANGEL', label: 'Angel' },
   { value: 'GROWTH', label: 'Growth' },
@@ -60,14 +60,14 @@ const FUNDING_TYPE_OPTIONS: ReadonlyArray<{ value: FundingRequirementType; label
   { value: 'ACQUISITION', label: 'Acquisition' },
 ];
 
-const SWOT_CATEGORIES: ReadonlyArray<{ value: SwotCategory; label: string }> = [
+const SWOT_CATEGORIES: readonly { value: SwotCategory; label: string }[] = [
   { value: 'STRENGTH', label: 'Strength' },
   { value: 'WEAKNESS', label: 'Weakness' },
   { value: 'OPPORTUNITY', label: 'Opportunity' },
   { value: 'THREAT', label: 'Threat' },
 ];
 
-const RISK_SEVERITIES: ReadonlyArray<{ value: RiskSeverity; label: string }> = [
+const RISK_SEVERITIES: readonly { value: RiskSeverity; label: string }[] = [
   { value: 'LOW', label: 'Low' },
   { value: 'MEDIUM', label: 'Medium' },
   { value: 'HIGH', label: 'High' },

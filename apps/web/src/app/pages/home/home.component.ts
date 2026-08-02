@@ -76,7 +76,7 @@ export class HomeComponent {
     return '/login';
   });
 
-  readonly navLinks: ReadonlyArray<{ label: string; href: string }> = [
+  readonly navLinks: readonly { label: string; href: string }[] = [
     { label: 'For Investors', href: '#for-investors' },
     { label: 'For Founders', href: '#for-founders' },
     { label: 'How it Works', href: '#how-it-works' },
@@ -84,20 +84,20 @@ export class HomeComponent {
     { label: 'About', href: '#about' },
   ];
 
-  readonly founderFeatures: ReadonlyArray<Feature> = [
+  readonly founderFeatures: readonly Feature[] = [
     { icon: 'pi-id-card', title: 'Structured company profile', blurb: 'Build a rich, investor-ready profile — promoters, business model, market, financials and more — in a guided flow.' },
     { icon: 'pi-file-pdf', title: 'One-click Teaser & IM', blurb: 'Auto-generate a polished teaser and a full information memorandum from your profile. Always current, never re-typed.' },
     { icon: 'pi-lock', title: 'Private data room', blurb: 'Share documents on your terms, with per-file visibility and a full audit trail of who viewed what.' },
     { icon: 'pi-compass', title: 'Reach the right investors', blurb: 'Get discovered by investors filtering on your sector, stage and ticket size — no cold outreach.' },
   ];
 
-  readonly investorFeatures: ReadonlyArray<Feature> = [
+  readonly investorFeatures: readonly Feature[] = [
     { icon: 'pi-search', title: 'Targeted discovery', blurb: 'Filter founders by sector, stage and geography and open a structured profile for each — signal over noise.' },
     { icon: 'pi-chart-line', title: 'Financials on request', blurb: 'Request access to gated financials, cap tables and projections; founders grant it deal by deal, all audited.' },
     { icon: 'pi-folder-open', title: 'Data room access', blurb: 'Review shared documents in a controlled data room once a founder opens it to you.' },
   ];
 
-  readonly steps: ReadonlyArray<Step> = [
+  readonly steps: readonly Step[] = [
     { n: 1, title: 'Build your profile', blurb: 'Founders publish a structured profile; investors set their thesis. It takes minutes.' },
     { n: 2, title: 'Discover & connect', blurb: 'Investors find founders that fit and request an intro. Founders choose who to engage.' },
     { n: 3, title: 'Move to a deal', blurb: 'An accepted intro opens a deal — track it through stages with a shared timeline, tasks and the data room.' },

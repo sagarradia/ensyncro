@@ -78,7 +78,7 @@
 
         @if (sp.image) {
           <div class="field">
-            <label>{{ sp.imageLabel || 'Image' }}</label>
+            <span class="field-label">{{ sp.imageLabel || 'Image' }}</span>
             @if (imageUrl) {
               <div class="col-img-preview">
                 <img [src]="imageUrl" alt="preview" />

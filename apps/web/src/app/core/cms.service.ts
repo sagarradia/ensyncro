@@ -68,7 +68,7 @@ export class CmsService {
     return this.http.get<AdminCmsContent>(`${this.base}/admin/cms`);
   }
 
-  save(updates: Array<{ key: string; value: string }>): Observable<CmsSaveResult> {
+  save(updates: { key: string; value: string }[]): Observable<CmsSaveResult> {
     return this.http.put<CmsSaveResult>(`${this.base}/admin/cms`, { updates });
   }
 
